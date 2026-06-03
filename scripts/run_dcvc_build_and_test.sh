@@ -53,7 +53,6 @@ python -u scripts/test_video_intra_era5.py \
   --data_root "/data/run01/scxj523/zsh/project/Data/ERA5/2024" \
   --output_dir "/data/run01/scxj523/zsh/project/AIForCompression/logs/results/DCVC-FM" \
   --model DCVC_FM \
-  --gpu 0 \
   --max_samples 1
 
 # 6. 运行 DCVC-RT 测试
@@ -62,5 +61,4 @@ python -u scripts/test_video_intra_era5.py \
   --data_root "/data/run01/scxj523/zsh/project/Data/ERA5/2024" \
   --output_dir "/data/run01/scxj523/zsh/project/AIForCompression/logs/results/DCVC-RT" \
   --model DCVC_RT \
-  --gpu 0 \
   --max_samples 1

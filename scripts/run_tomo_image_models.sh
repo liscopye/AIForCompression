@@ -10,8 +10,8 @@ eval "$(/data/home/scxj523/run/miniconda3/bin/conda shell.bash hook)"
 conda activate /data/run01/scxj523/zsh/envs/zsh
 
 PROJECT_ROOT=/data/run01/scxj523/zsh/project/AIForCompression
-DATA_FILE=/data/run01/scxj523/zsh/project/Data/tomo/tomo_00083.h5
-OUTPUT_DIR=$PROJECT_ROOT/unified_results/tomo_image_models
+DATA_FILE=/data/run01/scxj523/zsh/project/Data/tomo/tomo_00001_rec/recon.h5
+OUTPUT_DIR=$PROJECT_ROOT/unified_results/tomo_recon3ch
 
 cd $PROJECT_ROOT
 
@@ -19,6 +19,7 @@ python scripts/run_dataset_compression.py \
   --dataset tomo \
   --data_root $DATA_FILE \
   --output_dir $OUTPUT_DIR \
-  --models DCAE WeConvene LIC_TCM LIC-HPCM RwkvCompress \
-  --max_samples 10 \
+  --models DCAE LIC_TCM LIC-HPCM RwkvCompress \
+  --max_samples 30 \
+  --tomo_group_frames 3 \
   --image_eval_mode real

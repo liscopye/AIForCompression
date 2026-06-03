@@ -110,6 +110,7 @@ python scripts/run_dataset_compression.py ... --models DCVC-RT --output_dir unif
 - **DCVC-RT 不能和 DCAE 同进程**（RansEncoder 冲突）——分开提交
 - 其他图像模型可混合使用
 - DCVC P-frame 和 DCMVC P-frame 用独立脚本 `scripts/test_uvg_pframe.py` / `scripts/run_dcmvc_pframe.py`
+- CRA5 默认只跑 ERA5 268 通道样本；非 ERA5 诊断实验必须显式传 `--allow_cra5_adapted`，且不要作为主公平 benchmark。
 
 ## 4. CAESAR 测试
 
@@ -166,7 +167,10 @@ python utils/plot_all_datasets.py --mode all
 ERA5 适配器自动加载当天归一化参数。
 
 ### CAESAR
-**不做归一化**，直接处理原始 float32，通过误差界 eb 控制精度。
+Pipeline 不做 image-model 的 per-channel minmax；原始 float32 会进入 CAESAR view。CAESAR 上游 `ScientificDataset` 内部使用 `inst_norm=True, norm_type="mean_range"`，解压后通过 `recons_data()` 回到原始数据空间再算指标。
+
+### CRA5
+默认只接受 ERA5 原生 268 通道 canonical sample。`--allow_cra5_adapted` 会把非 ERA5 输入 resize 并复制到 268 通道，这是 ablation/diagnostic 路径，不应和主结果直接比较。
 
 ### 反归一化
 - uint8：`round(clip(x̂,0,1)×255)`

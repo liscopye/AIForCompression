@@ -21,4 +21,5 @@ python scripts/run_dataset_compression.py \
   --output_dir $OUTPUT_DIR \
   --models CRA5 \
   --max_samples 10 \
-  --image_eval_mode real
+  --image_eval_mode real \
+  --allow_cra5_adapted

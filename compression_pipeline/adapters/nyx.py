@@ -47,8 +47,8 @@ class NYXAdapter:
             data = data[:max_samples]
             d = data.shape[0]
         if resolution is not None:
-            from compression_pipeline.adapters.era5 import center_crop_chw
-            data = center_crop_chw(data, resolution)
+            from compression_pipeline.adapters.era5 import center_crop_vthw
+            data = center_crop_vthw(data[np.newaxis, ...], resolution)[0]
         sequence = data[np.newaxis, ...]  # [1, T=Z, H, W]
         timestamps = [f"2024-01-01T{i:02d}:00:00" for i in range(d)]
         return sequence, timestamps

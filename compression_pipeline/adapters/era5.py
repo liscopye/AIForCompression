@@ -175,3 +175,33 @@ def center_crop_chw(array: np.ndarray, resolution: tuple[int, int] | None) -> np
     start_h = (height - target_h) // 2
     start_w = (width - target_w) // 2
     return array[:, start_h:start_h + target_h, start_w:start_w + target_w]
+
+
+def center_crop_hw(array: np.ndarray, resolution: tuple[int, int] | None) -> np.ndarray:
+    if resolution is None:
+        return array
+    target_h, target_w = resolution
+    if target_h <= 0 or target_w <= 0:
+        raise ValueError(f"resolution values must be positive, got {resolution}")
+    height, width = array.shape
+    if target_h > height or target_w > width:
+        raise ValueError(f"resolution {resolution} exceeds data size {(height, width)}")
+    start_h = (height - target_h) // 2
+    start_w = (width - target_w) // 2
+    return array[start_h:start_h + target_h, start_w:start_w + target_w]
+
+
+def center_crop_vthw(array: np.ndarray, resolution: tuple[int, int] | None) -> np.ndarray:
+    if resolution is None:
+        return array
+    if array.ndim != 4:
+        raise ValueError(f"Expected VTHW array, got shape {array.shape}")
+    target_h, target_w = resolution
+    if target_h <= 0 or target_w <= 0:
+        raise ValueError(f"resolution values must be positive, got {resolution}")
+    _, _, height, width = array.shape
+    if target_h > height or target_w > width:
+        raise ValueError(f"resolution {resolution} exceeds data size {(height, width)}")
+    start_h = (height - target_h) // 2
+    start_w = (width - target_w) // 2
+    return array[:, :, start_h:start_h + target_h, start_w:start_w + target_w]

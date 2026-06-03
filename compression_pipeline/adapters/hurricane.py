@@ -88,10 +88,9 @@ class HurricaneAdapter:
             data = data[:max_samples]
             t = data.shape[0]
         if resolution is not None:
-            from compression_pipeline.adapters.era5 import center_crop_chw
-            data = center_crop_chw(data, resolution)
+            from compression_pipeline.adapters.era5 import center_crop_vthw
+            data = center_crop_vthw(data[np.newaxis, ...], resolution)[0]
         # [T, H, W] -> [V=1, T, H, W]
         sequence = data[np.newaxis, ...]
         timestamps = [f"2024-01-01T{i:02d}:00:00" for i in range(t)]
         return sequence, timestamps
-

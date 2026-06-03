@@ -21,5 +21,4 @@ python -u scripts/test_video_intra_era5.py \
   --data_root "$DATA" \
   --output_dir "$LOG_ROOT/DCVC-FM" \
   --model DCVC_FM \
-  --gpu 0 \
   --max_samples 1

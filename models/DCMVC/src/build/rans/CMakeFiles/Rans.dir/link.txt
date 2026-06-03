@@ -1,0 +1,2 @@
+/usr/bin/ar qc libRans.a CMakeFiles/Rans.dir/rans.cpp.o
+/usr/bin/ranlib libRans.a

@@ -12,7 +12,7 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
-from compression_pipeline.metrics import calculate_psnr
+from compression_pipeline.metrics import calculate_psnr, make_lpips_fn, reset_torch_peak_memory, torch_memory_usage_mb
 from compression_pipeline.views import CaesarView, build_caesar_view
 
 
@@ -81,11 +81,13 @@ def run_caesar_sequence(
     batch_size: int = 8,
     eb: float = 1e-4,
     start_index: int = 0,
+    sample_id: str = "caesar_sequence",
+    collect_lpips: bool = True,
 ) -> dict[str, Any]:
     if model_name not in CAESAR_N_FRAMES:
         raise ValueError(f"Unsupported CAESAR model: {model_name}")
     n_frame = CAESAR_N_FRAMES[model_name]
-    window = build_caesar_window(sequence_vthw, timestamps, n_frame=n_frame, start_index=start_index, sample_id=f"era5_{model_name}")
+    window = build_caesar_window(sequence_vthw, timestamps, n_frame=n_frame, start_index=start_index, sample_id=sample_id)
 
     caesar_root = Path(caesar_root)
     ckpt_dir = Path(ckpt_dir)
@@ -115,13 +117,14 @@ def run_caesar_sequence(
         dataset = ScientificDataset(data_arg)
         loader = DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=2)
         compressor = CAESAR(
-            model_path=str(ckpt_dir / f"{model_name}.pth"),
+            model_path=str(_resolve_caesar_checkpoint(ckpt_dir, model_name)),
             use_diffusion=(model_name == "caesar_d"),
             device=device,
             n_frame=n_frame,
         )
         params = _count_caesar_params(compressor, model_name)
 
+        reset_torch_peak_memory(device)
         t0 = time.time()
         compressed, compressed_size = compressor.compress(loader, eb=eb)
         t1 = time.time()
@@ -133,11 +136,14 @@ def run_caesar_sequence(
         original = dataset.input_data().numpy()
         recon = dataset.recons_data(reconstructed).detach().cpu().numpy()
         psnr, mse = calculate_psnr(original, recon)
+        lpips_value = make_lpips_fn(device)(original, recon) if collect_lpips else None
+        memory_metrics = torch_memory_usage_mb(device)
         compressed_bytes = float(compressed_size.item() if hasattr(compressed_size, "item") else compressed_size)
         original_bytes = int(original.size * 4)
         return {
             "model_name": "CAESAR",
             "model_id": model_name,
+            "sample_id": sample_id,
             "metric": "mse",
             "params": params,
             "model_view": "caesar_vsthw",
@@ -155,6 +161,9 @@ def run_caesar_sequence(
             "decode_time_avg": t2 - t1,
             "encode_throughput": original_bytes / (t1 - t0) if t1 > t0 else None,
             "decode_throughput": original_bytes / (t2 - t1) if t2 > t1 else None,
+            "lpips": lpips_value,
+            "memory_usage_MB": memory_metrics.get("memory_usage_MB"),
+            "memory_reserved_MB": memory_metrics.get("memory_reserved_MB"),
         }
     finally:
         npz_path.unlink(missing_ok=True)
@@ -173,7 +182,30 @@ def _parse_timestamp(timestamp: str) -> datetime:
             return datetime(2000, 1, 1) + timedelta(seconds=angle_sec)
         except ValueError:
             pass
+    # Reconstructed slice timestamps: slice_NNNN → treat as seconds from epoch
+    if timestamp.startswith("slice_"):
+        try:
+            slice_idx = int(timestamp.removeprefix("slice_"))
+            return datetime(2000, 1, 1) + timedelta(seconds=slice_idx)
+        except ValueError:
+            pass
     raise ValueError(f"Unsupported timestamp format for CAESAR: {timestamp}")
+
+
+def _resolve_caesar_checkpoint(ckpt_dir: str | Path, model_name: str) -> Path:
+    ckpt_dir = Path(ckpt_dir)
+    exact = ckpt_dir / f"{model_name}.pth"
+    if exact.exists():
+        return exact
+    candidates: list[Path] = []
+    for extension in (".pth", ".pt", ".pth.tar"):
+        candidates.extend(sorted(ckpt_dir.glob(f"{model_name}*{extension}")))
+    if candidates:
+        return candidates[0]
+    raise FileNotFoundError(
+        f"No checkpoint found for {model_name} in {ckpt_dir}; expected {exact.name} "
+        f"or a file matching {model_name}*.pt/.pth"
+    )
 
 
 def _count_caesar_params(compressor: Any, model_name: str) -> int:

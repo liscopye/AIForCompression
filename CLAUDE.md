@@ -1,176 +1,183 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to Claude Code when working in this repository.
 
 # AIForCompression 项目
 
-对多种学习型压缩模型在 ERA5 气象数据集上进行统一评测。
+目标是搭建一个可复用的学习型/传统压缩 benchmark 框架，用统一的数据中间层评测多种数据集和多种模型，而不是为每个“数据集 x 模型”写一次性脚本。
 
-## 项目结构
+当前主框架是：
 
-```
-AIForCompression/
-├── models/                         # 所有模型源码统一放在这里
-│   ├── CAESAR/                     # CAESAR 科学数据压缩模型
-│   ├── CRA5/                       # CRA5 工具库（mean/std 归一化参数 + CompressAI 预训练模型）
-│   ├── DCAE/                       # DCAE 图像压缩模型
-│   ├── DCMVC/                      # DCMVC 视频压缩模型（CVPR 2025）
-│   ├── DCVC/                       # DCVC / DCVC-RT / DCVC-family 视频压缩模型
-│   ├── FLAVC/                      # FLAVC 视频压缩模型
-│   ├── LIC-HPCM/                   # LIC-HPCM 图像压缩模型
-│   ├── LIC_TCM/                    # LIC-TCM 图像压缩模型
-│   ├── RwkvCompress/               # RwkvCompress / LALIC 图像压缩模型
-│   └── WeConvene/                  # WeConvene 模型 (ECCV 2024)
-├── checkpoints/                    # 所有模型权重统一按 checkpoints/<模型名>/... 存储
-│   ├── bmshj2018-factorized/       # CompressAI zoo 权重（mse / ms-ssim）
-│   ├── bmshj2018-hyperprior/       # CompressAI zoo 权重（mse / ms-ssim）
-│   ├── cheng2020-anchor/           # CompressAI zoo 权重（mse / ms-ssim）
-│   ├── cheng2020-attn/             # CompressAI zoo 权重（mse / ms-ssim）
-│   ├── dcae/                       # DCAE MSE 权重
-│   ├── dcvc-rt/                    # DCVC-RT 2025 权重（cvpr2025_image/video）
-│   ├── dcmvc/                      # DCMVC 权重
-│   ├── lic-hpcm/                   # LIC-HPCM MSE 权重（hpcm-base / hpcm-large）
-│   ├── lictcm/                     # LIC-TCM MSE 权重
-│   ├── mbt2018/                    # CompressAI zoo 权重（mse / ms-ssim）
-│   ├── mbt2018-mean/               # CompressAI zoo 权重（mse / ms-ssim）
-│   ├── rwkvcompress/               # RwkvCompress / LALIC MSE 权重
-│   ├── vaeformer-pretrained/       # CRA5 VAEformer 权重
-│   ├── weconvene/                  # WeConvene MSE 权重
-│   └── <新模型名>/                 # 新模型权重目录
-├── Data/
-│   └── ERA5/2024/        # 测试数据（pressure.nc + single.nc 配对）
-├── results_selected_channels/  # 6通道测试结果
-├── unified_results/            # 268通道统一结果和图表
-├── test_selected_channels.py   # 统一测试脚本（6目标通道）
-├── plot_*.py                   # 各类绘图脚本
-└── CLAUDE.md
+```text
+Dataset Adapter -> CanonicalSample -> Model View -> Codec Runner -> Metrics -> summary.json
 ```
 
-## ERA5 数据说明
+主入口：
 
-- 268 个通道：7 个气压层变量 x 37 个气压层 + 9 个地面变量
-- 数据文件格式：`{timestamp}_pressure.nc` + `{timestamp}_single.nc` 配对
-- 数据路径：`Data/ERA5/2024/`
-- 归一化参数来自 `models/CRA5/cra5/api/mean_std.json` 和 `mean_std_single.json`
-
-## 通道不匹配处理方法
-
-模型通常只支持 3 通道输入。处理方式（参照 DCAE/test_era5.py）：
-1. 将 268 通道按 GROUP_SIZE=3 分组（最后一组不足 3 通道则复制最后一个通道补齐）
-2. 每组做 minmax 归一化到 [0,1]，送入模型
-3. 模型输出后反归一化恢复原始尺度
-4. 拼接所有组的结果
-
-## 两种测试模式
-
-1. **268 通道全量测试**：每个模型目录下的 `test_era5.py`，结果在 `models/<模型>/results_era5/`
-2. **6 目标通道测试**：`test_selected_channels.py`，只测 z500/t850/v10/u10/t2m/msl（2 组 x 3 通道），结果在 `results_selected_channels/`
-   - CRA5 仍用全 268 通道，然后提取 6 通道计算指标
-   - 支持 `--models` 过滤：`python test_selected_channels.py --models LIC_TCM`
-   - 有 resume 支持，error 条目会自动重跑
-
-## 已知问题：模型导入冲突
-
-DCAE、LIC_TCM、RwkvCompress、WeConvene 等模型目录中可能都有各自的 `models` 包。在同一进程中顺序加载时，先导入的 `models` 会缓存在 `sys.modules` 中，导致后续模型 import 失败。解决方法：用 `--models` 参数单独跑有冲突的模型，或在 loader 中清理相关 `sys.modules` 并显式设置模型源码路径。
-
-## 模型分类（熵编码方式）
-
-- **非自回归**：bmshj2018-factorized, bmshj2018-hyperprior, mbt2018-mean — 并行解码，速度快
-- **自回归**：mbt2018, cheng2020-anchor, cheng2020-attn — 顺序解码（CPU），速度慢但压缩率高
-- **专用图像/科学数据模型**：DCAE, WeConvene, LIC_TCM, LIC-HPCM, RwkvCompress, CAESAR, CRA5
-- **视频模型**：DCMVC, DCVC/DCVC-RT/DCVC-family, FLAVC
-
-## 绘图脚本
-
-- `plot_selected_channels_time_bar.py`：6 通道 encode/decode 时间柱状图（非 CRA5 除以 2）
-- `plot_selected_channels_mse_bar.py`：MSE/RMSE 柱状图（仅 mse metric）
-- `plot_enc_dec_time_bar.py`：268 通道 encode/decode 时间柱状图
-- `plot_forward_time_bar.py`：forward 推理时间柱状图
-
-注意：绘图时非 CRA5 模型的 6 通道时间需除以 2（实际跑了 2 组 x 3 通道）。
-
-## 添加新模型的标准流程
-
-1. 将模型代码放在 `AIForCompression/models/<模型名>/` 目录下
-2. 将 checkpoints 放在 `checkpoints/<模型名>/` 目录下（tar 文件需解压）
-3. 在模型目录下创建 `test_era5.py`，遵循以下模式：
-   - 复用 ERA5 变量定义、读取、通道分组、归一化逻辑（参考 `models/DCAE/test_era5.py`）
-   - 适配模型的加载方式（参考模型自带的 eval 脚本和 README）
-   - 输出结果到 `<模型目录>/results_era5/`，格式为 summary.json
-4. 在 `test_selected_channels.py` 中添加 loader 函数和 config
-5. 编写对应的 `run.sh` 提交脚本
-
-## HPC 集群环境
-
-- 提交命令：`sbatch -p gpu_5090 ./run.sh`
-- GPU 分区：gpu_5090（RTX 5090）
-- Slurm 作业脚本中不要手动 `unset`、`export` 或覆盖 `CUDA_VISIBLE_DEVICES`。该变量由集群调度器根据分配到的 GPU 设置，脚本里改它会破坏 Slurm 的 GPU 绑定。
-
-## run.sh 编写规则
-
-每个模型的 run.sh 必须根据该模型自身的运行方式编写。编写前先阅读模型的 README 和 eval/test 脚本。
-
-固定部分（所有模型通用）：
 ```bash
-#!/bin/bash
-#SBATCH --job-name=<模型名>_era5
-#SBATCH --partition=gpu_5090
-#SBATCH --gpus=1
-#SBATCH --cpus-per-task=4
-#SBATCH --output=<模型名>_era5_%j.log
-#SBATCH --error=<模型名>_era5_%j.log
+python scripts/run_dataset_compression.py \
+  --dataset <dataset> \
+  --data_root <path> \
+  --output_dir unified_results/<run_name> \
+  --models <model...> \
+  --max_samples <n>
+```
 
+## 当前项目结构
+
+```text
+AIForCompression/
+├── compression_pipeline/           # shared benchmark framework
+│   ├── adapters/                   # dataset -> CanonicalSample
+│   ├── canonical.py                # CanonicalSample / DatasetManifest
+│   ├── views.py                    # image groups / CAESAR views / inverse transforms
+│   ├── runner.py                   # grouped image-model runner
+│   ├── torch_codecs.py             # model API wrappers
+│   ├── model_registry.py           # model checkpoint discovery and loaders
+│   ├── cra5_runner.py              # CRA5 native ERA5 runner
+│   └── caesar_runner.py            # CAESAR sequence runner
+├── scripts/                        # benchmark and Slurm entrypoints
+├── utils/                          # plotting, aggregation, download, statistics tools
+├── tests/                          # regression tests for framework behavior
+├── docs/                           # design notes and usage docs
+├── models/                         # upstream model source trees
+├── checkpoints/                    # model weights, organized by model
+├── normalization/                  # ERA5 daily mean/std files used by adapter
+└── unified_results/                # benchmark outputs and plots
+```
+
+## Supported Datasets
+
+`scripts/run_dataset_compression.py --dataset` currently supports:
+
+- `kodak`: RGB image folder, canonical `[C,H,W] uint8`.
+- `uvg`: YUV420 video frames, canonical RGB frames.
+- `era5`: paired `{timestamp}_pressure.nc` and `{timestamp}_single.nc`, canonical 268-channel float fields.
+- `tomo`: reconstructed tomography HDF5 volume, slices or grouped slices.
+- `hurricane`: `.bin.f32` time series fields.
+- `s2c`: Sentinel-2 SAFE/SAFE.zip JP2 band tiles.
+- `nyx`: SDRBench NYX `.f32` 3D volume.
+- `shanghai_xray`: synchrotron X-ray TIFF images.
+- `isot1024`: isotropic turbulence HDF5 velocity data.
+- `lysozyme`: CHESS lysozyme HDF5 diffraction frames.
+
+Adapters must emit `CanonicalSample(layout="channel_height_width")` for image-style models. Sequence-capable adapters may also implement `load_sequence()` returning `[V,T,H,W]` plus timestamps for CAESAR.
+
+## Supported Model Families
+
+### General image/intra models
+
+These go through `build_image_groups()` and `run_image_grouped_sample()`:
+
+- `DCAE`
+- `LIC_TCM`
+- `LIC-HPCM`
+- `RwkvCompress`
+- `WeConvene`
+- `DCVC-RT` intra wrapper
+- `DCMVC` intra wrapper
+
+Rules:
+
+- Image/uint8 data uses `/255 -> [0,1]`.
+- Float scientific data uses per-channel min/max normalization, with inverse transform before metrics.
+- Multi-channel samples are split into 3-channel groups; the last group is padded by repeating the last real channel.
+- Metrics are computed in the reconstructed original data space, not in normalized model input space.
+
+### CRA5
+
+CRA5 is an ERA5-native model. In the main benchmark path it only accepts ERA5-style 268-channel scientific samples and should be run without `--max_channels`:
+
+```bash
+python scripts/run_dataset_compression.py \
+  --dataset era5 \
+  --data_root /data/run01/scxj523/zsh/project/Data/ERA5/2024 \
+  --output_dir unified_results/era5_cra5 \
+  --models CRA5 \
+  --max_samples 1
+```
+
+Non-ERA5 CRA5 runs require the explicit `--allow_cra5_adapted` flag. That path resizes and channel-replicates samples to CRA5's 268-channel input and is only an ablation/diagnostic baseline, not a fair default benchmark.
+
+### CAESAR
+
+CAESAR uses native sequence views and does not go through the image-group runner:
+
+- `caesar_v` requires 8 contiguous frames.
+- `caesar_d` requires 16 contiguous frames.
+- Input to CAESAR runner is `[V,T,H,W]`; `build_caesar_view()` converts it to `[V,S,T,H,W]` with `S=1`.
+- `--caesar_start_index` selects the contiguous window.
+- `--caesar_eb` controls error-bound sweeps.
+
+Example:
+
+```bash
+python scripts/run_dataset_compression.py \
+  --dataset era5 \
+  --data_root /data/run01/scxj523/zsh/project/Data/ERA5/2024 \
+  --output_dir unified_results/era5_caesar_v \
+  --models caesar_v \
+  --max_samples 8 \
+  --max_channels 6 \
+  --caesar_eb 1e-4 1e-3 1e-2
+```
+
+## Metrics Contract
+
+Each successful result should include:
+
+- `mse`, `rmse`, `psnr`
+- `bpp`, `bitstream_bytes`, `original_bytes`, `compression_ratio`
+- `encode_time_total`, `decode_time_total`
+- `encode_time_per_group_avg`, `decode_time_per_group_avg`
+- `encode_throughput_MBps`, `decode_throughput_MBps`
+- legacy aliases: `encode_time_avg`, `decode_time_avg`, `encode_throughput`, `decode_throughput`
+- `model_name`, `model_id`, `sample_id`, `dataset_id` where applicable
+
+PSNR is computed as `10 * log10(data_range^2 / mse)` in original data space. `data_range` is per-sample `original.max() - original.min()`, falling back to `1.0` for constant samples.
+
+## HPC / Slurm Rules
+
+Use the allocated GPU from Slurm. Job scripts must not unset, export, or overwrite `CUDA_VISIBLE_DEVICES` unless debugging outside Slurm.
+
+Standard environment:
+
+```bash
 eval "$(/data/home/scxj523/run/miniconda3/bin/conda shell.bash hook)"
 conda activate /data/run01/scxj523/zsh/envs/zsh
+cd /data/run01/scxj523/zsh/project/AIForCompression
 ```
 
-可变部分（根据模型调整）：
-- `cd` 到模型对应的目录
-- python 命令、脚本名、参数都按模型自身的用法来
-- checkpoints 路径统一为 `checkpoints/<模型名>/...`
-- 数据路径统一为 `Data/ERA5/2024`
-- 如果底层 Python 脚本有 `--gpu` 参数，Slurm 提交脚本默认不要传；让 `CUDA_VISIBLE_DEVICES` 保持调度器分配的值。
+Smoke entrypoint:
 
-## 权重目录约定
+```bash
+sbatch scripts/run_framework_smoke_model.sh <case> [max_model_jobs|all] [max_samples|all]
+```
 
-- 模型源码只放在 `models/<模型名>/`，不要再把模型源码放在项目根目录。
-- 预训练权重统一放在项目根目录的 `checkpoints/` 下，不放进各模型源码目录，除非上游脚本强依赖相对路径且无法通过参数指定。
-- README 中标注为 MSE 的权重按模型分目录保存：
-  - DCAE：`checkpoints/dcae/mse_*.pth.tar`
-  - LIC_TCM：`checkpoints/lictcm/*.pth.tar`
-  - LIC-HPCM：`checkpoints/lic-hpcm/hpcm-base/mse/*.pth.tar` 和 `checkpoints/lic-hpcm/hpcm-large/mse/*.pth.tar`
-  - RwkvCompress/LALIC：`checkpoints/rwkvcompress/mse/lalic-q*.pth`
-  - WeConvene：`checkpoints/weconvene/*.pth.tar`
-- DCVC-RT 2025 权重放在 `checkpoints/dcvc-rt/`，主 README 使用 `cvpr2025_image.pth.tar` 和 `cvpr2025_video.pth.tar`。
-- DCMVC P-frame 权重放在 `checkpoints/dcmvc/dcmvc_p_frame.pth.tar`；I-frame 权重来自 DCVC-DC 的 `cvpr2023_image_psnr.pth.tar`。
-- 视频模型如果上游 README 使用 `./checkpoints` 或 `./ckpt`，优先在运行脚本中传入项目根目录下的统一权重路径；只有在脚本写死相对路径时才创建软链接。
+Examples:
 
-## 代码规范
+```bash
+sbatch scripts/run_framework_smoke_model.sh kodak_dcae all all
+sbatch scripts/run_framework_smoke_model.sh era5_caesar_v 1 8
+```
 
-- Python 3.10，依赖 compressai==1.2.6, xarray, torch
-- 除此之外应该递归查看对应模型中的文件，检查哪些依赖没有安装
-- 测试脚本统一使用 argparse，支持 `--data_root`, `--ckpt_dir`, `--checkpoint`, `--gpu`, `--compress` 等参数
-- 工具脚本统一放在utils目录下，例如AIForCompression放在'/data/run01/scxj523/zsh/project/AIForCompression/utils' 下 里面包含了计算参数量 的脚本，计算mead,std的脚本等等
-- 测试脚本一般放在scripts目录下，例如/data/run01/scxj523/zsh/project/AIForCompression/scripts 下
+## Development Rules
 
-## 测试指标
-- 结果必须包含以下指标：
-- 参数量
-- mse
-- rmse
-- psnr
-- bpp
-- compression_ratio
-- encode_time_avg
-- decode_time_avg
-- encode_throughput
-- decode_throughput
+- Treat `models/` as upstream/vendor model code unless a model-specific fix is required.
+- Prefer adding reusable adapter/view/codec code under `compression_pipeline/` over creating new one-off scripts.
+- Add new datasets by implementing an adapter in `compression_pipeline/adapters/`, registering it in `scripts/run_dataset_compression.py`, and documenting its canonical layout.
+- Add new models through `compression_pipeline/model_registry.py` plus a codec wrapper if the model does not expose CompressAI-style `compress()`/`decompress()`.
+- Keep tests focused on reusable framework behavior. Run at least:
 
+```bash
+pytest -q tests/test_compression_pipeline.py tests/test_model_registry.py
+```
 
-## 关键路径
+## Key Paths
 
-- 项目根目录：`/data/run01/scxj523/zsh/project/AIForCompression`
-- 数据目录：`/data/run01/scxj523/zsh/project/AIForCompression/Data/ERA5/2024`
-- Checkpoints：`/data/run01/scxj523/zsh/project/AIForCompression/checkpoints/`
-- 模型源码目录：`/data/run01/scxj523/zsh/project/AIForCompression/models/`
-- CRA5 归一化参数：`models/CRA5/cra5/api/mean_std.json`, `models/CRA5/cra5/api/mean_std_single.json`
+- Project root: `/data/run01/scxj523/zsh/project/AIForCompression`
+- Data root: `/data/run01/scxj523/zsh/project/Data`
+- ERA5 data: `/data/run01/scxj523/zsh/project/Data/ERA5/2024`
+- Checkpoints: `/data/run01/scxj523/zsh/project/AIForCompression/checkpoints`
+- Model source: `/data/run01/scxj523/zsh/project/AIForCompression/models`
+- ERA5 normalization: `/data/run01/scxj523/zsh/project/AIForCompression/normalization`

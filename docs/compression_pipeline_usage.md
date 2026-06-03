@@ -93,6 +93,14 @@ python scripts/run_dataset_compression.py \
 
 使用 CRA5 时不要传 `--max_channels`。Runner 会以 `x.shape == [1, 268, H, W]` 调用 `model.compress(x)`，然后调用 `model.decompress(strings, z_shape)`。
 
+默认情况下，CRA5 会拒绝非 ERA5 / 非 268 通道样本，避免把 resized/channel-replicated 的非公平 baseline 混进主 benchmark。若确实要做 Kodak/Tomo 等诊断性 ablation，必须显式传：
+
+```bash
+--allow_cra5_adapted
+```
+
+该模式会把输入 resize 到 CRA5 空间尺寸并复制/截取到 268 通道，只应在结果名和说明中标注为 adapted CRA5。
+
 ## 运行 CAESAR
 
 CAESAR 通过自己的原生 model view 接入，不走 image-group runner。它需要 ERA5 的连续时间段 stack：

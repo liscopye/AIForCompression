@@ -8,6 +8,7 @@ from PIL import Image
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+from compression_pipeline.adapters.era5 import center_crop_vthw
 from compression_pipeline.adapters.kodak import KodakAdapter
 from compression_pipeline.caesar_runner import build_caesar_window, validate_regular_timestamps
 from compression_pipeline.canonical import CanonicalSample
@@ -98,6 +99,21 @@ class CompressionPipelineTest(unittest.TestCase):
         self.assertEqual(metrics["encode_time_avg"], metrics["encode_time_total"])
         self.assertEqual(metrics["decode_time_avg"], metrics["decode_time_total"])
 
+    def test_base_metrics_preserves_optional_extra_metrics(self):
+        original = np.ones((3, 2, 2), dtype=np.float32)
+        reconstructed = original.copy()
+
+        metrics = base_metrics(
+            original,
+            reconstructed,
+            bitstream_bytes=8,
+            elapsed=(1.0, 1.0),
+            extra_metrics={"lpips": 0.125, "memory_usage_MB": 42.0},
+        )
+
+        self.assertEqual(metrics["lpips"], 0.125)
+        self.assertEqual(metrics["memory_usage_MB"], 42.0)
+
     def test_image_group_runner_reports_group_count_and_total_group_time(self):
         class FakeCodec:
             def __init__(self):
@@ -129,6 +145,36 @@ class CompressionPipelineTest(unittest.TestCase):
         self.assertEqual(result["decode_time_total"], 1.0)
         self.assertEqual(result["encode_time_per_group_avg"], 0.25)
         self.assertEqual(result["decode_time_per_group_avg"], 0.5)
+
+    def test_image_group_runner_records_optional_lpips_and_memory_metrics(self):
+        class FakeCodec:
+            def roundtrip(self, tensor):
+                return CodecResult(
+                    reconstruction=tensor,
+                    bitstream_bytes=10,
+                    encode_time=0.25,
+                    decode_time=0.5,
+                )
+
+        sample = CanonicalSample(
+            dataset_id="turb_rot_npz",
+            sample_id="t0",
+            kind="turb_rot_npz",
+            array=np.zeros((3, 2, 2), dtype=np.float32),
+            layout="channel_height_width",
+            metadata={"dtype": "float32"},
+        )
+
+        result = run_image_grouped_sample(
+            sample,
+            FakeCodec(),
+            lpips_fn=lambda original, reconstructed: 0.25,
+            memory_fn=lambda: {"memory_usage_MB": 10.0, "memory_reserved_MB": 12.0},
+        )
+
+        self.assertEqual(result["lpips"], 0.25)
+        self.assertEqual(result["memory_usage_MB"], 10.0)
+        self.assertEqual(result["memory_reserved_MB"], 12.0)
 
     def test_forward_likelihood_codec_uses_likelihoods_to_estimate_bitstream_size(self):
         torch = __import__("torch")
@@ -185,6 +231,14 @@ class CompressionPipelineTest(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             validate_regular_timestamps(timestamps)
+
+    def test_center_crop_vthw_preserves_variable_and_time_axes(self):
+        sequence = np.arange(2 * 4 * 5 * 6, dtype=np.float32).reshape(2, 4, 5, 6)
+
+        cropped = center_crop_vthw(sequence, (3, 4))
+
+        self.assertEqual(cropped.shape, (2, 4, 3, 4))
+        np.testing.assert_array_equal(cropped, sequence[:, :, 1:4, 1:5])
 
     def test_cra5_runner_uses_native_268_channel_shape(self):
         class FakeCRA5:

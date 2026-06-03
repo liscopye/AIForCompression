@@ -24,7 +24,6 @@ python -u test_era5.py \
   --data_root "$DATA" \
   --ckpt_dir "$ROOT/checkpoints/dcae" \
   --output_dir "$LOG_ROOT/DCAE" \
-  --gpu 0 \
   --compress \
   --max_samples 1
 
@@ -33,7 +32,6 @@ python -u test_era5.py \
   --data_root "$DATA" \
   --ckpt_dir "$ROOT/checkpoints/lictcm" \
   --output_dir "$LOG_ROOT/LIC_TCM" \
-  --gpu 0 \
   --compress \
   --max_samples 1
 
@@ -42,7 +40,6 @@ python -u test_era5.py \
   --data_root "$DATA" \
   --ckpt_dir "$ROOT/checkpoints/weconvene" \
   --output_dir "$LOG_ROOT/WeConvene" \
-  --gpu 0 \
   --compress \
   --max_samples 1
 
@@ -52,7 +49,6 @@ python -u scripts/test_extra_image_era5.py \
   --data_root "$DATA" \
   --ckpt_dir "$ROOT/checkpoints/lic-hpcm/hpcm-base/mse" \
   --output_dir "$LOG_ROOT/LIC-HPCM-base" \
-  --gpu 0 \
   --max_samples 1
 
 python -u scripts/test_extra_image_era5.py \
@@ -60,7 +56,6 @@ python -u scripts/test_extra_image_era5.py \
   --data_root "$DATA" \
   --ckpt_dir "$ROOT/checkpoints/lic-hpcm/hpcm-large/mse" \
   --output_dir "$LOG_ROOT/LIC-HPCM-large" \
-  --gpu 0 \
   --max_samples 1
 
 python -u scripts/test_extra_image_era5.py \
@@ -68,5 +63,4 @@ python -u scripts/test_extra_image_era5.py \
   --data_root "$DATA" \
   --ckpt_dir "$ROOT/checkpoints/rwkvcompress/mse" \
   --output_dir "$LOG_ROOT/RwkvCompress" \
-  --gpu 0 \
   --max_samples 1

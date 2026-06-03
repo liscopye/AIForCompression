@@ -129,13 +129,14 @@ class S2CAdapter:
         t = len(frames)
         data = np.stack(frames)  # [T, H, W]
         if resolution is not None:
-            from compression_pipeline.adapters.era5 import center_crop_chw
-            data = center_crop_chw(data, resolution)
-        sequence = data[np.newaxis, ...]  # [1, T, H, W]
+            from compression_pipeline.adapters.era5 import center_crop_vthw
+            data = center_crop_vthw(data[np.newaxis, ...], resolution)[0]
         # Pad by repeating if needed (for CAESAR-D)
         if max_samples is not None and max_samples > t:
             pad = np.repeat(data[-1:], max_samples - t, axis=0)
             data = np.concatenate([data, pad], axis=0)
+            t = data.shape[0]
+        sequence = data[np.newaxis, ...]  # [1, T, H, W]
         timestamps = [f"2024-01-01T{i:02d}:00:00" for i in range(t)]
         return sequence, timestamps
 

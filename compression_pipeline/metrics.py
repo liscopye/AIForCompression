@@ -1,6 +1,10 @@
 from __future__ import annotations
 
 import math
+import os
+import resource
+from functools import lru_cache
+from typing import Callable
 
 import numpy as np
 
@@ -23,6 +27,7 @@ def base_metrics(
     bitstream_bytes: int,
     elapsed: tuple[float, float],
     group_count: int = 1,
+    extra_metrics: dict[str, float | int | None] | None = None,
 ) -> dict[str, float | int | None]:
     psnr, mse = calculate_psnr(original, reconstructed)
     original_bytes = int(original.size * original.dtype.itemsize)
@@ -30,7 +35,7 @@ def base_metrics(
     groups = max(int(group_count), 1)
     encode_throughput = original_bytes / encode_time if encode_time > 0 else None
     decode_throughput = original_bytes / decode_time if decode_time > 0 else None
-    return {
+    metrics = {
         "mse": mse,
         "rmse": math.sqrt(mse),
         "psnr": psnr,
@@ -53,3 +58,125 @@ def base_metrics(
         "encode_throughput": encode_throughput,
         "decode_throughput": decode_throughput,
     }
+    if extra_metrics:
+        metrics.update(extra_metrics)
+    return metrics
+
+
+def process_memory_usage_mb() -> float | None:
+    try:
+        import psutil
+
+        return float(psutil.Process(os.getpid()).memory_info().rss / 1024**2)
+    except Exception:
+        try:
+            return float(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024.0)
+        except Exception:
+            return None
+
+
+def torch_memory_usage_mb(device: str = "cuda") -> dict[str, float | None]:
+    if not str(device).startswith("cuda"):
+        return {"memory_usage_MB": process_memory_usage_mb(), "memory_reserved_MB": None}
+    try:
+        import torch
+
+        if not torch.cuda.is_available():
+            return {"memory_usage_MB": process_memory_usage_mb(), "memory_reserved_MB": None}
+        torch.cuda.synchronize()
+        return {
+            "memory_usage_MB": float(torch.cuda.max_memory_allocated() / 1024**2),
+            "memory_reserved_MB": float(torch.cuda.max_memory_reserved() / 1024**2),
+        }
+    except Exception:
+        return {"memory_usage_MB": process_memory_usage_mb(), "memory_reserved_MB": None}
+
+
+def reset_torch_peak_memory(device: str = "cuda") -> None:
+    if not str(device).startswith("cuda"):
+        return
+    try:
+        import torch
+
+        if torch.cuda.is_available():
+            torch.cuda.reset_peak_memory_stats()
+    except Exception:
+        return
+
+
+def make_lpips_fn(device: str = "cuda") -> Callable[[np.ndarray, np.ndarray], float | None]:
+    model = _lpips_model(device)
+
+    def _calculate(original: np.ndarray, reconstructed: np.ndarray) -> float | None:
+        if model is None:
+            return None
+        try:
+            import torch
+
+            values = []
+            with torch.no_grad():
+                for original_image, reconstructed_image in _iter_lpips_image_pairs(original, reconstructed):
+                    original_tensor = _lpips_tensor(original_image, device)
+                    reconstructed_tensor = _lpips_tensor(reconstructed_image, device)
+                    value = model(original_tensor, reconstructed_tensor)
+                    values.append(float(value.mean().detach().cpu().item()))
+            if not values:
+                return None
+            return float(np.mean(values))
+        except Exception:
+            return None
+
+    return _calculate
+
+
+@lru_cache(maxsize=4)
+def _lpips_model(device: str):
+    try:
+        import lpips
+
+        model = lpips.LPIPS(net="alex")
+        model.eval()
+        return model.to(device)
+    except Exception:
+        return None
+
+
+def _lpips_tensor(array: np.ndarray, device: str):
+    import torch
+
+    arr = array.astype(np.float32, copy=False)
+    if arr.ndim == 2:
+        arr = arr[None, ...]
+    if arr.ndim != 3:
+        raise ValueError(f"LPIPS expects [C,H,W] or [H,W], got {array.shape}")
+    if arr.shape[0] == 1:
+        arr = np.repeat(arr, 3, axis=0)
+    elif arr.shape[0] > 3:
+        arr = arr[:3]
+    elif arr.shape[0] == 2:
+        arr = np.concatenate([arr, arr[-1:]], axis=0)
+    arr_min = float(np.min(arr))
+    arr_max = float(np.max(arr))
+    if arr_max > arr_min:
+        arr = (arr - arr_min) / (arr_max - arr_min)
+    else:
+        arr = np.zeros_like(arr, dtype=np.float32)
+    arr = arr * 2.0 - 1.0
+    return torch.from_numpy(arr[None]).to(device=device, dtype=torch.float32)
+
+
+def _iter_lpips_image_pairs(original: np.ndarray, reconstructed: np.ndarray):
+    if original.shape != reconstructed.shape:
+        raise ValueError(f"LPIPS arrays must have the same shape, got {original.shape} and {reconstructed.shape}")
+    if original.ndim == 2:
+        yield original, reconstructed
+        return
+    if original.ndim == 3 and original.shape[0] <= 4:
+        yield original, reconstructed
+        return
+    if original.ndim < 3:
+        raise ValueError(f"LPIPS expects at least 2D arrays, got {original.shape}")
+    original_flat = original.reshape((-1,) + original.shape[-2:])
+    reconstructed_flat = reconstructed.reshape((-1,) + reconstructed.shape[-2:])
+    for original_image, reconstructed_image in zip(original_flat, reconstructed_flat):
+        yield original_image, reconstructed_image

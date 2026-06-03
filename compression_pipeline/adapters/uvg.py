@@ -77,8 +77,8 @@ class UVGAdapter:
         arrays = np.stack(frames, axis=1)  # [C, T, H, W]
         t = arrays.shape[1]
         if resolution is not None:
-            from compression_pipeline.adapters.era5 import center_crop_chw
-            arrays = center_crop_chw(arrays, resolution)
+            from compression_pipeline.adapters.era5 import center_crop_vthw
+            arrays = center_crop_vthw(arrays, resolution)
         timestamps = [f"2024-01-01T{i:02d}:00:00" for i in range(t)]
         return arrays, timestamps
 

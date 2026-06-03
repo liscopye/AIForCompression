@@ -15,6 +15,5 @@ cd /data/run01/scxj523/zsh/project/AIForCompression/CRA5
 python run_all_compressai.py \
     --data_root /data/run01/scxj523/zsh/project/AIForCompression/Data/ERA5 \
     --output_dir /data/run01/scxj523/zsh/project/AIForCompression/CRA5/results/all_compressai \
-    --gpu 0 \
     --max_samples 1 \
     --metrics mse

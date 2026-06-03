@@ -1,0 +1,3 @@
+repository='https://github.com/rygorous/ryg_rans.git'
+module=''
+tag='origin'

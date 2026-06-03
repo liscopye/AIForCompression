@@ -18,5 +18,4 @@ cd /data/run01/scxj523/zsh/project/AIForCompression
 
 python -u test_selected_channels.py \
     --data_root /data/run01/scxj523/zsh/project/AIForCompression/Data/ERA5/2024 \
-    --gpu 0 \
     --max_samples 1

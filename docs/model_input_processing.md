@@ -8,7 +8,7 @@
 | **LIC-HPCM** | 图像 | [1,3,H,W] | RGB | 由 pipeline 决定 | 非自回归 | — |
 | **DCVC-RT** | 视频/图像 | [1,3,H,W] | **YCbCr BT.709** | 由 pipeline 决定 | 自回归 (GPU RANS) | float16 推理 |
 | **DCMVC** | 视频/图像 | [1,3,H,W] | RGB | 由 pipeline 决定 | 非自回归 | — |
-| **CAESAR** | 序列 | [V,T,H,W] | — | **无归一化** | 基于误差界 (eb) | 直接处理 float32 |
+| **CAESAR** | 序列 | [V,T,H,W] | — | 上游 `ScientificDataset` 内部 `mean_range` instance norm | 基于误差界 (eb) | pipeline 不做 image-style minmax |
 
 ---
 
@@ -118,10 +118,11 @@ CanonicalSample [C,H,W]
 
 ```
 适配器.load_sequence()
-  → [V, T, H, W] float32 (原始数据，无归一化)
-  → CAESAR 压缩 (误差界控制)
-  → [V, T, H, W] float32
-  → PSNR: data_range=1.0 (归一化空间)
+  → [V, T, H, W] float32 (pipeline 保留原始数据)
+  → CAESAR ScientificDataset(inst_norm=True, norm_type="mean_range")
+  → CAESAR 压缩/解压 (误差界控制)
+  → dataset.recons_data() 反变换回原始数据空间
+  → PSNR/MSE: 原始数据空间
 ```
 
 ### 各数据集序列构造

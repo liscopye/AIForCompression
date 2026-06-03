@@ -2,6 +2,7 @@ import sys
 import tempfile
 from pathlib import Path
 
+import pytest
 from PIL import Image
 
 
@@ -9,7 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 DCAE_DIR = ROOT / "models" / "DCAE"
 sys.path.insert(0, str(DCAE_DIR))
 
-import test_kodak  # type: ignore  # noqa: E402
+test_kodak = pytest.importorskip("test_kodak")
 
 
 def test_find_checkpoints_prefers_known_dcae_order():

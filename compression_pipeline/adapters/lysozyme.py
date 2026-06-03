@@ -44,8 +44,8 @@ class LysozymeAdapter:
             with h5py.File(str(fp), "r") as f:
                 img = f["/entry/data/data"][0].astype(np.float32)  # [H, W]
             if resolution is not None:
-                from compression_pipeline.adapters.era5 import center_crop_chw
-                img = center_crop_chw(img, resolution)
+                from compression_pipeline.adapters.era5 import center_crop_hw
+                img = center_crop_hw(img, resolution)
             frames.append(img)
         t = len(frames)
         data = np.stack(frames)[np.newaxis]  # [1, T, H, W]
@@ -53,6 +53,7 @@ class LysozymeAdapter:
         if max_samples is not None and max_samples > t:
             pad = np.repeat(data[:, -1:], max_samples - t, axis=1)
             data = np.concatenate([data, pad], axis=1)
+            t = data.shape[1]
         timestamps = [f"2024-01-01T{i:02d}:00:00" for i in range(t)]
         return data, timestamps
 

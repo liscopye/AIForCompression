@@ -99,13 +99,13 @@ DATASETS = {
         "psnr_range": 1.0,
     },
     "Tomo": {
-        "title": "Tomography (ALS)",
+        "title": "Tomography (reconstructed, 3ch)",
         "sources": [
-            ("unified_results/tomo/summary.json", "image"),
-            ("unified_results/tomo_dcvc/summary.json", "video"),
-            ("unified_results/tomo_caesar/summary.json", "caesar"),
+            ("unified_results/tomo_recon3ch/summary.json", "image"),
+            ("unified_results/tomo_recon/summary.json", "video"),
+            ("unified_results/tomo_recon_caesar/summary.json", "caesar"),
         ],
-        "output": "unified_results/tomo_overview",
+        "output": "unified_results/tomo_recon_overview",
         "psnr_range": 1.0,
     },
     "Lysozyme": {

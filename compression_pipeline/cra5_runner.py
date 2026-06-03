@@ -73,7 +73,7 @@ def _reconstruct_from_cra5(x_hat: torch.Tensor, orig_c: int, orig_hw: tuple, vmi
 
 
 @torch.no_grad()
-def run_cra5_sample(sample: CanonicalSample, model: Any, device: str) -> dict:
+def run_cra5_sample(sample: CanonicalSample, model: Any, device: str, allow_adapted: bool = False) -> dict:
     sample.require_layout("channel_height_width")
     arr = sample.array.astype(np.float32, copy=False)
     c, h, w = arr.shape
@@ -93,7 +93,7 @@ def run_cra5_sample(sample: CanonicalSample, model: Any, device: str) -> dict:
         reconstruction = decompressed["x_hat"].detach().cpu().numpy()[0].astype(np.float32, copy=False)
         bitstream_bytes = nested_bytes(compressed["strings"])
         metrics = base_metrics(arr, reconstruction, bitstream_bytes, (t1 - t0, t2 - t1), group_count=1)
-    else:
+    elif allow_adapted:
         # Non-ERA5 path: adapt to CRA5 input, then map back
         cra5_input, orig_c, orig_hw, vmin, vmax = _adapt_to_cra5(sample, device)
 
@@ -108,6 +108,11 @@ def run_cra5_sample(sample: CanonicalSample, model: Any, device: str) -> dict:
         reconstruction = _reconstruct_from_cra5(decompressed["x_hat"], orig_c, orig_hw, vmin, vmax)
         bitstream_bytes = nested_bytes(compressed["strings"])
         metrics = base_metrics(arr, reconstruction, bitstream_bytes, (t1 - t0, t2 - t1), group_count=1)
+    else:
+        raise ValueError(
+            f"CRA5 native runner requires an ERA5-style 268-channel scientific_field sample, "
+            f"got kind={sample.kind!r}, channels={c}. Use allow_adapted=True only for explicit ablation runs."
+        )
 
     metrics.update({
         "dataset_id": sample.dataset_id,

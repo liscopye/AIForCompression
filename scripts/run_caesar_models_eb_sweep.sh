@@ -34,7 +34,6 @@ for EB in "${EB_VALUES[@]}"; do
     --output_dir "$OUT_DIR" \
     --ckpt_dir "$ROOT/checkpoints/caesar" \
     --model both \
-    --gpu 0 \
     --batch_size 1 \
     --max_channels 32 \
     --eb "$EB"

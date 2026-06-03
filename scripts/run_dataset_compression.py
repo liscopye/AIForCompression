@@ -1,4 +1,5 @@
 import argparse
+import fcntl
 import gc
 import json
 import os
@@ -20,9 +21,11 @@ from compression_pipeline.adapters.nyx import NYXAdapter
 from compression_pipeline.adapters.s2c import S2CAdapter
 from compression_pipeline.adapters.shanghai_xray import ShanghaiXrayAdapter
 from compression_pipeline.adapters.tomo_h5 import TomoH5Adapter
+from compression_pipeline.adapters.turb_rot_npz import TurbRotNPZAdapter
 from compression_pipeline.adapters.uvg import UVGAdapter
 from compression_pipeline.caesar_runner import CAESAR_N_FRAMES, run_caesar_sequence
 from compression_pipeline.cra5_runner import run_cra5_sample
+from compression_pipeline.metrics import make_lpips_fn, reset_torch_peak_memory, torch_memory_usage_mb
 from compression_pipeline.model_registry import image_model_jobs
 from compression_pipeline.runner import run_image_grouped_sample
 from compression_pipeline.torch_codecs import CompressAILikeCodec, DCVCRTCodec, DCMVCCodec, ForwardLikelihoodCodec
@@ -30,7 +33,7 @@ from compression_pipeline.torch_codecs import CompressAILikeCodec, DCVCRTCodec, 
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Run supported codecs on ERA5 or Kodak through the shared data adapter.")
-    parser.add_argument("--dataset", choices=["era5", "kodak", "tomo", "uvg", "hurricane", "s2c", "nyx", "shanghai_xray", "isot1024", "lysozyme"], required=True)
+    parser.add_argument("--dataset", choices=["era5", "kodak", "tomo", "uvg", "hurricane", "s2c", "nyx", "shanghai_xray", "isot1024", "lysozyme", "turb_rot_npz"], required=True)
     parser.add_argument("--data_root", required=True)
     parser.add_argument("--project_root", default=str(PROJECT_ROOT))
     parser.add_argument("--output_dir", required=True)
@@ -47,11 +50,18 @@ def parse_args():
     parser.add_argument("--caesar_start_index", type=int, default=0)
     parser.add_argument("--caesar_eb", type=float, nargs="+", default=[1e-4],
                         help="CAESAR error bound(s); pass multiple to sweep, e.g. --caesar_eb 1e-4 5e-4 1e-3")
+    parser.add_argument("--allow_cra5_adapted", action="store_true",
+                        help="Allow experimental non-ERA5 CRA5 runs by resizing/replicating samples to 268x721x1440. Disabled by default for fair benchmarks.")
     parser.add_argument("--tomo_group_frames", type=int, default=1,
                         help="Stack N consecutive tomo frames as N-channel input (e.g. 3 for pseudo-RGB DCVC-RT/DCMVC evaluation).")
     parser.add_argument("--tile_size", type=int, default=None,
                         help="Tile large images into tile_size x tile_size blocks (for s2c dataset).")
+    parser.add_argument("--turb_rot_section_index", type=int, default=0,
+                        help="Section index used for Turb_Rot CAESAR sequence view.")
+    parser.add_argument("--turb_rot_section_start", type=int, default=0,
+                        help="First section index used for Turb_Rot 3-channel image samples.")
     parser.add_argument("--batch_size", type=int, default=8)
+    parser.add_argument("--no_lpips", action="store_true", help="Disable optional LPIPS calculation.")
     return parser.parse_args()
 
 
@@ -86,6 +96,13 @@ def iter_dataset_samples(args):
     if args.dataset == "lysozyme":
         yield from LysozymeAdapter(args.data_root).iter_samples(max_samples=args.max_samples)
         return
+    if args.dataset == "turb_rot_npz":
+        yield from TurbRotNPZAdapter(
+            args.data_root,
+            section_index=args.turb_rot_section_index,
+            section_start=args.turb_rot_section_start,
+        ).iter_samples(max_samples=args.max_samples)
+        return
     yield from ERA5Adapter(args.data_root).iter_samples(
         max_samples=args.max_samples,
         max_channels=args.max_channels,
@@ -103,8 +120,29 @@ def main():
     summary_file = output_dir / "summary.json"
     print(f"CUDA_VISIBLE_DEVICES={os.environ.get('CUDA_VISIBLE_DEVICES', '<unset>')}", flush=True)
     print(f"torch.cuda.is_available()={torch.cuda.is_available()} device={device}", flush=True)
+    lpips_fn = None if args.no_lpips else make_lpips_fn(device)
 
+    # Load existing results (resume-safe) so concurrent jobs don't overwrite each other
+    existing_keys: set[tuple] = set()
     summary = []
+    if summary_file.exists():
+        try:
+            existing = json.loads(summary_file.read_text(encoding="utf-8"))
+            for r in existing:
+                if "error" not in r:
+                    key = (r.get("model_id", ""), r.get("sample_id", ""), r.get("eb", 0), r.get("start_index", 0))
+                    existing_keys.add(key)
+            summary = existing
+        except Exception:
+            pass
+
+    def _safe_write_summary():
+        """Atomically write summary with file locking to prevent concurrent overwrites."""
+        with open(summary_file, "w", encoding="utf-8") as f:
+            fcntl.flock(f.fileno(), fcntl.LOCK_EX)
+            json.dump(summary, f, indent=2)
+            fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+
     requested_models = set(args.models) if args.models else None
     caesar_models = requested_caesar_models(requested_models)
     non_caesar_models = None if requested_models is None else requested_models - {"CAESAR", "caesar_v", "caesar_d", "CAESAR-V", "CAESAR-D"}
@@ -158,6 +196,15 @@ def main():
                 max_samples=args.max_samples,
                 resolution=tuple(args.resolution) if args.resolution else None,
             )
+        elif args.dataset == "turb_rot_npz":
+            sequence, timestamps = TurbRotNPZAdapter(
+                args.data_root,
+                section_index=args.turb_rot_section_index,
+                section_start=args.turb_rot_section_start,
+            ).load_sequence(
+                max_samples=args.max_samples,
+                resolution=tuple(args.resolution) if args.resolution else None,
+            )
         else:
             raise SystemExit("CAESAR requires a dataset with sequential structure")
         max_n_frame = max(CAESAR_N_FRAMES[name] for name in caesar_models)
@@ -168,6 +215,12 @@ def main():
             )
         for model_name in caesar_models:
             for eb in args.caesar_eb:
+                # Skip if already completed (resume-safe, cross-job dedup)
+                sample_id = f"{args.dataset}_{model_name}"
+                key = (model_name, sample_id, eb, args.caesar_start_index)
+                if key in existing_keys:
+                    print(f"[model] skip {model_name} eb={eb} — already in {summary_file.name}", flush=True)
+                    continue
                 try:
                     print(f"[model] running {model_name} eb={eb} on {args.dataset} sequence", flush=True)
                     result = run_caesar_sequence(
@@ -181,15 +234,18 @@ def main():
                         batch_size=args.batch_size,
                         eb=eb,
                         start_index=args.caesar_start_index,
+                        sample_id=sample_id,
+                        collect_lpips=not args.no_lpips,
                     )
                     result["eb"] = eb
                     summary.append(result)
+                    existing_keys.add(key)
                     print(json.dumps(result, indent=2), flush=True)
                 except Exception as exc:
                     summary.append({"model_name": "CAESAR", "model_id": model_name, "metric": "mse", "eb": eb, "error": str(exc)})
                     print(f"[error] {model_name} eb={eb}: {exc}", flush=True)
                 finally:
-                    summary_file.write_text(json.dumps(summary, indent=2), encoding="utf-8")
+                    _safe_write_summary()
 
     jobs = list(image_model_jobs(args.project_root, non_caesar_models))
     if args.max_model_jobs > 0:
@@ -217,9 +273,17 @@ def main():
             for sample in samples:
                 print(f"[sample] {job.model_id} {sample.sample_id}", flush=True)
                 if job.model_name == "CRA5":
-                    result = run_cra5_sample(sample, model, device=device)
+                    reset_torch_peak_memory(device)
+                    result = run_cra5_sample(sample, model, device=device, allow_adapted=args.allow_cra5_adapted)
+                    result.update(torch_memory_usage_mb(device))
                 else:
-                    result = run_image_grouped_sample(sample, codec)
+                    reset_torch_peak_memory(device)
+                    result = run_image_grouped_sample(
+                        sample,
+                        codec,
+                        lpips_fn=lpips_fn,
+                        memory_fn=lambda d=device: torch_memory_usage_mb(d),
+                    )
                 result.update({
                     "model_name": job.model_name,
                     "model_id": job.model_id,

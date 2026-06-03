@@ -1,0 +1,46 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "/data/run01/scxj523/zsh/project/AIForCompression/models/DCMVC/src/build/3rdparty/ryg_rans/ryg_rans-download/CMakeFiles/ryg_rans"
+		},
+		{
+			"file" : "/data/run01/scxj523/zsh/project/AIForCompression/models/DCMVC/src/build/3rdparty/ryg_rans/ryg_rans-download/CMakeFiles/ryg_rans.rule"
+		},
+		{
+			"file" : "/data/run01/scxj523/zsh/project/AIForCompression/models/DCMVC/src/build/3rdparty/ryg_rans/ryg_rans-download/CMakeFiles/ryg_rans-complete.rule"
+		},
+		{
+			"file" : "/data/run01/scxj523/zsh/project/AIForCompression/models/DCMVC/src/build/3rdparty/ryg_rans/ryg_rans-download/ryg_rans-prefix/src/ryg_rans-stamp/ryg_rans-build.rule"
+		},
+		{
+			"file" : "/data/run01/scxj523/zsh/project/AIForCompression/models/DCMVC/src/build/3rdparty/ryg_rans/ryg_rans-download/ryg_rans-prefix/src/ryg_rans-stamp/ryg_rans-configure.rule"
+		},
+		{
+			"file" : "/data/run01/scxj523/zsh/project/AIForCompression/models/DCMVC/src/build/3rdparty/ryg_rans/ryg_rans-download/ryg_rans-prefix/src/ryg_rans-stamp/ryg_rans-download.rule"
+		},
+		{
+			"file" : "/data/run01/scxj523/zsh/project/AIForCompression/models/DCMVC/src/build/3rdparty/ryg_rans/ryg_rans-download/ryg_rans-prefix/src/ryg_rans-stamp/ryg_rans-install.rule"
+		},
+		{
+			"file" : "/data/run01/scxj523/zsh/project/AIForCompression/models/DCMVC/src/build/3rdparty/ryg_rans/ryg_rans-download/ryg_rans-prefix/src/ryg_rans-stamp/ryg_rans-mkdir.rule"
+		},
+		{
+			"file" : "/data/run01/scxj523/zsh/project/AIForCompression/models/DCMVC/src/build/3rdparty/ryg_rans/ryg_rans-download/ryg_rans-prefix/src/ryg_rans-stamp/ryg_rans-patch.rule"
+		},
+		{
+			"file" : "/data/run01/scxj523/zsh/project/AIForCompression/models/DCMVC/src/build/3rdparty/ryg_rans/ryg_rans-download/ryg_rans-prefix/src/ryg_rans-stamp/ryg_rans-test.rule"
+		},
+		{
+			"file" : "/data/run01/scxj523/zsh/project/AIForCompression/models/DCMVC/src/build/3rdparty/ryg_rans/ryg_rans-download/ryg_rans-prefix/src/ryg_rans-stamp/ryg_rans-update.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"ryg_rans"
+		],
+		"name" : "ryg_rans"
+	}
+}

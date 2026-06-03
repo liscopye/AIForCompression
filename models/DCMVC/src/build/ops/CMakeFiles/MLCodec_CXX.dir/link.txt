@@ -1,0 +1,1 @@
+/usr/bin/c++ -fPIC -O3 -DNDEBUG -flto=auto -shared  -o MLCodec_CXX.cpython-312-x86_64-linux-gnu.so CMakeFiles/MLCodec_CXX.dir/ops.cpp.o 

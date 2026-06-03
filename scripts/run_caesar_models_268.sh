@@ -24,7 +24,6 @@ python -u scripts/test_caesar_era5.py \
   --output_dir "$LOG_ROOT/CAESAR" \
   --ckpt_dir "$ROOT/checkpoints/caesar" \
   --model both \
-  --gpu 0 \
   --batch_size 1 \
   --max_channels 32 \
   --eb 8e-3

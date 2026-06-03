@@ -10,8 +10,8 @@ eval "$(/data/home/scxj523/run/miniconda3/bin/conda shell.bash hook)"
 conda activate /data/run01/scxj523/zsh/envs/zsh
 
 PROJECT_ROOT=/data/run01/scxj523/zsh/project/AIForCompression
-DATA_FILE=/data/run01/scxj523/zsh/project/Data/tomo/tomo_00083.h5
-OUTPUT_DIR=$PROJECT_ROOT/unified_results/tomo_caesar_eb_sweep
+DATA_FILE=/data/run01/scxj523/zsh/project/Data/tomo/tomo_00001_rec/recon.h5
+OUTPUT_DIR=$PROJECT_ROOT/unified_results/tomo_recon_caesar
 
 cd $PROJECT_ROOT
 

@@ -10,4 +10,4 @@ eval "$(/data/home/scxj523/run/miniconda3/bin/conda shell.bash hook)"
 conda activate /data/run01/scxj523/zsh/envs/zsh
 
 cd /data/run01/scxj523/zsh/project/AIForCompression
-python test_selected_channels.py --models LIC_TCM --gpu 0
+python test_selected_channels.py --models LIC_TCM

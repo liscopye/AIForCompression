@@ -242,10 +242,14 @@ CAESAR 是专门针对科学数据的序列压缩模型，通过误差界（erro
 
 ### 数据处理
 
-CAESAR 不走 per_channel_minmax 归一化——它直接处理原始 float32 科学数据，通过误差界控制质量：
+CAESAR 不走 image-model 的 per_channel_minmax 归一化。Pipeline 传入原始 float32 科学数据，但 CAESAR 上游 `ScientificDataset` 会在模型内部使用 `inst_norm=True, norm_type="mean_range"` 做 instance normalization，并在评估前通过 `recons_data()` 反变换回原始数据空间：
 
 ```
-适配器.load_sequence() → [V, T, H, W] float32 → CAESAR 压缩 → [V, T, H, W] float32
+适配器.load_sequence()
+  → [V, T, H, W] float32
+  → ScientificDataset mean_range instance norm
+  → CAESAR 压缩/解压
+  → recons_data() 回到原始数据空间
 ```
 
 各数据集 `load_sequence` 的序列构造方式：
@@ -261,7 +265,7 @@ CAESAR 不走 per_channel_minmax 归一化——它直接处理原始 float32 �
 
 ### PSNR 计算
 
-CAESAR 使用固定 data_range=1.0（归一化空间），PSNR 值较高（~80dB）但所有模型一致可比。
+当前 pipeline 的 CAESAR 指标和其他模型一致，在重建后的原始数据空间计算。`data_range` 使用当前 sample 的 `original.max() - original.min()`，常量样本回退为 `1.0`。
 
 ### 使用方式
 
