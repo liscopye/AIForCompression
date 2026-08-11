@@ -423,7 +423,7 @@ footer{{color:var(--muted);font-size:12px;border-top:1px solid var(--line);paddi
 <section class="overview" id="overview"><h2>全模型汇总</h2><p class="lede">每格给出该模型在对应数据集上的 Pareto 点数、完整 BPP 范围和 normalized PSNR 范围。点击单元格可查看图表与吞吐量明细。</p><div class="table-wrap"><table><thead><tr><th>模型</th>{overview_head}</tr></thead><tbody>{''.join(overview_rows)}</tbody></table></div></section>
 <section id="legacy"><h2>历史模型去向</h2><p class="lede">旧版“all models”页面中的模型均在此交代，避免把不同协议的数字混入正式横向排名。</p><div class="table-wrap"><table><thead><tr><th>历史模型/变体</th><th>当前处理</th><th>原因</th></tr></thead><tbody>
 <tr><th>Visemz / AIZ</th><td>保留为外部复现</td><td>没有通过 objective-v1 的统一输入、计时和完整样本 gate</td></tr>
-<tr><th>GraphComp</th><td>保留为复现与诊断</td><td>当前 runner 不是论文的完整 learned pipeline，不进入正式排名</td></tr>
+<tr><th>GraphComp</th><td>结果已清理；源码与脚本保留</td><td>当前 runner 不是论文的完整 learned pipeline，不进入正式排名</td></tr>
 <tr><th>LIC-TCM</th><td>历史结果</td><td>未形成 objective-v1 合规的全数据集曲线</td></tr>
 <tr><th>CAESAR no-PCA</th><td>消融实验</td><td>不是默认正式推理路径</td></tr>
 <tr><th>DCAE / LIC-HPCM + CAESAR-PCA</th><td>消融实验</td><td>额外 PCA 路径不与模型原生结果混排</td></tr>
