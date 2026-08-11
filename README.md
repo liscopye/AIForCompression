@@ -164,6 +164,7 @@ unified_results/
 | `models/` | 模型源码与 submodule |
 | `checkpoints/` | 本地模型权重 |
 | `benchmark_protocols/` | 机器可读正式协议 |
+| `normalization/` | ERA5 NetCDF adapter 使用的按日 mean/std；CRA5 全局统计在模型目录内 |
 | `unified_results/` | 正式结果和必要诊断证据 |
 | `docs/` | 复现、交接、结果解释和失败记录 |
 | `tests/` | 数据处理、审计和 runner 测试 |
