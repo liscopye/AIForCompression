@@ -110,7 +110,7 @@ diffusion noise-prediction loss 与最终固定 seed sampling PSNR 不一致。�
 ```text
 logs/caesar_era5_daily_d_stage2_pilot/
 logs/caesar_era5_stage2_20260723/
-scripts/run_caesar_era5_daily_d_stage2_pilot.sh
+scripts/archive/caesar_experiments/run_caesar_era5_daily_d_stage2_pilot.sh
 scripts/run_caesar_era5_stage2_grid.sh
 ```
 
@@ -170,7 +170,7 @@ checkpoint 已删除，保留：
 
 ```text
 logs/caesar_era5_d_x0_objective_pilot/
-scripts/run_caesar_era5_d_x0_objective_pilot.sh
+scripts/archive/caesar_experiments/run_caesar_era5_d_x0_objective_pilot.sh
 unified_results/diagnostics/caesar_era5_discarded_training_manifest.json
 ```
 
@@ -250,7 +250,7 @@ unified_results/diagnostics/caesar_era5_discarded_training_manifest.json
 
 ## 13. 已排除的伪故障：range coder/量化路径
 
-`scripts/diagnose_caesar_quantization_paths.py` 对 forward quantization 和真实 range compress/decompress 做了逐 latent 对比：
+`scripts/archive/caesar_experiments/diagnose_caesar_quantization_paths.py` 对 forward quantization 和真实 range compress/decompress 做了逐 latent 对比：
 
 - reconstruction path MSE 约 `1e-11`；
 - 最大绝对差约 `1e-4`；

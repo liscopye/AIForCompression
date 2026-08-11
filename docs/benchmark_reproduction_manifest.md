@@ -425,7 +425,7 @@ unified_results/objective_era5_caesar_v_100k_best_compare/caesar_v_era5_original
 训练输入与正式测试保持同一外部数据语义：90 天 ERA5 hourly shard，按时间顺序使用前 `1776 h` 训练、后 `384 h` 验证；`n_frame=8`、`frame_step=24`、`temporal_stride=8`、`256x256` patch、batch 32、`mean_range`，normalized-domain MSE。最终路径使用 `lr=3e-4`、250-update warmup、100k updates，脚本为：
 
 ```bash
-bash scripts/run_caesar_era5_v_decoder_quality_100k.sh
+bash scripts/archive/caesar_experiments/run_caesar_era5_v_decoder_quality_100k.sh
 ```
 
 三条并行路径均跑满 100k，并由验证集自动保留最佳 checkpoint：
@@ -565,7 +565,7 @@ unified_results/objective_era5_caesar_d_stage2_50000_compare/comparison.json
 `5k/10k/25k/.../200k` 里程碑使用固定 decoder 做 4 点 objective 筛选；只有真实 codec 曲线优于当前 5k 候选时才替换最终权重。相关入口和结果为：
 
 ```text
-scripts/run_caesar_era5_d_decoder_quality_100k.sh
+scripts/archive/caesar_experiments/run_caesar_era5_d_decoder_quality_100k.sh
 scripts/run_caesar_era5_d_stage2_full_200k.sh
 scripts/watch_caesar_era5_d_stage2_objective_probes.sh
 scripts/run_caesar_era5_d_decoder100k_stage2_5k_13pt.sh
@@ -588,7 +588,7 @@ unified_results/objective_era5_caesar_vd_complete_compare/manifest.json
 复现命令：
 
 ```bash
-python scripts/build_caesar_era5_vd_complete_compare.py \
+python scripts/archive/caesar_experiments/build_caesar_era5_vd_complete_compare.py \
   --baseline unified_results/objective_all_to_all_v1/combined_summary.json \
   --v-final unified_results/objective_era5_caesar_v_decoder_final_rd/era5_npy/summary.json \
   --v-variant decoder_quality_100k_lr3em4 \
@@ -621,7 +621,7 @@ unified_results/objective_era5_caesar_d_lam1em3_decoder_best_original_stage2_com
 为避免把 Stage1 质量、EB 后处理和 Stage2 时间生成混为一谈，使用真实 range-coded keyframe latent 分别统计 keyframe 与 predicted-frame PSNR。诊断脚本为：
 
 ```text
-scripts/diagnose_caesar_d_temporal_reconstruction.py
+scripts/archive/caesar_experiments/diagnose_caesar_d_temporal_reconstruction.py
 ```
 
 在完整 `268 x 16 x 240 x 240` ERA5 测试输入上，更低码率的 `lambda_rate=1e-3` D Stage1 得到：
@@ -658,7 +658,7 @@ unified_results/objective_era5_caesar_d_lam1em3_keyframe_only_compare/caesar_d_s
 `x0_weight=0.1` 的早期 checkpoint 也从 update 50 的 `29.585 dB` 下降到 update 250 的 `28.680 dB`，因此未扩展成长训练。该结果再次说明训练 surrogate loss 下降不能替代最终 codec sampling 审计。入口、checkpoint 和 W&B：
 
 ```text
-scripts/run_caesar_era5_d_x0_objective_pilot.sh
+scripts/archive/caesar_experiments/run_caesar_era5_d_x0_objective_pilot.sh
 checkpoints/caesar_era5_d_x0_objective_pilot/
 hybrid_w001: https://wandb.ai/1796248596-university-of-chinese-academy-of-sciences/caesar-era5-hourly-tuning/runs/go7p0nde
 hybrid_w01:  https://wandb.ai/1796248596-university-of-chinese-academy-of-sciences/caesar-era5-hourly-tuning/runs/x0mhdwx9

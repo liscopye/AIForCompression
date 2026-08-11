@@ -43,7 +43,7 @@ for index in "${!names[@]}"; do
   OMP_NUM_THREADS="$THREADS" \
   MKL_NUM_THREADS="$THREADS" \
   OPENBLAS_NUM_THREADS="$THREADS" \
-    python "$ROOT/scripts/diagnose_caesar_d_temporal_reconstruction.py" \
+    python "$ROOT/scripts/archive/caesar_experiments/diagnose_caesar_d_temporal_reconstruction.py" \
       --checkpoint "$checkpoint" \
       --output "$OUTPUT_ROOT/$name.json" \
       --mode diffusion_ensemble \

@@ -26,8 +26,8 @@ python "$ROOT/utils/audit_era5_hourly_shards.py" \
   --objective-raw-dir /workspace/Data/ERA5/test \
   --mean-std-dir "$ROOT/models/CRA5/cra5/dataset"
 
-bash "$ROOT/scripts/run_caesar_era5_hourly_pilot.sh"
-bash "$ROOT/scripts/run_caesar_era5_hourly_pilot_eval.sh"
+bash "$ROOT/scripts/archive/caesar_experiments/run_caesar_era5_hourly_pilot.sh"
+bash "$ROOT/scripts/archive/caesar_experiments/run_caesar_era5_hourly_pilot_eval.sh"
 
 python "$ROOT/scripts/select_caesar_era5_hourly_checkpoint.py" \
   --eval-dir "$EVAL_DIR" \
@@ -36,7 +36,7 @@ python "$ROOT/scripts/select_caesar_era5_hourly_checkpoint.py" \
   --output-dir "$SELECTION_DIR" \
   --selected-checkpoint-dir "$SELECTED_DIR"
 
-bash "$ROOT/scripts/run_caesar_era5_hourly_stage2_pilot.sh"
+bash "$ROOT/scripts/archive/caesar_experiments/run_caesar_era5_hourly_stage2_pilot.sh"
 bash "$ROOT/scripts/run_caesar_era5_hourly_stage2_eval.sh"
 
 # Re-run selection after adding Stage-2 candidates, then perform independent

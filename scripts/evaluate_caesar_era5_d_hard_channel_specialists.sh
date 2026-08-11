@@ -26,7 +26,7 @@ run_one() {
     return
   fi
   CUDA_VISIBLE_DEVICES="$gpu" python -u \
-    "$ROOT/scripts/diagnose_caesar_d_temporal_reconstruction.py" \
+    "$ROOT/scripts/archive/caesar_experiments/diagnose_caesar_d_temporal_reconstruction.py" \
     --checkpoint "$checkpoint" \
     --output "$output" \
     --mode official \

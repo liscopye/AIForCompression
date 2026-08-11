@@ -89,7 +89,7 @@ if (( failed != 0 )); then
   exit "$failed"
 fi
 
-python "$ROOT/scripts/build_caesar_era5_d_complete_5k_compare.py" \
+python "$ROOT/scripts/archive/caesar_experiments/build_caesar_era5_d_complete_5k_compare.py" \
   --baseline "$ROOT/unified_results/objective_all_to_all_v1/era5_npy/summary.json" \
   --original "$ROOT/unified_results/objective_era5_caesar_d_original_13pt_rd/era5_npy/summary.json" \
   --candidate "$CURRENT_OUTPUT/era5_npy/summary.json" \
@@ -98,7 +98,7 @@ python "$ROOT/scripts/build_caesar_era5_d_complete_5k_compare.py" \
   --status "Complete 13-point diffusion ensemble-4 audit" \
   --output "$ROOT/unified_results/objective_era5_caesar_d_decoder100k_stage2_overlap5k_ensemble4_compare"
 
-python "$ROOT/scripts/build_caesar_era5_d_complete_5k_compare.py" \
+python "$ROOT/scripts/archive/caesar_experiments/build_caesar_era5_d_complete_5k_compare.py" \
   --baseline "$ROOT/unified_results/objective_all_to_all_v1/era5_npy/summary.json" \
   --original "$ROOT/unified_results/objective_era5_caesar_d_original_13pt_rd/era5_npy/summary.json" \
   --candidate "$LOWRATE_OUTPUT/era5_npy/summary.json" \
@@ -107,7 +107,7 @@ python "$ROOT/scripts/build_caesar_era5_d_complete_5k_compare.py" \
   --status "Complete 13-point low-rate diffusion ensemble-4 audit" \
   --output "$ROOT/unified_results/objective_era5_caesar_d_lam1em3_original_stage2_ensemble4_compare"
 
-python "$ROOT/scripts/build_caesar_era5_vd_complete_compare.py" \
+python "$ROOT/scripts/archive/caesar_experiments/build_caesar_era5_vd_complete_compare.py" \
   --baseline "$ROOT/unified_results/objective_all_to_all_v1/combined_summary.json" \
   --v-final "$ROOT/unified_results/objective_era5_caesar_v_decoder_final_rd/era5_npy/summary.json" \
   --v-variant decoder_quality_100k_lr3em4 \
