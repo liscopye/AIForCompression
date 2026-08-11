@@ -25,10 +25,17 @@ class TomoH5Adapter:
         if not self.data_root.exists():
             raise FileNotFoundError(f"Tomo H5 file does not exist: {self.data_root}")
 
+    @staticmethod
+    def _data_dataset(h5_file):
+        for key in ("data", "exchange/data"):
+            if key in h5_file:
+                return key, h5_file[key]
+        raise KeyError("Tomo H5 must contain either 'data' or 'exchange/data'")
+
     def manifest(self) -> DatasetManifest:
         import h5py
         with h5py.File(self.data_root, "r") as f:
-            data = f["data"]
+            data_key, data = self._data_dataset(f)
             n_slices, h, w = data.shape
         channels = self.group_frames
         sample_count = n_slices if channels == 1 else n_slices // channels
@@ -41,10 +48,12 @@ class TomoH5Adapter:
             sample_count=sample_count,
             metadata={
                 "data_root": str(self.data_root),
+                "data_key": data_key,
                 "height": int(h),
                 "width": int(w),
                 "channels": channels,
                 "dtype": "float32",
+                "source_dtype": str(data.dtype),
             },
         )
 
@@ -55,13 +64,13 @@ class TomoH5Adapter:
     ) -> Iterator[CanonicalSample]:
         import h5py
         with h5py.File(self.data_root, "r") as f:
-            data = f["data"]
+            data_key, data = self._data_dataset(f)
             n_slices = data.shape[0]
-            if max_samples is not None and max_samples > 0:
-                n_slices = min(n_slices, max_samples)
 
             gf = self.group_frames
             if gf > 1:
+                if max_samples is not None and max_samples > 0:
+                    n_slices = min(n_slices, max_samples * gf)
                 for start in range(0, n_slices - gf + 1, gf):
                     frames = []
                     for j in range(gf):
@@ -78,8 +87,9 @@ class TomoH5Adapter:
                         layout="channel_height_width",
                         metadata={
                             "source_path": str(self.data_root),
+                            "data_key": data_key,
                             "dtype": "float32",
-                            "source_dtype": "float32",
+                            "source_dtype": str(data.dtype),
                             "height": int(chw.shape[1]),
                             "width": int(chw.shape[2]),
                             "channels": gf,
@@ -88,6 +98,8 @@ class TomoH5Adapter:
                     )
                 return
 
+            if max_samples is not None and max_samples > 0:
+                n_slices = min(n_slices, max_samples)
             for i in range(n_slices):
                 frame = data[i].astype(np.float32)
                 chw = frame[None, ...]
@@ -102,8 +114,9 @@ class TomoH5Adapter:
                     layout="channel_height_width",
                     metadata={
                         "source_path": str(self.data_root),
+                        "data_key": data_key,
                         "dtype": "float32",
-                        "source_dtype": "float32",
+                        "source_dtype": str(data.dtype),
                         "height": int(chw.shape[1]),
                         "width": int(chw.shape[2]),
                         "channels": 1,
@@ -119,7 +132,7 @@ class TomoH5Adapter:
         """Load reconstructed slices as a sequence [C, T, H, W] for CAESAR/video models."""
         import h5py
         with h5py.File(self.data_root, "r") as f:
-            data = f["data"]
+            _, data = self._data_dataset(f)
             n_slices = data.shape[0]
             if max_samples is not None and max_samples > 0:
                 n_slices = min(n_slices, max_samples)

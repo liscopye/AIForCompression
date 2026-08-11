@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Iterator
 
@@ -87,7 +88,7 @@ class KodakAdapter:
                 arr = center_crop_chw(arr, resolution)
             arrays.append(arr)
 
-        timestamps = [f"2024-01-01T{i:02d}:00:00" for i in range(len(samples))]
+        start = datetime(2024, 1, 1)
+        timestamps = [(start + timedelta(hours=i)).isoformat() for i in range(len(samples))]
         tchw = np.stack(arrays, axis=0)
         return np.transpose(tchw, (1, 0, 2, 3)), timestamps
-

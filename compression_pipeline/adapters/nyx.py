@@ -26,7 +26,7 @@ class NYXAdapter:
         self.dataset_id = dataset_id
 
     def _find_file(self) -> Path:
-        candidates = list(self.data_root.glob(f"{self.field}.f32"))
+        candidates = list(self.data_root.rglob(f"{self.field}.f32"))
         if not candidates:
             raise FileNotFoundError(f"No .f32 file for field '{self.field}' in {self.data_root}")
         return candidates[0]

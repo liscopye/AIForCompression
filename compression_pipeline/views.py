@@ -104,6 +104,13 @@ def _normalize_for_image_model(
     float_chunk = chunk.astype(np.float32, copy=False)
     n_ch = float_chunk.shape[0]
 
+    if metadata.get("external_normalized") is True:
+        return float_chunk, {
+            "type": "dataset_fixed_identity",
+            "dtype": metadata.get("dtype", str(chunk.dtype)),
+            "normalization_id": metadata.get("normalization_id"),
+        }
+
     # Z-score normalization if pre-computed mean/std available
     zscore_mean = metadata.get("zscore_mean")
     zscore_std = metadata.get("zscore_std")
@@ -142,6 +149,8 @@ def _denormalize_image_group(chw: np.ndarray, normalization: dict[str, Any]) -> 
     norm_type = normalization["type"]
     if norm_type == "uint8_255":
         return np.rint(np.clip(chw, 0.0, 1.0) * 255.0).astype(np.uint8)
+    if norm_type == "dataset_fixed_identity":
+        return chw.astype(np.float32, copy=False)
     if norm_type == "per_channel_minmax":
         return (chw.astype(np.float32) * normalization["scale"][: chw.shape[0]] + normalization["min"][: chw.shape[0]]).astype(np.float32)
     if norm_type == "per_channel_zscore":
@@ -161,4 +170,3 @@ def _as_chw(tensor: np.ndarray) -> np.ndarray:
     if arr.ndim == 3:
         return arr
     raise ValueError(f"Expected CHW or BCHW tensor, got {arr.shape}")
-

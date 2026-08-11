@@ -10,7 +10,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from compression_pipeline.adapters.era5 import center_crop_vthw
 from compression_pipeline.adapters.kodak import KodakAdapter
-from compression_pipeline.caesar_runner import build_caesar_window, validate_regular_timestamps
+from compression_pipeline.caesar_runner import (
+    _resolve_caesar_checkpoint,
+    build_caesar_window,
+    validate_regular_timestamps,
+)
 from compression_pipeline.canonical import CanonicalSample
 from compression_pipeline.cra5_runner import run_cra5_sample
 from compression_pipeline.metrics import base_metrics
@@ -20,6 +24,12 @@ from compression_pipeline.views import build_caesar_view, build_image_groups, re
 
 
 class CompressionPipelineTest(unittest.TestCase):
+    def test_caesar_checkpoint_resolver_accepts_direct_file(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            checkpoint = Path(tmp) / "candidate.pt"
+            checkpoint.touch()
+            self.assertEqual(_resolve_caesar_checkpoint(checkpoint, "caesar_v"), checkpoint)
+
     def test_kodak_adapter_reads_rgb_images_as_canonical_samples(self):
         with tempfile.TemporaryDirectory() as tmp:
             image_path = Path(tmp) / "kodim01.png"
@@ -82,6 +92,28 @@ class CompressionPipelineTest(unittest.TestCase):
         self.assertEqual(groups[0].normalization["type"], "uint8_255")
         np.testing.assert_array_equal(reconstructed, array)
 
+    def test_dataset_normalized_groups_do_not_apply_per_sample_minmax(self):
+        array = np.array([[[0.2, 0.4], [0.6, 0.8]]], dtype=np.float32)
+        sample = CanonicalSample(
+            dataset_id="scientific",
+            sample_id="fixed-normalization",
+            kind="scientific_field",
+            array=array,
+            layout="channel_height_width",
+            metadata={
+                "dtype": "float32",
+                "external_normalized": True,
+                "normalization_id": "scientific-objective-v1",
+            },
+        )
+
+        groups = build_image_groups(sample)
+        reconstructed = reconstruct_from_groups(groups, [groups[0].tensor])
+
+        self.assertEqual(groups[0].normalization["type"], "dataset_fixed_identity")
+        np.testing.assert_allclose(groups[0].tensor[0, 0], array[0])
+        np.testing.assert_allclose(reconstructed, array)
+
     def test_base_metrics_reports_total_time_and_mb_throughput(self):
         original = np.ones((4, 2, 2), dtype=np.float32)
         reconstructed = original.copy()
@@ -98,6 +130,7 @@ class CompressionPipelineTest(unittest.TestCase):
         self.assertEqual(metrics["decode_throughput_MBps"], 64.0 / 4.0 / 1e6)
         self.assertEqual(metrics["encode_time_avg"], metrics["encode_time_total"])
         self.assertEqual(metrics["decode_time_avg"], metrics["decode_time_total"])
+        self.assertEqual(metrics["psnr"], 300.0)
 
     def test_base_metrics_preserves_optional_extra_metrics(self):
         original = np.ones((3, 2, 2), dtype=np.float32)
@@ -231,6 +264,14 @@ class CompressionPipelineTest(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             validate_regular_timestamps(timestamps)
+
+    def test_caesar_window_accepts_turb_rot_frame_timestamps(self):
+        sequence = np.zeros((1, 4, 2, 2), dtype=np.float32)
+        timestamps = ["turb_rot_t0000", "turb_rot_t0001", "turb_rot_t0002", "turb_rot_t0003"]
+
+        window = build_caesar_window(sequence, timestamps, n_frame=4)
+
+        self.assertEqual(window.timestamps, timestamps)
 
     def test_center_crop_vthw_preserves_variable_and_time_axes(self):
         sequence = np.arange(2 * 4 * 5 * 6, dtype=np.float32).reshape(2, 4, 5, 6)

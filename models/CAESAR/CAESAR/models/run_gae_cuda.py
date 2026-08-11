@@ -54,12 +54,37 @@ class PCA:
         self.mean_ = None
 
     def fit(self, X: torch.Tensor):
-        X = X.to(self.device)                      
+        X = X.to(self.device)
+        input_dtype = X.dtype
         self.mean_ = torch.mean(X, dim=0)
+        if X.shape[0] <= 1:
+            # A one-vector residual set has zero covariance. Any orthonormal
+            # basis is valid, and identity preserves the residual exactly.
+            Vt = torch.eye(X.shape[1], dtype=input_dtype, device=X.device)
+            if self.n_components is not None:
+                Vt = Vt[:self.n_components, :]
+            self.components_ = Vt
+            return self
+
         X_centered = X - self.mean_
-        
-        C = (X_centered.T @ X_centered) / (X_centered.shape[0] - 1)  
-        evals, evecs = torch.linalg.eigh(C)  
+        C = (X_centered.T @ X_centered) / (X_centered.shape[0] - 1)
+        C = (C + C.T) * 0.5
+        try:
+            if not torch.isfinite(C).all():
+                raise RuntimeError("non-finite float32 covariance")
+            evals, evecs = torch.linalg.eigh(C)
+        except RuntimeError:
+            # Residual covariance is often rank deficient at loose error
+            # bounds. Recompute, rather than merely cast, in float64 so the
+            # covariance accumulation itself gains precision.
+            X64 = X.double()
+            X_centered64 = X64 - torch.mean(X64, dim=0)
+            C64 = (X_centered64.T @ X_centered64) / (X_centered64.shape[0] - 1)
+            C64 = (C64 + C64.T) * 0.5
+            if not torch.isfinite(C64).all():
+                raise RuntimeError("PCA covariance remains non-finite in float64")
+            evals, evecs = torch.linalg.eigh(C64)
+            evecs = evecs.to(input_dtype)
         idx = torch.argsort(evals, descending=True)
         Vt = evecs[:, idx].T  
         

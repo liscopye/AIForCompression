@@ -6,12 +6,12 @@ Add the Turb_Rot CAESAR turbulence NPZ dataset to the unified benchmark path, ev
 
 ## Dataset Contract
 
-`Turb_Rot_testset.npz` contains `data` in CAESAR-style `[V,S,T,H,W]` layout and a `variable_name` array used as metadata. The current file is `(1,16,256,256,256)`: one variable channel, sixteen section slices, 256 time frames, and 256x256 spatial fields.
+`Turb_Rot_testset.npz` contains `data` in paper/CAESAR-style `[V,S,T,H,W]` layout and a `variable_name` array used as metadata. For the full TUM-TF turbulence setup described in `papers/unified.pdf`, this should be `3x16x2000x256x256`, where `V=3` are velocity components `vx,vy,vz`, `S=16` are x-axis slices/sections, `T=2000` is simulation time, and `H,W=256x256` is the yz-plane grid. The current reduced file is `(1,16,256,256,256)`: one stored variable channel, sixteen section slices, 256 time frames, and 256x256 spatial fields. It can be used as a reduced subset, but it is not the full paper dataset because `V` is not 3 and `T` is not 2000.
 
 The adapter exposes two views:
 
-- Image models: `iter_samples()` yields `[3,H,W]` float32 samples by stacking neighboring section slices at one time index. This gives DCAE, LIC-HPCM, DCMVC, and DCVC-RT natural three-channel inputs without inventing missing variables.
-- CAESAR: `load_sequence()` selects one section slice and returns `[V,T,H,W]`, preserving contiguous time frames for `caesar_v` and `caesar_d`.
+- Image models: `iter_samples()` yields `[3,H,W]` float32 samples. For paper-style `V>=3` turbulence data it uses `[vx,vy,vz]` from the same section/time as channels. For reduced `V=1` files it falls back to stacking neighboring section slices so DCAE, LIC-HPCM, DCMVC, and DCVC-RT still receive natural three-channel inputs without inventing missing variables. This is controlled by `--turb_rot_image_group_mode auto|variables|sections`.
+- CAESAR: `load_sequence()` selects one section slice and returns `[V,T,H,W]`, preserving velocity variables and contiguous time frames for `caesar_v` and `caesar_d`.
 
 ## Metrics
 

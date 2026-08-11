@@ -50,4 +50,6 @@ def test_aggregate_records_averages_quality_and_memory_fields():
     assert rows[0]["compression_ratio"] == 12.0
     assert rows[0]["bpp"] == 2.0
     assert rows[0]["memory_usage_MB"] == 110.0
+    assert rows[0]["average_lpips"] == pytest.approx(0.3)
+    assert rows[0]["average_memory_usage_MB"] == 110.0
     assert rows[0]["sample_count"] == 2

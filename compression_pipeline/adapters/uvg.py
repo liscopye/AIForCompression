@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import re
 from typing import Iterator
 
 import numpy as np
@@ -56,14 +57,23 @@ class UVGAdapter:
     def _frame_size(self, height: int, width: int) -> int:
         return height * width * 3 // 2  # YUV420 = 1.5 bytes/pixel
 
+    def _resolution(self) -> tuple[int, int]:
+        yuv_path = self._find_yuv()
+        match = re.search(r"(\d{3,5})x(\d{3,5})", yuv_path.name)
+        if match:
+            width = int(match.group(1))
+            height = int(match.group(2))
+            return height, width
+        return 2160, 3840
+
     def load_sequence(
         self,
         max_samples: int | None = None,
         resolution: tuple[int, int] | None = None,
     ) -> tuple[np.ndarray, list[str]]:
         """Load video frames as CAESAR sequence [V=3, T, H, W] uint8→float32."""
-        height, width = 2160, 3840
         yuv_path = self._find_yuv()
+        height, width = self._resolution()
         frame_size = self._frame_size(height, width)
         total_frames = min(30, max_samples or 30)
         frames = []
@@ -85,10 +95,12 @@ class UVGAdapter:
     def iter_samples(
         self,
         max_samples: int = 30,
-        height: int = 2160,
-        width: int = 3840,
+        height: int | None = None,
+        width: int | None = None,
     ) -> Iterator[CanonicalSample]:
         yuv_path = self._find_yuv()
+        if height is None or width is None:
+            height, width = self._resolution()
         frame_size = self._frame_size(height, width)
         file_size = yuv_path.stat().st_size
         total_frames = file_size // frame_size

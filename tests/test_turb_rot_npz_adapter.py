@@ -12,6 +12,13 @@ def _write_tiny_turb_rot(path):
     return data
 
 
+def _write_tiny_paper_turbulence(path):
+    data = np.arange(3 * 4 * 5 * 6 * 7, dtype=np.float32).reshape(3, 4, 5, 6, 7)
+    variable_name = np.array(["vx", "vy", "vz"], dtype="<U2")
+    np.savez(path, data=data, variable_name=variable_name)
+    return data
+
+
 def test_iter_samples_stacks_neighboring_sections_as_three_channel_images(tmp_path):
     npz_path = tmp_path / "tiny_turb_rot.npz"
     data = _write_tiny_turb_rot(npz_path)
@@ -25,6 +32,30 @@ def test_iter_samples_stacks_neighboring_sections_as_three_channel_images(tmp_pa
     np.testing.assert_array_equal(samples[0].array, data[0, 0:3, 0])
     assert samples[0].metadata["variable_name"] == ["vx"]
     assert samples[0].metadata["section_indices"] == [0, 1, 2]
+    assert samples[0].metadata["image_group_mode"] == "sections"
+
+
+def test_iter_samples_uses_velocity_variables_for_paper_layout(tmp_path):
+    npz_path = tmp_path / "tiny_paper_turbulence.npz"
+    data = _write_tiny_paper_turbulence(npz_path)
+
+    samples = list(TurbRotNPZAdapter(npz_path, section_start=2).iter_samples(max_samples=1))
+
+    assert samples[0].sample_id == "section002_vars000-002_t0000"
+    assert samples[0].array.shape == (3, 6, 7)
+    np.testing.assert_array_equal(samples[0].array, data[0:3, 2, 0])
+    assert samples[0].metadata["variable_indices"] == [0, 1, 2]
+    assert samples[0].metadata["image_group_mode"] == "variables"
+
+
+def test_iter_samples_can_force_section_grouping_for_paper_layout(tmp_path):
+    npz_path = tmp_path / "tiny_paper_turbulence.npz"
+    data = _write_tiny_paper_turbulence(npz_path)
+
+    samples = list(TurbRotNPZAdapter(npz_path, image_group_mode="sections").iter_samples(max_samples=1))
+
+    np.testing.assert_array_equal(samples[0].array, data[0, 0:3, 0])
+    assert samples[0].metadata["image_group_mode"] == "sections"
 
 
 def test_iter_samples_pads_last_section_group_by_repeating_last_section(tmp_path):

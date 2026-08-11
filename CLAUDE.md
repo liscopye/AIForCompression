@@ -61,6 +61,11 @@ AIForCompression/
 - `isot1024`: isotropic turbulence HDF5 velocity data.
 - `lysozyme`: CHESS lysozyme HDF5 diffraction frames.
 
+Detailed dataset/model processing rules are documented in
+`docs/dataset_model_processing_spec.md`.  Use that document as the benchmark
+contract for channel grouping, normalization, CAESAR sequence shape, bpp, PSNR,
+LPIPS, memory, and throughput.
+
 Adapters must emit `CanonicalSample(layout="channel_height_width")` for image-style models. Sequence-capable adapters may also implement `load_sequence()` returning `[V,T,H,W]` plus timestamps for CAESAR.
 
 ## Supported Model Families
@@ -138,6 +143,19 @@ PSNR is computed as `10 * log10(data_range^2 / mse)` in original data space. `da
 
 ## HPC / Slurm Rules
 
+Current 5090 host environment:
+
+```bash
+source /workspace/ai4cp/bin/activate
+cd /workspace/AIForCompression
+```
+
+Use `/workspace/Turb_Rot_testset.npz` for the local Turb_Rot benchmark data and
+`/workspace/AIForCompression/checkpoints/caesar_tuned` for the official
+Turb_Rot-tuned CAESAR checkpoint directory.
+
+Legacy cluster environment:
+
 Use the allocated GPU from Slurm. Job scripts must not unset, export, or overwrite `CUDA_VISIBLE_DEVICES` unless debugging outside Slurm.
 
 Standard environment:
@@ -175,9 +193,9 @@ pytest -q tests/test_compression_pipeline.py tests/test_model_registry.py
 
 ## Key Paths
 
-- Project root: `/data/run01/scxj523/zsh/project/AIForCompression`
-- Data root: `/data/run01/scxj523/zsh/project/Data`
-- ERA5 data: `/data/run01/scxj523/zsh/project/Data/ERA5/2024`
-- Checkpoints: `/data/run01/scxj523/zsh/project/AIForCompression/checkpoints`
-- Model source: `/data/run01/scxj523/zsh/project/AIForCompression/models`
-- ERA5 normalization: `/data/run01/scxj523/zsh/project/AIForCompression/normalization`
+- Project root: `/workspace/AIForCompression`
+- Turb_Rot data: `/workspace/Turb_Rot_testset.npz`
+- Checkpoints: `/workspace/AIForCompression/checkpoints`
+- CAESAR tuned checkpoints: `/workspace/AIForCompression/checkpoints/caesar_tuned`
+- Model source: `/workspace/AIForCompression/models`
+- ERA5 normalization: `/workspace/AIForCompression/normalization`

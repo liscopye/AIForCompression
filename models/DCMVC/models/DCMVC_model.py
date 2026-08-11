@@ -472,7 +472,7 @@ class DMC(CompressionModel):
                 self.mv_y_spatial_prior_adaptor_3, self.mv_y_spatial_prior)
 
         mv_hat, mv_feature = self.mv_decoder(mv_y_hat, mv_y_q_dec)
-        context1, context2, context3, _ , _ = self.motion_compensation(dpb, mv_hat, frame_idx)
+        context1, context2, context3, _, _, _ = self.motion_compensation(dpb, mv_hat, frame_idx)
 
         y = self.contextual_encoder(x, context1, context2, context3, y_q_enc)
         y_pad, slice_shape = self.pad_for_y(y)
@@ -532,7 +532,7 @@ class DMC(CompressionModel):
                                                    self.mv_y_spatial_prior)
 
         mv_hat, mv_feature = self.mv_decoder(mv_y_hat, mv_y_q_dec)
-        context1, context2, context3, _, _ = self.motion_compensation(dpb, mv_hat, frame_idx)
+        context1, context2, context3, _, _, _ = self.motion_compensation(dpb, mv_hat, frame_idx)
 
         params = self.res_prior_param_decoder(z_hat, dpb, context3, slice_shape)
         y_hat = self.decompress_four_part_prior(params,

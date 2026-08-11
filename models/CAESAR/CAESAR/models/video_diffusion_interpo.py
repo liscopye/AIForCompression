@@ -740,11 +740,15 @@ class GaussianDiffusion(nn.Module):
                cond_scale = 1., batch_size = 16, sample_rate = 2, start_img = None):
         
         if cond_idx is None:
-            self.cond_idx = torch.arange(0,img_cond.shape[-3],interpo_rate)
+            self.cond_idx = torch.arange(
+                0, img_cond.shape[-3], interpo_rate, device=img_cond.device
+            )
         else:
-            self.cond_idx = cond_idx
+            self.cond_idx = cond_idx.to(img_cond.device)
             
-        self.noise_mask = ~torch.isin(torch.arange(img_cond.shape[-3]), self.cond_idx)
+        self.noise_mask = ~torch.isin(
+            torch.arange(img_cond.shape[-3], device=img_cond.device), self.cond_idx
+        )
         
         device = next(self.denoise_fn.parameters()).device
 

@@ -25,7 +25,7 @@ def torch_warp(feature, flow):
     flow = torch.cat([flow[:, 0:1, :, :] / ((feature.size(3) - 1.0) / 2.0),
                       flow[:, 1:2, :, :] / ((feature.size(2) - 1.0) / 2.0)], 1)
 
-    grid = (backward_grid[device_id][str(flow.size())] + flow)
+    grid = (backward_grid[device_id][str(flow.size())] + flow).to(dtype=feature.dtype)
     return torch.nn.functional.grid_sample(input=feature,
                                            grid=grid.permute(0, 2, 3, 1),
                                            mode='bilinear',

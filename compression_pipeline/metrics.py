@@ -9,16 +9,78 @@ from typing import Callable
 import numpy as np
 
 
-def calculate_psnr(original: np.ndarray, reconstructed: np.ndarray) -> tuple[float, float]:
+def calculate_psnr(
+    original: np.ndarray,
+    reconstructed: np.ndarray,
+    valid_mask: np.ndarray | None = None,
+) -> tuple[float, float]:
     orig64 = original.astype(np.float64)
     recon64 = reconstructed.astype(np.float64)
+    if valid_mask is not None:
+        mask = np.asarray(valid_mask, dtype=bool)
+        if mask.shape != original.shape:
+            raise ValueError(f"valid_mask shape {mask.shape} does not match original shape {original.shape}")
+        if not np.any(mask):
+            raise ValueError("valid_mask has no valid elements")
+        orig64 = orig64[mask]
+        recon64 = recon64[mask]
     mse = float(np.mean((orig64 - recon64) ** 2))
     if mse < 1e-30:
-        return float("inf"), mse
+        return 300.0, mse
     data_range = float(orig64.max() - orig64.min())
     if data_range < 1e-8:
         data_range = 1.0
     return float(10 * np.log10(data_range ** 2 / mse)), mse
+
+
+def calculate_axis0_average_psnr(
+    original: np.ndarray,
+    reconstructed: np.ndarray,
+    valid_mask: np.ndarray | None = None,
+) -> float | None:
+    """Average PSNR over the first axis, useful for multi-variable scientific fields."""
+    if original.shape != reconstructed.shape or original.ndim < 3:
+        return None
+    values = []
+    masks = valid_mask if valid_mask is not None else [None] * original.shape[0]
+    for orig_item, recon_item, mask_item in zip(original, reconstructed, masks):
+        psnr, _ = calculate_psnr(orig_item, recon_item, mask_item)
+        if math.isfinite(psnr):
+            values.append(psnr)
+    if not values:
+        return None
+    return float(np.mean(values))
+
+
+def calculate_frame_average_psnr(
+    original: np.ndarray,
+    reconstructed: np.ndarray,
+    valid_mask: np.ndarray | None = None,
+) -> float | None:
+    """Average per-frame PSNR using each frame's own dynamic range.
+
+    For CAESAR-style tensors [V,S,T,H,W], the frame axis is T.  For image-style
+    tensors [C,H,W], the single image PSNR is already the frame PSNR.
+    """
+    if original.shape != reconstructed.shape or original.ndim < 3:
+        return None
+    if original.ndim == 3:
+        psnr, _ = calculate_psnr(original, reconstructed, valid_mask)
+        return psnr
+    if original.ndim >= 5:
+        frame_axis = -3
+        values = []
+        for index in range(original.shape[frame_axis]):
+            orig_frame = np.take(original, index, axis=frame_axis)
+            recon_frame = np.take(reconstructed, index, axis=frame_axis)
+            mask_frame = np.take(valid_mask, index, axis=frame_axis) if valid_mask is not None else None
+            psnr, _ = calculate_psnr(orig_frame, recon_frame, mask_frame)
+            if math.isfinite(psnr):
+                values.append(psnr)
+        if not values:
+            return None
+        return float(np.mean(values))
+    return None
 
 
 def base_metrics(
@@ -27,22 +89,34 @@ def base_metrics(
     bitstream_bytes: int,
     elapsed: tuple[float, float],
     group_count: int = 1,
+    side_info_bytes: int = 0,
+    valid_mask: np.ndarray | None = None,
     extra_metrics: dict[str, float | int | None] | None = None,
 ) -> dict[str, float | int | None]:
-    psnr, mse = calculate_psnr(original, reconstructed)
+    psnr, mse = calculate_psnr(original, reconstructed, valid_mask)
     original_bytes = int(original.size * original.dtype.itemsize)
     encode_time, decode_time = elapsed
     groups = max(int(group_count), 1)
+    spatial_pixels = int(original.shape[-2] * original.shape[-1])
+    scientific_symbols = int(original.size)
+    total_bytes_with_side_info = int(bitstream_bytes + max(side_info_bytes, 0))
     encode_throughput = original_bytes / encode_time if encode_time > 0 else None
     decode_throughput = original_bytes / decode_time if decode_time > 0 else None
     metrics = {
         "mse": mse,
         "rmse": math.sqrt(mse),
         "psnr": psnr,
-        "bpp": bitstream_bytes * 8.0 / (original.shape[-2] * original.shape[-1]),
+        "average_variable_psnr": calculate_axis0_average_psnr(original, reconstructed, valid_mask),
+        "average_frame_psnr": calculate_frame_average_psnr(original, reconstructed, valid_mask),
+        "image_bpp": bitstream_bytes * 8.0 / spatial_pixels,
+        "bpp": bitstream_bytes * 8.0 / scientific_symbols,
+        "scientific_bpp": bitstream_bytes * 8.0 / scientific_symbols,
+        "scientific_bpp_with_side_info": total_bytes_with_side_info * 8.0 / scientific_symbols,
         "bitstream_bytes": int(bitstream_bytes),
+        "side_info_bytes": int(max(side_info_bytes, 0)),
+        "total_bytes_with_side_info": total_bytes_with_side_info,
         "original_bytes": original_bytes,
-        "compression_ratio": original_bytes / bitstream_bytes if bitstream_bytes > 0 else float("inf"),
+        "compression_ratio": original_bytes / total_bytes_with_side_info if total_bytes_with_side_info > 0 else float("inf"),
         "group_count": groups,
         "encode_time_total": encode_time,
         "decode_time_total": decode_time,

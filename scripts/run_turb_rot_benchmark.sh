@@ -1,26 +1,18 @@
 #!/usr/bin/env bash
-#SBATCH --job-name=turb_rot_bench
-#SBATCH --gres=gpu:1
-#SBATCH --cpus-per-task=8
-#SBATCH --mem=64G
-#SBATCH --time=24:00:00
-#SBATCH --output=/data/run01/scxj523/zsh/project/AIForCompression/logs/turb_rot_benchmark_%j.log
-#SBATCH --error=/data/run01/scxj523/zsh/project/AIForCompression/logs/turb_rot_benchmark_%j.log
-
 set -euo pipefail
 
-ROOT=/data/run01/scxj523/zsh/project/AIForCompression
-DATA=${TURB_ROT_DATA:-/data/run01/scxj523/zsh/Turb_Rot_testset.npz}
+ROOT=${AI4C_ROOT:-/workspace/AIForCompression}
+DATA=${TURB_ROT_DATA:-/workspace/Turb_Rot_testset.npz}
 OUT=${TURB_ROT_OUT:-$ROOT/unified_results/turb_rot_npz}
 MAX_IMAGE_SAMPLES=${MAX_IMAGE_SAMPLES:-16}
 MAX_CAESAR_SAMPLES=${MAX_CAESAR_SAMPLES:-16}
 SECTION_INDEX=${TURB_ROT_SECTION_INDEX:-0}
 SECTION_START=${TURB_ROT_SECTION_START:-0}
-CAESAR_EB=${CAESAR_EB:-"1e-4 5e-4 1e-3 5e-3 1e-2"}
+CAESAR_EB=${CAESAR_EB:-"1e-5 5e-5 1e-4 5e-4 1e-3 5e-3 1e-2"}
 MAX_MODEL_JOBS=${MAX_MODEL_JOBS:-all}
+VENV=${AI4C_VENV:-/workspace/ai4cp}
 
-eval "$(/data/home/scxj523/run/miniconda3/bin/conda shell.bash hook)"
-conda activate /data/run01/scxj523/zsh/envs/zsh
+source "$VENV/bin/activate"
 cd "$ROOT"
 mkdir -p "$OUT" "$ROOT/logs"
 

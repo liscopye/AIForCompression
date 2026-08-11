@@ -20,19 +20,22 @@ class CAESAR:
     def __init__(self, 
                  model_path, 
                  use_diffusion=True, 
-                 device='cuda',  n_frame = 16, interpo_rate=3, diffusion_steps = 32
+                 device='cuda',  n_frame = 16, interpo_rate=3, diffusion_steps = 32,
+                 diffusion_ensemble_size=1
                  ):
+        if diffusion_ensemble_size <= 0:
+            raise ValueError("diffusion_ensemble_size must be positive")
         self.pretrained_path = model_path
         self.use_diffusion = use_diffusion
         self.device = device
         self.n_frame = n_frame
         self.diffusion_steps = diffusion_steps
+        self.diffusion_ensemble_size = int(diffusion_ensemble_size)
+        self.interpo_rate = interpo_rate
+        self.cond_idx = torch.arange(0, n_frame, interpo_rate)
+        self.pred_idx = ~torch.isin(torch.arange(n_frame), self.cond_idx)
 
         self._load_models()
-        
-        self.interpo_rate = interpo_rate
-        self.cond_idx = torch.arange(0,n_frame,interpo_rate)
-        self.pred_idx = ~torch.isin(torch.arange(n_frame), self.cond_idx)
         torch.backends.cudnn.deterministic = True
         torch.backends.cudnn.benchmark = False
     
@@ -86,6 +89,10 @@ class CAESAR:
         state_dict = self.remove_module_prefix(pretrained_models["vae"])
         model.load_state_dict(state_dict)
         self.keyframe_model = model.to(self.device).eval()
+
+        if not bool(self.pred_idx.any()):
+            self.diffusion_model = None
+            return
         
         
         from .models.video_diffusion_interpo import Unet3D, GaussianDiffusion
@@ -100,7 +107,7 @@ class CAESAR:
         diffusion = GaussianDiffusion(
             model,
             image_size=16,
-            num_frames=10,
+            num_frames=int(self.pred_idx.sum()),
             channels=64,
             timesteps=self.diffusion_steps,
             loss_type='l2'
@@ -167,7 +174,7 @@ class CAESAR:
         with torch.no_grad():
             for data in dataloader:
     
-                keyframe = data["input"][:,:,self.cond_idx].cuda()
+                keyframe = data["input"][:, :, self.cond_idx].to(self.device)
                 outputs = self.keyframe_model.compress(keyframe)
                 total_bits += torch.sum(outputs["bpf_real"])
                 
@@ -192,18 +199,35 @@ class CAESAR:
                 latent_data = self.keyframe_model.decompress(*compressed["compressed"], device = self.device)
                 B,C,KT,H,W = latent_data.shape
 
-                input_latent = torch.zeros([B, C, self.n_frame, H, W], device = self.device)
-                input_latent[:,:,self.cond_idx] = latent_data
-                input_latent,offset_latent, scale_latent = normalize_latent(input_latent)
+                if bool(self.pred_idx.any()):
+                    input_latent = torch.zeros([B, C, self.n_frame, H, W], device = self.device)
+                    input_latent[:,:,self.cond_idx] = latent_data
+                    input_latent,offset_latent, scale_latent = normalize_latent(input_latent)
 
-                result = self.diffusion_model.sample(input_latent, self.interpo_rate, batch_size=input_latent.shape[0])
-                input_latent[:,:,self.pred_idx] = result
-                input_latent = input_latent*scale_latent + offset_latent
+                    decoded_sum = None
+                    for _ in range(self.diffusion_ensemble_size):
+                        sample_latent = input_latent.clone()
+                        result = self.diffusion_model.sample(
+                            sample_latent,
+                            self.interpo_rate,
+                            batch_size=sample_latent.shape[0],
+                        )
+                        sample_latent[:,:,self.pred_idx] = result
+                        sample_latent = sample_latent*scale_latent + offset_latent
+                        sample_latent = sample_latent.permute(0,2,1,3,4).reshape(-1,64,16,16)
+                        decoded = self.keyframe_model.decode(sample_latent).detach()
+                        decoded_sum = decoded if decoded_sum is None else decoded_sum + decoded
+                    rct_data = decoded_sum / self.diffusion_ensemble_size
+                else:
+                    input_latent = latent_data
+                    input_latent = input_latent.permute(0,2,1,3,4).reshape(-1,64,16,16)
+                    rct_data = self.keyframe_model.decode(input_latent).detach()
 
-                input_latent = input_latent[:,:,:].permute(0,2,1,3,4).reshape(-1,64,16,16)
-
-                rct_data = self.keyframe_model.decode(input_latent).detach()
-                rct_data = rct_data.reshape([B, -1, 16, *rct_data.shape[-2:]])*compressed["scale"].cuda() + compressed["offset"].cuda()
+                rct_data = (
+                    rct_data.reshape([B, -1, 16, *rct_data.shape[-2:]])
+                    * compressed["scale"].to(self.device)
+                    + compressed["offset"].to(self.device)
+                )
                 rct_data = rct_data.cpu()
 
                 for i in range(B):
@@ -238,7 +262,10 @@ class CAESAR:
             for compressed in all_compressed:
                 
                     rct_data = self.compressor_v.decompress(*compressed["compressed"])
-                    rct_data = rct_data*compressed["scale"].cuda() + compressed["offset"].cuda()
+                    rct_data = (
+                        rct_data * compressed["scale"].to(self.device)
+                        + compressed["offset"].to(self.device)
+                    )
                     rct_data = rct_data.cpu()
                     
                     for i in range(rct_data.shape[0]):
@@ -271,7 +298,7 @@ class CAESAR:
 
         with torch.no_grad():
             for data in dataloader:
-                outputs = self.compressor_v.compress(data["input"].cuda())
+                outputs = self.compressor_v.compress(data["input"].to(self.device))
                 total_bits += torch.sum(outputs["bpf_real"])
                 
                 compressed_latent = {"compressed": outputs["compressed"],

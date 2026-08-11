@@ -22,7 +22,7 @@ class HurricaneAdapter:
 
     def _find_file(self) -> Path:
         """Find the .bin.f32 file matching the requested channel."""
-        candidates = list(self.data_root.glob(f"{self.channel}*.bin.f32"))
+        candidates = list(self.data_root.rglob(f"{self.channel}*.bin.f32"))
         if not candidates:
             raise FileNotFoundError(f"No .bin.f32 file for channel '{self.channel}' in {self.data_root}")
         return candidates[0]

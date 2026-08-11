@@ -9,7 +9,7 @@ from compression_pipeline.canonical import CanonicalSample
 
 
 class TurbRotNPZAdapter:
-    """Reads CAESAR-style Turb_Rot NPZ data in [V,S,T,H,W] layout."""
+    """Reads paper-style turbulence NPZ data in [V,S,T,H,W] layout."""
 
     def __init__(
         self,
@@ -17,11 +17,19 @@ class TurbRotNPZAdapter:
         dataset_id: str = "turb_rot_npz",
         section_index: int = 0,
         section_start: int = 0,
+        time_start: int = 0,
+        image_group_mode: str = "auto",
+        image_channel_count: int | None = None,
     ) -> None:
         self.data_root = Path(data_root)
         self.dataset_id = dataset_id
         self.section_index = int(section_index)
         self.section_start = int(section_start)
+        self.time_start = int(time_start)
+        if image_group_mode not in {"auto", "variables", "sections"}:
+            raise ValueError(f"Unsupported image_group_mode={image_group_mode!r}")
+        self.image_group_mode = image_group_mode
+        self.image_channel_count = None if image_channel_count is None or image_channel_count <= 0 else int(image_channel_count)
 
     def _load_npz(self):
         if self.data_root.is_dir():
@@ -70,43 +78,80 @@ class TurbRotNPZAdapter:
     ) -> tuple[np.ndarray, list[str]]:
         """Return a CAESAR sequence [V,T,H,W] from one section slice."""
         _, data, _ = self._data_and_metadata()
-        section = self._checked_section_index(data.shape[1], self.section_index)
-        sequence = data[:, section].astype(np.float32, copy=False)
+        mode = self._resolved_image_group_mode(data)
+        if mode == "sections":
+            section = self._checked_section_index(data.shape[1], self.section_index)
+            section_indices = list(range(section, min(section + 3, data.shape[1])))
+            while len(section_indices) < 3:
+                section_indices.append(section_indices[-1])
+            sequence = data[0, section_indices].astype(np.float32, copy=False)
+        else:
+            section = self._checked_section_index(data.shape[1], self.section_index)
+            variable_indices = self._variable_indices(data.shape[0])
+            sequence = data[variable_indices, section].astype(np.float32, copy=False)
+        time_start = self._checked_time_index(sequence.shape[1], self.time_start)
         if max_samples is not None and max_samples > 0:
-            sequence = sequence[:, :max_samples]
+            sequence = sequence[:, time_start : time_start + max_samples]
+        else:
+            sequence = sequence[:, time_start:]
         if resolution is not None:
             from compression_pipeline.adapters.era5 import center_crop_vthw
 
             sequence = center_crop_vthw(sequence, resolution)
-        timestamps = [f"turb_rot_t{i:04d}" for i in range(sequence.shape[1])]
+        timestamps = [self._timestamp(i) for i in range(sequence.shape[1])]
         return sequence, timestamps
 
     def iter_samples(self, max_samples: int = -1) -> Iterator[CanonicalSample]:
-        """Yield [3,H,W] image samples by grouping neighboring section slices."""
+        """Yield [3,H,W] image samples.
+
+        Paper-style turbulence/E3SM data stores physical variables in V.  When
+        multiple variables are present, keep all variables from the same
+        section/time; image codecs split them into 3-channel groups internally.
+        Reduced files with one stored variable can still fall back to neighboring
+        section slices so RGB-style image codecs receive three channels.
+        """
         path, data, base_metadata = self._data_and_metadata()
         section_start = self._checked_section_index(data.shape[1], self.section_start)
+        mode = self._resolved_image_group_mode(data)
         count = 0
-        for t in range(data.shape[2]):
+        time_start = self._checked_time_index(data.shape[2], self.time_start)
+        for t in range(time_start, data.shape[2]):
             if max_samples > 0 and count >= max_samples:
                 return
-            section_indices = list(range(section_start, min(section_start + 3, data.shape[1])))
-            while len(section_indices) < 3:
-                section_indices.append(section_indices[-1])
-            chunk = data[0, section_indices, t].astype(np.float32, copy=False)
-            first = section_indices[0]
-            last_real = min(section_start + 2, data.shape[1] - 1)
             metadata = dict(base_metadata)
-            metadata.update(
-                {
-                    "source_path": str(path),
-                    "time_index": int(t),
-                    "variable_index": 0,
-                    "section_indices": [int(i) for i in section_indices],
-                }
-            )
+            if mode == "variables":
+                section = section_start
+                variable_indices = self._variable_indices(data.shape[0])
+                chunk = data[variable_indices, section, t].astype(np.float32, copy=False)
+                sample_id = f"section{section:03d}_vars000-{variable_indices[-1]:03d}_t{t:04d}"
+                metadata.update(
+                    {
+                        "time_index": int(t),
+                        "section_index": int(section),
+                        "variable_indices": variable_indices,
+                        "image_group_mode": mode,
+                    }
+                )
+            else:
+                section_indices = list(range(section_start, min(section_start + 3, data.shape[1])))
+                while len(section_indices) < 3:
+                    section_indices.append(section_indices[-1])
+                chunk = data[0, section_indices, t].astype(np.float32, copy=False)
+                first = section_indices[0]
+                last_real = min(section_start + 2, data.shape[1] - 1)
+                sample_id = f"section{first:03d}-{last_real:03d}_t{t:04d}"
+                metadata.update(
+                    {
+                        "time_index": int(t),
+                        "variable_index": 0,
+                        "section_indices": [int(i) for i in section_indices],
+                        "image_group_mode": mode,
+                    }
+                )
+            metadata["source_path"] = str(path)
             yield CanonicalSample(
                 dataset_id=self.dataset_id,
-                sample_id=f"section{first:03d}-{last_real:03d}_t{t:04d}",
+                sample_id=sample_id,
                 kind="turb_rot_npz",
                 array=chunk,
                 layout="channel_height_width",
@@ -114,8 +159,30 @@ class TurbRotNPZAdapter:
             )
             count += 1
 
+    def _resolved_image_group_mode(self, data: np.ndarray) -> str:
+        if self.image_group_mode == "variables":
+            return "variables"
+        if self.image_group_mode == "sections":
+            return "sections"
+        return "variables" if data.shape[0] >= 3 else "sections"
+
+    def _timestamp(self, index: int) -> str:
+        return f"turb_rot_t{index:04d}"
+
+    def _variable_indices(self, variable_count: int) -> list[int]:
+        count = variable_count if self.image_channel_count is None else min(self.image_channel_count, variable_count)
+        if count <= 0:
+            raise ValueError("NPZ data must contain at least one variable")
+        return list(range(count))
+
     @staticmethod
     def _checked_section_index(section_count: int, section_index: int) -> int:
         if section_index < 0 or section_index >= section_count:
             raise ValueError(f"section index {section_index} out of range for S={section_count}")
         return section_index
+
+    @staticmethod
+    def _checked_time_index(time_count: int, time_index: int) -> int:
+        if time_index < 0 or time_index >= time_count:
+            raise ValueError(f"time index {time_index} out of range for T={time_count}")
+        return time_index

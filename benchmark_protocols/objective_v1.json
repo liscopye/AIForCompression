@@ -1,0 +1,238 @@
+{
+  "protocol_id": "aifc-objective-v1",
+  "description": "Checksum-matched, side-information-complete benchmark for the ten established datasets.",
+  "canonical_dtype": "float32",
+  "fairness_boundary": {
+    "controlled_externally": [
+      "source_sample_and_index",
+      "crop_and_resolution",
+      "valid_mask_policy",
+      "canonical_physical_values",
+      "external_color_conversion",
+      "external_normalization_for_models_that_require_it"
+    ],
+    "codec_owned_and_not_standardized": [
+      "internal_normalization",
+      "internal_partitioning_and_padding",
+      "latent_representation",
+      "predictor_or_PCA_design",
+      "entropy_model",
+      "internal_precision"
+    ],
+    "rule": "The benchmark controls values before the codec and evaluates values after the inverse dataset transform. Every codec on one dataset receives the same frozen dataset-normalized canonical values. It records but never rewrites codec-internal behavior."
+  },
+  "external_normalization": {
+    "scope": "dataset_not_model",
+    "precision": "float32",
+    "clipping": "forbidden_unless_the_dataset_contract_explicitly_defines_a_separate_lossy_visualization_track",
+    "invertibility": "The scientific main track requires an invertible transform on every valid value.",
+    "parameter_rule": "Parameters are frozen once per dataset (and per physical variable when applicable), stored in the benchmark manifest and reused by every codec.",
+    "internal_rule": "Any additional normalization performed inside a released codec remains untouched and is not treated as external benchmark preprocessing.",
+    "api_conversion_rule": "Required dtype/layout conversion after dataset normalization is codec-specific plumbing. It must be deterministic, timed and declared; any lossy conversion contributes to reconstruction error."
+  },
+  "rate": {
+    "unit": "bits_per_original_grid_symbol",
+    "formula": "8 * (payload_bytes + required_side_information_bytes) / canonical_symbol_count",
+    "include": [
+      "container_and_entropy_headers",
+      "sample_dependent_external_normalization_parameters",
+      "PCA_coefficients_and_metadata",
+      "padding_or_shape_metadata",
+      "GOP_headers_and_I_frames",
+      "invalid_mask_when_not_declared_shared"
+    ],
+    "exclude": ["model_weights", "decoder_program"],
+    "rule": "Only metadata required by the decoder and varying per sample is counted. Frozen external adapter constants and deterministic codec-internal behavior are codec configuration, like model weights, and are not charged per sample."
+  },
+  "quality": {
+    "primary_scientific_metric": "dataset_fixed_scale_normalized_mse",
+    "normalized_mse_formula": "mean_over_variables(MSE_v / scale_v^2)",
+    "normalized_psnr_formula": "-10*log10(dataset_fixed_scale_normalized_mse)",
+    "scale_rule": "One evaluation scale per physical variable, computed once from the declared calibration corpus and reused for every sample and codec. This metric scale does not alter codec input or codec-internal normalization.",
+    "secondary_scientific_metrics": [
+      "per_variable_psnr_median",
+      "per_variable_nrmse_mean",
+      "raw_mse",
+      "raw_max_abs_error",
+      "error_bound_satisfied"
+    ],
+    "general_media_metrics": ["rgb_psnr", "ms_ssim", "lpips"],
+    "mask_rule": "Invalid values do not enter scale, MSE, PSNR or max-error. The decoder must reproduce the mask, or the mask must be declared shared for all codecs.",
+    "lpips_rule": "LPIPS is primary only for Kodak and UVG RGB. Scientific LPIPS is diagnostic and requires one fixed rendering transform for all codecs."
+  },
+  "timing": {
+    "input_boundary": "canonical tensor resident in pageable host memory",
+    "encode_boundary": "canonical host tensor to final in-memory byte strings",
+    "decode_boundary": "final in-memory byte strings to reconstructed canonical host tensor",
+    "include": ["external_adapter", "complete_codec_call_including_internal_behavior", "H2D", "entropy_coding", "D2H", "inverse_external_adapter", "assembly"],
+    "exclude": ["first_disk_read", "model_construction", "checkpoint_load", "metric_calculation", "plotting"],
+    "warmup_repetitions": 2,
+    "measured_repetitions": 5,
+    "statistics": ["median", "p10", "p90"],
+    "gpu_rule": "One benchmark process per physical GPU; no MPS sharing or concurrent workload. Record GPU model, driver and visible physical index.",
+    "codec_execution": {
+      "caesar_inference_batch_size": 64,
+      "caesar_batch_source": "models/CAESAR/eval_caesar.ipynb",
+      "caesar_rule": "Use the authors' evaluation batch size. PCA and all other codec-internal behavior remain unchanged."
+    }
+  },
+  "curve": {
+    "minimum_valid_points": 7,
+    "required_points_by_curve": {
+      "DCAE": 6,
+      "LIC-HPCM-base": 6,
+      "LIC-HPCM-large": 6,
+      "CAESAR-V": 7,
+      "CAESAR-D": 7,
+      "CAESAR-V-Turb-tuned": 7,
+      "CAESAR-D-Turb-tuned": 7,
+      "cuSZ-Hi": 7,
+      "nvJPEG": 7,
+      "nvJPEG2000": 7,
+      "DCMVC-I": 4,
+      "DCVC-RT-I": 4,
+      "DCMVC-IP": 4,
+      "DCVC-RT-IP": 4
+    },
+    "invalid_point_rule": "Reject failed decode, non-finite metrics, checksum mismatch and requested error-bound violation.",
+    "monotonic_rule": "Keep raw points and report violations; the monotonic frontier may be used for interpolation but must not hide rejected points.",
+    "comparison_rule": "Compare only inside the measured BPP and quality overlap. Never extrapolate across a model family's uncovered BPP interval.",
+    "aggregate_rule": "Aggregate bytes and SSE over the complete canonical corpus before computing BPP and PSNR; do not average sample PSNR as the primary result.",
+    "uncertainty_rule": "Bootstrap canonical sample or variable units and report a 95% confidence interval. Timing uncertainty uses measured repetitions."
+  },
+  "tracks": {
+    "scientific_numeric": {
+      "datasets": ["e3sm_npz", "era5_npy", "hurricane", "nyx", "turb_rot_npz", "tomo", "lysozyme", "s2c"],
+      "main_methods": ["DCAE", "LIC-HPCM", "CAESAR-V", "CAESAR-D", "cuSZ-Hi", "nvJPEG2000", "DCMVC-I", "DCVC-RT-I"],
+      "rule": "All methods start from and reconstruct the same physical float values. A fixed external adapter may satisfy a model's declared input range, but codec-internal normalization and partitioning remain untouched. DCMVC and DCVC-RT use their released I-frame paths as 2D baselines; cuSZ uses genuine 3D blocks. Reversible corpus stacking is allowed when a native axis is shorter than CAESAR's 8/16-plane requirement."
+    },
+    "rgb_intra": {
+      "datasets": ["kodak"],
+      "main_methods": ["DCAE", "LIC-HPCM", "CAESAR-V", "CAESAR-D", "cuSZ-Hi", "DCMVC-I", "DCVC-RT-I", "nvJPEG"],
+      "rule": "Every method reconstructs all 24 native Kodak RGB images. DCMVC and DCVC-RT use only their released I-frame paths. CAESAR and cuSZ receive one reversible full-corpus RGB-plane stack; portrait images are reversibly rotated to the common spatial orientation and CAESAR depth padding is included in rate and timing."
+    },
+    "video_temporal": {
+      "datasets": ["uvg_twilight_1080p"],
+      "main_methods": ["DCAE", "LIC-HPCM", "CAESAR-V", "CAESAR-D", "cuSZ-Hi", "DCMVC-IP", "DCVC-RT-IP", "nvJPEG"],
+      "rule": "Use the same 30 consecutive frames. DCMVC and DCVC-RT use their P-frame paths and rate/timing include the I-frame anchor amortized over the complete sequence. DCAE, HPCM and nvJPEG are frame-intra baselines. CAESAR uses RGB variables with the genuine time axis; cuSZ uses one genuine time-volume per RGB channel."
+    },
+    "error_bounded": {
+      "datasets": ["e3sm_npz", "era5_npy", "hurricane", "nyx", "turb_rot_npz", "tomo", "lysozyme", "s2c"],
+      "main_methods": ["cuSZ-Hi"],
+      "rule": "Only decoded streams that satisfy the requested absolute bound on every valid value enter the curve. Other methods may be plotted for RD context but are not described as error-bounded."
+    },
+    "ablation": {
+      "datasets": ["e3sm_npz", "era5_npy", "hurricane", "nyx", "turb_rot_npz", "tomo", "lysozyme", "s2c", "kodak", "uvg_twilight_1080p"],
+      "methods": ["CAESAR-no-PCA", "DCAE+CAESAR-PCA", "LIC-HPCM+CAESAR-PCA"],
+      "rule": "Ablations are plotted separately from the main codec ranking and must count PCA metadata and anchor bytes."
+    }
+  },
+  "datasets": {
+    "e3sm_npz": {
+      "objective_samples": ["vars000-004_sec000_t000-015", "vars000-004_sec000_t400-415"],
+      "canonical_layout": "variable,time,y,x",
+      "selection": "All 5 variables, section 0, two non-overlapping 16-time blocks, full 240x240.",
+      "metric_units": "per variable",
+      "normalization": "Per-variable affine min/max frozen jointly from the two objective blocks; x_norm=(x-min_v)/(max_v-min_v), no clipping."
+    },
+    "era5_npy": {
+      "objective_samples": ["vars000-267_t000-015_crop240"],
+      "diagnostic_samples": ["vars000-074-259_t000-015_crop240"],
+      "canonical_layout": "variable,time,y,x",
+      "selection": "Objective track uses all 268 CRA5-normalized variables and all 16 test times with one fixed center 240x240 crop. The 3-variable selection is diagnostic only.",
+      "metric_units": "per ERA5 variable; CRA5 training mean/std is fixed codec metadata and must not be recomputed per sample",
+      "normalization": "The supplied values already use CRA5 z-score statistics; a second per-variable affine min/max frozen from the complete objective tensor maps them to the common [0,1] codec input without clipping."
+    },
+    "hurricane": {
+      "objective_samples": ["precip_log10_t000-095"],
+      "canonical_layout": "variable,time,y,x",
+      "selection": "Exact PRECIPf48.log10.bin.f32, first 96 frames, full 500x500. The final 4 frames are excluded so every method covers complete 8/16-frame windows.",
+      "metric_units": "log10 precipitation",
+      "normalization": "One affine min/max pair frozen from the complete 96-frame objective corpus; no clipping."
+    },
+    "nyx": {
+      "objective_samples": ["baryon_density_z000-511"],
+      "canonical_layout": "variable,z,y,x",
+      "selection": "Complete 512x512x512 baryon-density volume. Internal blocks are allowed but all 512 slices must be reconstructed.",
+      "metric_units": "baryon density; additionally report log1p-domain error as a secondary metric",
+      "normalization": "One affine min/max pair frozen from the complete volume; no clipping. A log1p transform, if studied, is a separate all-codec ablation rather than a model-specific option."
+    },
+    "turb_rot_npz": {
+      "optional_methods": ["CAESAR-V-Turb-tuned", "CAESAR-D-Turb-tuned"],
+      "objective_samples": ["var000_sec000_t000-255", "var000_sec008_t000-255"],
+      "canonical_layout": "variable,time,y,x",
+      "selection": "Two fixed sections, each containing all 256 planes at 256x256.",
+      "metric_units": "per physical variable",
+      "normalization": "One affine min/max pair frozen jointly from objective sections 0 and 8; no clipping."
+    },
+    "tomo": {
+      "objective_samples": ["projection0000-0511_crop512", "projection0989-1500_crop512"],
+      "canonical_layout": "variable,angle,y,x",
+      "selection": "Two disjoint 512-projection blocks with the same fixed center 512x512 crop for every method.",
+      "metric_units": "detector intensity",
+      "normalization": "Fixed uint16 type scaling x_norm=x/65535 for every codec."
+    },
+    "lysozyme": {
+      "objective_samples": ["test_chunks000-030_frames000-495", "test_chunks031-061_frames000-495"],
+      "canonical_layout": "variable,time,y,x",
+      "selection": "Two disjoint 496-frame stacks (31 complete 16-frame chunks), full 1024x1024.",
+      "metric_units": "valid detector intensity",
+      "mask_policy": "raw >= 4294967000 is invalid. The frozen canonical validity mask is shared benchmark metadata for every codec, is excluded from every codec's rate, and is used only for input replacement and evaluation.",
+      "normalization": "Affine valid-value min/max frozen jointly from the two objective test stacks; invalid values are replaced only after the mask is formed; no clipping."
+    },
+    "s2c": {
+      "objective_samples": [
+        "T51RUQ_20260509T022531_B02_10m_bands4_t000x004",
+        "T51RUQ_20260509T022531_B02_10m_bands4_t000x005",
+        "T51RUQ_20260509T022531_B02_10m_bands4_t000x006",
+        "T51RUQ_20260509T022531_B02_10m_bands4_t000x007"
+      ],
+      "canonical_layout": "variable,spectral_band,y,x",
+      "selection": "Bands B02/B03/B04/B08, first four deterministic non-constant 1024x1024 tiles in row-major order.",
+      "metric_units": "per spectral band",
+      "compatibility": "The four tiles are reversibly stacked in deterministic tile-major, band-minor order, yielding a genuine 16-plane spectral/corpus axis for CAESAR and cuSZ.",
+      "normalization": "Per-band affine min/max frozen jointly from all four objective tiles and shared by every codec; no per-tile min/max and no clipping. The nominal /10000 transform is not used because valid L2A values in this scene exceed 10000."
+    },
+    "kodak": {
+      "objective_samples": [
+        "kodim01", "kodim02", "kodim03", "kodim04", "kodim05", "kodim06",
+        "kodim07", "kodim08", "kodim09", "kodim10", "kodim11", "kodim12",
+        "kodim13", "kodim14", "kodim15", "kodim16", "kodim17", "kodim18",
+        "kodim19", "kodim20", "kodim21", "kodim22", "kodim23", "kodim24"
+      ],
+      "canonical_layout": "rgb,image,y,x",
+      "selection": "All 24 original RGB images at native resolution.",
+      "metric_units": "RGB [0,255]",
+      "compatibility": "CAESAR/cuSZ use all 24 images and all three RGB planes in one deterministic 72-plane corpus stack; portrait rotations are exactly inverted before evaluation.",
+      "normalization": "Fixed x_norm=x/255 for every codec; no per-image normalization."
+    },
+    "uvg_twilight_1080p": {
+      "objective_samples": ["twilight_frames000-029_1080p"],
+      "canonical_layout": "rgb,time,y,x",
+      "selection": "All 30 consecutive 1920x1080 frames decoded from the supplied YUV420 file using one fixed color conversion.",
+      "metric_units": "RGB [0,255] and YUV420",
+      "compatibility": "P-frame main track uses the complete sequence and includes its I-frame cost",
+      "normalization": "UVGAdapter performs the one fixed YUV420-to-RGB conversion and already returns float32 [0,1]; the objective normalization is therefore identity, and identical frames enter every RGB codec."
+    }
+  },
+  "required_result_fields": [
+    "protocol_id",
+    "track_id",
+    "dataset_id",
+    "canonical_sample_id",
+    "canonical_sha256",
+    "normalized_canonical_sha256",
+    "canonical_shape",
+    "canonical_symbol_count",
+    "canonical_valid_symbol_count",
+    "external_input_manifest",
+    "payload_bytes",
+    "side_info_bytes",
+    "total_bytes_with_side_info",
+    "scientific_bpp_with_side_info",
+    "metric_protocol",
+    "timing_protocol",
+    "timing_repetitions",
+    "hardware_manifest"
+  ]
+}

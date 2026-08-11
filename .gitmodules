@@ -1,0 +1,18 @@
+[submodule "models/GraphComp"]
+	path = models/GraphComp
+	url = https://github.com/liscopye/GraphComp.git
+[submodule "models/visemz"]
+	path = models/visemz
+	url = https://github.com/liscopye/visemz.git
+[submodule "models/cuSZ-Hi"]
+	path = models/cuSZ-Hi
+	url = https://github.com/liscopye/cuSZ-Hi.git
+[submodule "models/SZ3"]
+	path = models/SZ3
+	url = https://github.com/szcompressor/SZ3.git
+[submodule "models/PRISM_PPoPP_Artifacts"]
+	path = models/PRISM_PPoPP_Artifacts
+	url = https://github.com/BingluCS/PRISM_PPoPP_Artifacts.git
+[submodule "models/aurora"]
+	path = models/aurora
+	url = https://github.com/microsoft/aurora.git
