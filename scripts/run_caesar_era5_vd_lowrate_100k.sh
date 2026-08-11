@@ -105,12 +105,9 @@ launch() {
   names+=("$name")
 }
 
-launch 2 V v_lr1em5_lam1em4_full100k 1e-4
-launch 3 V v_lr1em5_lam3em4_full100k 3e-4
+# Only retain the two Stage-1 paths used by the final selected V/D models.
 launch 4 V v_lr1em5_lam1em3_full100k 1e-3
-launch 5 D d_s1_lr1em5_lam1em4_full100k 1e-4
 launch 6 D d_s1_lr1em5_lam3em4_full100k 3e-4
-launch 7 D d_s1_lr1em5_lam1em3_full100k 1e-3
 
 failed=0
 for index in "${!pids[@]}"; do

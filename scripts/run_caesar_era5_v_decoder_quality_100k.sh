@@ -3,13 +3,13 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DATA_DIR="${ERA5_SHARD_DIR:-/workspace/Data/ERA5/hourly_center512_shards_20240301_90d}"
-SOURCE="$ROOT/checkpoints/caesar_era5_vd_lowrate_100k/v_lr1em5_lam1em3_full100k_update100000.pt"
-OUTPUT_DIR="${CAESAR_V_QUALITY_RECOVERY_DIR:-$ROOT/checkpoints/caesar_era5_v_lowrate_quality_recovery_10k}"
-LOG_DIR="${CAESAR_V_QUALITY_RECOVERY_LOG_DIR:-$ROOT/logs/caesar_era5_v_lowrate_quality_recovery_10k}"
+LOWRATE_SOURCE="$ROOT/checkpoints/caesar_era5_vd_lowrate_100k/v_lr1em5_lam1em3_full100k_update100000.pt"
+OUTPUT_DIR="${CAESAR_V_DECODER_100K_DIR:-$ROOT/checkpoints/caesar_era5_v_decoder_quality_100k}"
+LOG_DIR="${CAESAR_V_DECODER_100K_LOG_DIR:-$ROOT/logs/caesar_era5_v_decoder_quality_100k}"
 
 source /workspace/ai4cp/bin/activate
 mkdir -p "$OUTPUT_DIR" "$LOG_DIR"
-test -f "$SOURCE"
+test -f "$LOWRATE_SOURCE"
 wandb login --verify >/dev/null
 
 actual_days=$(find "$DATA_DIR" -maxdepth 1 -name '*_hourly.npy' -type f 2>/dev/null | wc -l)
@@ -21,9 +21,10 @@ fi
 {
   date -u '+started_utc=%Y-%m-%dT%H:%M:%SZ'
   printf 'data_dir=%s\n' "$DATA_DIR"
-  printf 'source=%s\n' "$SOURCE"
-  printf 'objective=quality_recovery_at_low_rate\n'
-  sha256sum "$SOURCE"
+  printf 'lowrate_source=%s\n' "$LOWRATE_SOURCE"
+  printf 'decoder_10k_source=%s\n' "$DECODER_10K_SOURCE"
+  printf 'objective=frozen_encoder_decoder_quality_100k\n'
+  sha256sum "$LOWRATE_SOURCE"
 } >"$OUTPUT_DIR/source_manifest.txt"
 
 common=(
@@ -43,19 +44,20 @@ common=(
   --val_batch_size 32
   --num_workers 4
   --prefetch_factor 2
-  --iterations 10000
+  --iterations 100000
   --rate_mode bpp
+  --distortion_domain normalized
+  --lambda_rate 0
+  --trainable_scope decoder
   --warmup_updates 250
-  --log_interval 100
-  --val_interval 2000
-  --save_interval 10000
-  --milestone_steps 500 2000 5000 10000
+  --log_interval 200
+  --val_interval 2500
+  --save_interval 25000
+  --milestone_steps 10000 25000 50000 75000 100000
   --norm_type mean_range
-  --ckpt_path "$SOURCE"
-  --lr 3e-6
   --wandb_project caesar-era5-hourly-tuning
-  --wandb_group v-lowrate-100k-quality-recovery-10k
-  --wandb_tags era5 low-rate quality-recovery source-domain continuation
+  --wandb_group v-lowrate-frozen-encoder-decoder-quality-100k
+  --wandb_tags era5 low-rate decoder-only frozen-encoder quality-recovery 100k
   --require_wandb
   --device cuda:0
 )
@@ -63,14 +65,14 @@ common=(
 run_one() {
   local gpu="$1"
   local name="$2"
-  local domain="$3"
-  local lambda_rate="$4"
+  local source="$3"
+  local lr="$4"
 
-  echo "GPU $gpu: $name domain=$domain lambda=$lambda_rate"
+  echo "GPU $gpu: $name source=$(basename "$source") lr=$lr"
   CUDA_VISIBLE_DEVICES="$gpu" python -u "$ROOT/scripts/finetune_caesar_era5.py" \
     "${common[@]}" \
-    --distortion_domain "$domain" \
-    --lambda_rate "$lambda_rate" \
+    --ckpt_path "$source" \
+    --lr "$lr" \
     --output_ckpt "$OUTPUT_DIR/$name.pt" \
     --wandb_run_name "$name" \
     >"$LOG_DIR/$name.log" 2>&1
@@ -83,19 +85,14 @@ names=()
 launch() {
   local gpu="$1"
   local name="$2"
-  local domain="$3"
-  local lambda_rate="$4"
-  run_one "$gpu" "$name" "$domain" "$lambda_rate" &
+  local source="$3"
+  local lr="$4"
+  run_one "$gpu" "$name" "$source" "$lr" &
   pids+=("$!")
   names+=("$name")
 }
 
-launch 2 source_lam0_lr3em6 source 0
-launch 3 source_lam1em3_lr3em6 source 1e-3
-launch 4 source_lam3em3_lr3em6 source 3e-3
-launch 5 source_lam1em2_lr3em6 source 1e-2
-launch 6 source_lam3em2_lr3em6 source 3e-2
-launch 7 normalized_lam1em4_lr3em6 normalized 1e-4
+launch 5 from_lowrate_lr3em4 "$LOWRATE_SOURCE" 3e-4
 
 failed=0
 for index in "${!pids[@]}"; do

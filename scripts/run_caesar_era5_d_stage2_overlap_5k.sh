@@ -12,10 +12,8 @@ source /workspace/ai4cp/bin/activate
 mkdir -p "$OUTPUT_DIR" "$LOG_DIR"
 wandb login --verify >/dev/null
 
-source_lam1em4="$SOURCE_DIR/d_s1_lr1em5_lam1em4_full100k_update100000.pt"
 source_lam3em4="$SOURCE_DIR/d_s1_lr1em5_lam3em4_full100k_update100000.pt"
 test -f "$BASE"
-test -f "$source_lam1em4"
 test -f "$source_lam3em4"
 
 {
@@ -27,7 +25,7 @@ test -f "$source_lam3em4"
   printf 'diffusion_steps=32\n'
   printf 'effective_batch=64\n'
   printf 'lr=1e-4\n'
-  sha256sum "$BASE" "$source_lam1em4" "$source_lam3em4"
+  sha256sum "$BASE" "$source_lam3em4"
 } >"$OUTPUT_DIR/source_manifest.txt"
 
 common=(
@@ -82,13 +80,25 @@ run_one() {
 }
 
 pids=()
-run_one 4 lam1em4 "$source_lam1em4" & pids+=("$!")
 run_one 7 lam3em4 "$source_lam3em4" & pids+=("$!")
 
 failed=0
 for pid in "${pids[@]}"; do
   wait "$pid" || failed=1
 done
+
+if [[ "$failed" -eq 0 ]]; then
+  decoder="$ROOT/checkpoints/caesar_era5_d_decoder_quality_100k/lam3em4_from_lowrate_lr3em4.pt"
+  stage2="$OUTPUT_DIR/lam3em4_stage2_lr1em4_update5000.pt"
+  final="$ROOT/checkpoints/caesar_era5_d_complete_candidates/lam3em4_decoder100k_stage2_overlap5000.pt"
+  test -f "$decoder"
+  test -f "$stage2"
+  python "$ROOT/scripts/package_caesar_d_stage1.py" \
+    --vae "$decoder" \
+    --base "$stage2" \
+    --output "$final"
+  sha256sum "$decoder" "$stage2" "$final"
+fi
 
 date -u '+finished_utc=%Y-%m-%dT%H:%M:%SZ' >>"$OUTPUT_DIR/source_manifest.txt"
 exit "$failed"

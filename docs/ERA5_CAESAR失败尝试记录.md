@@ -3,6 +3,7 @@
 > 状态日期：2026-08-11
 > 目的：记录没有进入最终交付的训练方向、失败证据和可复用经验，避免接手人重复消耗算力。
 > 最终有效权重和完整结论见 `项目交接总览.md` 第 4 节。
+> 对应实验 checkpoint 和一次性脚本已清理；文中的旧路径仅是历史标识，不表示文件仍存在。
 
 ## 1. 如何定义“失败”
 
@@ -111,7 +112,7 @@ diffusion noise-prediction loss 与最终固定 seed sampling PSNR 不一致。�
 logs/caesar_era5_daily_d_stage2_pilot/
 logs/caesar_era5_stage2_20260723/
 scripts/archive/caesar_experiments/run_caesar_era5_daily_d_stage2_pilot.sh
-scripts/run_caesar_era5_stage2_grid.sh
+scripts/archive/caesar_experiments/run_caesar_era5_stage2_grid.sh
 ```
 
 ## 7. Stage2 长训练未超过 5k
@@ -139,7 +140,7 @@ scripts/run_caesar_era5_stage2_grid.sh
 
 ```text
 unified_results/diagnostic_caesar_d_stage2_cpu_full268/
-scripts/run_caesar_era5_d_cpu_sampling_audit.sh
+scripts/archive/caesar_experiments/run_caesar_era5_d_cpu_sampling_audit.sh
 logs/caesar_era5_d_stage2_full_200k/
 ```
 

@@ -4,7 +4,6 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DATA_DIR="${ERA5_SHARD_DIR:-/workspace/Data/ERA5/hourly_center512_shards_20240301_90d}"
 LOWRATE_DIR="$ROOT/checkpoints/caesar_era5_vd_lowrate_100k"
-DECODER_10K_DIR="$ROOT/checkpoints/caesar_era5_d_decoder_quality_10k"
 OUTPUT_DIR="${CAESAR_D_DECODER_100K_DIR:-$ROOT/checkpoints/caesar_era5_d_decoder_quality_100k}"
 LOG_DIR="${CAESAR_D_DECODER_100K_LOG_DIR:-$ROOT/logs/caesar_era5_d_decoder_quality_100k}"
 
@@ -12,11 +11,8 @@ source /workspace/ai4cp/bin/activate
 mkdir -p "$OUTPUT_DIR" "$LOG_DIR"
 wandb login --verify >/dev/null
 
-lam1_lowrate="$LOWRATE_DIR/d_s1_lr1em5_lam1em4_full100k_update100000.pt"
 lam3_lowrate="$LOWRATE_DIR/d_s1_lr1em5_lam3em4_full100k_update100000.pt"
-lam1_decoder10k="$DECODER_10K_DIR/lam1em4_decoder_lr3em4.pt"
-lam3_decoder10k="$DECODER_10K_DIR/lam3em4_decoder_lr3em4.pt"
-for source in "$lam1_lowrate" "$lam3_lowrate" "$lam1_decoder10k" "$lam3_decoder10k"; do
+for source in "$lam3_lowrate"; do
   test -f "$source"
 done
 
@@ -26,7 +22,7 @@ done
   printf 'objective=frozen_rate_caesar_d_stage1_decoder_quality_100k\n'
   printf 'trainable_scope=decoder\n'
   printf 'iterations=100000\n'
-  sha256sum "$lam1_lowrate" "$lam3_lowrate" "$lam1_decoder10k" "$lam3_decoder10k"
+  sha256sum "$lam3_lowrate"
 } >"$OUTPUT_DIR/source_manifest.txt"
 
 common=(
@@ -94,10 +90,7 @@ launch() {
   names+=("$name")
 }
 
-launch 2 lam1em4_from_lowrate_lr3em4 "$lam1_lowrate" 3e-4
-launch 3 lam1em4_from_decoder10k_lr1em4 "$lam1_decoder10k" 1e-4
 launch 5 lam3em4_from_lowrate_lr3em4 "$lam3_lowrate" 3e-4
-launch 6 lam3em4_from_decoder10k_lr1em4 "$lam3_decoder10k" 1e-4
 
 failed=0
 for index in "${!pids[@]}"; do
