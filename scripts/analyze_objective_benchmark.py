@@ -231,6 +231,47 @@ def plot_metric_ranges(
     plt.close(fig)
 
 
+def plot_throughput_bars(dataset_id: str, points: list[dict[str, Any]], output: Path) -> None:
+    """Plot mean end-to-end throughput as bars with the measured range."""
+    grouped = []
+    for curve in sorted({row["curve"] for row in points}):
+        values = [
+            float(row["wall_throughput_MBps"])
+            for row in points
+            if row["curve"] == curve
+            and isinstance(row.get("wall_throughput_MBps"), (int, float))
+            and float(row["wall_throughput_MBps"]) > 0
+        ]
+        if values:
+            grouped.append((curve, min(values), statistics.mean(values), max(values)))
+    if not grouped:
+        return
+    grouped.sort(key=lambda item: item[2])
+    fig_height = max(3.8, 0.46 * len(grouped) + 1.8)
+    fig, ax = plt.subplots(figsize=(8.8, fig_height), constrained_layout=True)
+    positions = np.arange(len(grouped))
+    means = [item[2] for item in grouped]
+    colors = [COLORS.get(item[0], plt.get_cmap("tab20")(index)) for index, item in enumerate(grouped)]
+    errors = [
+        [mean - minimum for _, minimum, mean, _ in grouped],
+        [maximum - mean for _, _, mean, maximum in grouped],
+    ]
+    bars = ax.barh(
+        positions, means, xerr=errors, color=colors, alpha=0.9,
+        error_kw={"ecolor": "#31363f", "elinewidth": 1.4, "capsize": 3},
+    )
+    ax.bar_label(bars, labels=[f"{value:.3g}" for value in means], padding=4, fontsize=8)
+    ax.set_yticks(positions, [item[0] for item in grouped])
+    ax.set_xlabel("Mean end-to-end throughput (MB/s); whiskers show measured range")
+    ax.set_title(f"{dataset_id} · End-to-end throughput", loc="left", fontweight="semibold")
+    ax.grid(True, axis="x", alpha=0.22)
+    ax.set_axisbelow(True)
+    ax.spines[["top", "right", "left"]].set_visible(False)
+    ax.margins(x=0.12)
+    fig.savefig(output, dpi=220)
+    plt.close(fig)
+
+
 def plot_lpips(dataset_id: str, points: list[dict[str, Any]], output: Path) -> None:
     curves = sorted({row["curve"] for row in points if isinstance(row.get("lpips"), (int, float))})
     if not curves:
@@ -433,9 +474,8 @@ def main() -> None:
         pareto_points, dominated_points = pareto_partition(points)
         if pareto_points:
             plot_dataset(dataset_id, pareto_points, analysis_dir / f"{dataset_id}_objective_rd.png")
-            plot_metric_ranges(
-                dataset_id, pareto_points, "wall_throughput_MBps", "End-to-end throughput (MB/s)",
-                analysis_dir / f"{dataset_id}_throughput_range.png",
+            plot_throughput_bars(
+                dataset_id, pareto_points, analysis_dir / f"{dataset_id}_throughput_range.png",
             )
             plot_metric_ranges(
                 dataset_id, pareto_points, "peak_memory_MB", "Peak allocated memory (MB)",
