@@ -137,6 +137,8 @@ python scripts/run_objective_benchmark.py \
   --models DCAE LIC-HPCM CAESAR-V CAESAR-D
 ```
 
+UVG 视频正式入口会在 `frames/` 不存在时自动调用 `scripts/export_objective_uvg_frames.py`，导出并校验 30 张 canonical PNG 后再运行 DCVC-RT/DCMVC P-frame。
+
 模型、EB、checkpoint 和样本参数必须使用复现清单中的数据集专用配置，不能只照抄上面的结构示例。
 
 ## 8. 添加新数据集

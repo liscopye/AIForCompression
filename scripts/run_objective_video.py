@@ -41,6 +41,25 @@ def hardware_manifest(gpu: str) -> dict:
     return json.loads(subprocess.check_output([sys.executable, "-c", code], env=env, text=True))
 
 
+def ensure_uvg_frames(root: Path) -> Path:
+    """Export the frozen canonical UVG frames when they are not present yet."""
+    frames_dir = root / DATASET_ID / "frames"
+    pngs = sorted(frames_dir.glob("im*.png"))
+    if len(pngs) == 30 and (frames_dir / "manifest.json").is_file():
+        return frames_dir
+    command = [
+        sys.executable,
+        str(PROJECT_ROOT / "scripts/export_objective_uvg_frames.py"),
+        "--root",
+        str(root),
+    ]
+    subprocess.run(command, cwd=PROJECT_ROOT, check=True)
+    pngs = sorted(frames_dir.glob("im*.png"))
+    if len(pngs) != 30 or not (frames_dir / "manifest.json").is_file():
+        raise RuntimeError(f"UVG frame export incomplete: expected 30 PNGs in {frames_dir}, got {len(pngs)}")
+    return frames_dir
+
+
 def run_repetition(args: argparse.Namespace, model: str, index: int, measured_lpips: bool) -> list[dict]:
     run_dir = args.root / DATASET_ID / "video_runs" / model / f"run{index:02d}"
     run_dir.mkdir(parents=True, exist_ok=True)
@@ -128,6 +147,7 @@ def main() -> None:
         raise ValueError("The UVG objective track requires exactly one canonical sequence")
     manifest = manifests[0]
     normalization = json.loads((dataset_dir / "normalization.json").read_text(encoding="utf-8"))
+    ensure_uvg_frames(args.root)
     hardware = hardware_manifest(args.gpu)
     output = dataset_dir / "video_summary.json"
     rows = [] if args.force or not output.exists() else json.loads(output.read_text(encoding="utf-8"))

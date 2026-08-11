@@ -636,6 +636,14 @@ def main():
                     _safe_write_summary()
 
     jobs = list(image_model_jobs(args.project_root, non_caesar_models))
+    if non_caesar_models:
+        missing_models = sorted(non_caesar_models - {job.model_name for job in jobs})
+        if missing_models:
+            expected = PROJECT_ROOT / "checkpoints"
+            raise SystemExit(
+                f"No runnable model job/checkpoint found for: {', '.join(missing_models)}. "
+                f"Check the model-specific directories under {expected}."
+            )
     if args.max_model_jobs > 0:
         jobs = jobs[:args.max_model_jobs]
     if non_caesar_models != set() and jobs:
