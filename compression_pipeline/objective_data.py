@@ -107,7 +107,7 @@ def load_objective_samples(dataset_id: str) -> list[ObjectiveSample]:
         return [_sample(dataset_id, "baryon_density_z000-511", np.asarray(data)[None], source=path)]
 
     if dataset_id == "turb_rot_npz":
-        path = WORKSPACE / "Turb_Rot_testset.npz"
+        path = WORKSPACE / "Data/Turb_Rot_testset.npz"
         with np.load(path) as handle:
             data = handle["data"][0]
             return [

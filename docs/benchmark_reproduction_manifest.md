@@ -101,7 +101,7 @@ checkpoints/caesar_era5_v_decoder_quality_100k/from_lowrate_lr3em4.pt
 | 科学场 | ERA5 | `/workspace/Data/ERA5/finetune_processed/era5_test.npy` | 全部 268 个 CRA5-normalized 变量、前 16 个测试时刻、中心裁切 240x240，`[268,16,240,240]`。禁止退回 3-variable 诊断输入。 |
 | 科学场 | Hurricane | `/workspace/Data/SDRBENCH-Hurricane-ISABEL-100x500x500/100x500x500/PRECIPf48.log10.bin.f32` | 一个变量的前 96 帧，`[1,96,500,500]`；96 同时整除 CAESAR-V/D 深度。 |
 | 科学场 | NYX | `/workspace/Data/SDRBENCH-EXASKY-NYX-512x512x512/SDRBENCH-EXASKY-NYX-512x512x512/baryon_density.f32` | 完整 baryon-density volume，`[1,512,512,512]`，Z 作为 3D 深度。 |
-| 科学场 | Turb_Rot | `/workspace/Turb_Rot_testset.npz` | variable 0，section 0 和 8，各 `[1,256,256,256]`；256 planes 全部参与。 |
+| 科学场 | Turb_Rot | `/workspace/Data/Turb_Rot_testset.npz` | variable 0，section 0 和 8，各 `[1,256,256,256]`；256 planes 全部参与。 |
 | 科学图像 | Tomo | `/workspace/Data/tomo_00001.h5` | projection `0:512` 与 `989:1501` 两块；每块中心裁切 512x512，shape `[1,512,512,512]`。 |
 | 科学图像 | Lysozyme | `/workspace/Data/lysozyme_processed/mmap/lysozyme_test_nf16.npy` | 两个不重叠 stack，每个 31 个 16-frame chunk，即 `[1,496,1024,1024]`。 |
 | 科学图像 | S2C | Sentinel-2 SAFE 目录，见 `objective_data.py` | B02/B03/B04/B08，前四个确定性非恒定 1024 tile。每 tile `[4,1,1024,1024]`；CAESAR/cuSZ 按 tile-major、band-minor 可逆堆成 16 planes。 |

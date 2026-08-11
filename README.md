@@ -6,6 +6,8 @@
 
 | 想做什么 | 入口 |
 |---|---|
+| 浏览文档导航 | `docs/README.md` |
+| 理解 Pipeline 架构 | `docs/compression_pipeline概览.md` |
 | 查看全部正式结果 | `unified_results/objective_all_to_all_v1/index.html` |
 | 查看机器可读汇总 | `unified_results/objective_all_to_all_v1/combined_summary.json` |
 | 检查结果是否合规 | `unified_results/objective_all_to_all_v1/objective_protocol_audit.md` |
@@ -13,6 +15,7 @@
 | 了解完整复现参数 | `docs/benchmark_reproduction_manifest.md` |
 | 查看 ERA5/CAESAR 微调结论 | `docs/项目交接总览.md` |
 | 查看失败尝试 | `docs/ERA5_CAESAR失败尝试记录.md` |
+| 迁移到其他机器 | `docs/迁移到新机器指南.md` |
 
 最简单的阅读方式是用浏览器打开：
 
@@ -57,7 +60,7 @@ python scripts/run_objective_benchmark.py --help
 | ERA5 | `/workspace/Data/ERA5/finetune_processed/era5_test.npy`，268 变量 × 16 时刻 |
 | Hurricane | SDRBench Hurricane，前 96 帧 |
 | NYX | 完整 `512³` baryon-density volume |
-| Turb-Rot | `/workspace/Turb_Rot_testset.npz`，section 0 和 8 |
+| Turb-Rot | `/workspace/Data/Turb_Rot_testset.npz`，section 0 和 8 |
 | Tomo | `/workspace/Data/tomo_00001.h5`，两个 512-depth block |
 | Lysozyme | `/workspace/Data/lysozyme_processed/mmap/lysozyme_test_nf16.npy` |
 | S2C | Sentinel-2，4 个 tile × 4 个 band |
@@ -177,3 +180,4 @@ unified_results/
 - `docs/objective_benchmark_protocol.md`：公平性边界与指标定义。
 - `docs/项目交接总览.md`：ERA5/CAESAR 权重、结论和项目状态。
 - `docs/ERA5_CAESAR失败尝试记录.md`：失败方向及避免重复训练的建议。
+- `docs/迁移到新机器指南.md`：新机器的软件安装、数据和权重复制及迁移验收。

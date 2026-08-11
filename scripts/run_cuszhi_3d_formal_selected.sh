@@ -34,7 +34,7 @@ run_cuszhi_3d 0 e3sm_npz \
 
 run_cuszhi_3d 1 turb_rot_npz \
   --dataset turb_rot_npz \
-  --data_root /workspace/Turb_Rot_testset.npz \
+  --data_root /workspace/Data/Turb_Rot_testset.npz \
   --output_dir unified_results/turb_rot_npz_external_models_n64/cuszhi_3d_formal_n2_maskaware \
   --npz_image_mode sections \
   --npz_image_channels 3 \

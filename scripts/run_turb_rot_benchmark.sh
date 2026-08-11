@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT=${AI4C_ROOT:-/workspace/AIForCompression}
-DATA=${TURB_ROT_DATA:-/workspace/Turb_Rot_testset.npz}
+DATA=${TURB_ROT_DATA:-/workspace/Data/Turb_Rot_testset.npz}
 OUT=${TURB_ROT_OUT:-$ROOT/unified_results/turb_rot_npz}
 MAX_IMAGE_SAMPLES=${MAX_IMAGE_SAMPLES:-16}
 MAX_CAESAR_SAMPLES=${MAX_CAESAR_SAMPLES:-16}

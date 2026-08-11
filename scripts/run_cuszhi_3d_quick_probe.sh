@@ -30,7 +30,7 @@ pids+=($!)
 
 run_one 1 \
   --dataset turb_rot_npz \
-  --data_root /workspace/Turb_Rot_testset.npz \
+  --data_root /workspace/Data/Turb_Rot_testset.npz \
   --output_dir unified_results/turb_rot_npz_external_models_n64/cuszhi_3d_quick_probe \
   --max_samples "$MAX_N" \
   --npz_image_mode sections \

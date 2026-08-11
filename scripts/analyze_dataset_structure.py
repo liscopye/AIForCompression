@@ -202,7 +202,7 @@ def load_volumes(selected: set[str]) -> dict[str, tuple[np.ndarray, str, float |
         handle = np.memmap(path, dtype=np.float32, mode="r", shape=(512, 512, 512))
         volumes["nyx"] = (handle, "spatial z", None, None)
     if not selected or "turb_rot_npz" in selected:
-        handle = np.load(ROOT / "Turb_Rot_testset.npz")
+        handle = np.load(ROOT / "Data/Turb_Rot_testset.npz")
         volumes["turb_rot_npz"] = (handle["data"][0, 0], "time/spatial section index", None, handle)
     if not selected or "lysozyme" in selected:
         handle = np.load(ROOT / "Data/lysozyme_processed/mmap/lysozyme_test_nf16.npy", mmap_mode="r")

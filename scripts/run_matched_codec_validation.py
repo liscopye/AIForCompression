@@ -87,7 +87,7 @@ def load_canonical(dataset_id: str) -> tuple[np.ndarray, np.ndarray | None, dict
         }
 
     if dataset_id == "turb_rot_npz":
-        path = root / "Turb_Rot_testset.npz"
+        path = root / "Data/Turb_Rot_testset.npz"
         with np.load(path) as handle:
             array = np.asarray(handle["data"][0, 0, :16], dtype=np.float32)[None]
         return array, None, {"source": str(path), "selection": "V=0,S=0,T=0:16", "axis": "variable,time,y,x"}

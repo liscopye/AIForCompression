@@ -53,12 +53,7 @@
 
 训练/验证必须沿相同 hour-of-day 轨道跨日采样，即 `frame_step=24`。不能把连续小时 validation 的改善外推到 daily 正式测试。
 
-证据：
-
-```text
-docs/caesar_era5_finetune_root_cause.md
-unified_results/caesar_era5_daily_cadence_real_codec/
-```
+证据位于 `unified_results/caesar_era5_daily_cadence_real_codec/`，复现参数见 `docs/benchmark_reproduction_manifest.md`。
 
 ## 4. Raw/source 全局 MSE 失败
 
@@ -247,11 +242,10 @@ caesar_era5_d_stage2_rate2_pilot
 caesar_era5_d_lam1em3_recovery_pilot
 ```
 
-选择依据、保留权重和删除路径统一记录于：
+选择依据和机器记录统一保存在：
 
 ```text
 unified_results/diagnostics/caesar_era5_discarded_training_manifest.json
-docs/结果清理清单.md
 ```
 
 ## 13. 已排除的伪故障：range coder/量化路径

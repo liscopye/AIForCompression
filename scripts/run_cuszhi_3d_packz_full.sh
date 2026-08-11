@@ -42,7 +42,7 @@ run_cuszhi_packz 0 e3sm_npz \
 
 run_cuszhi_packz 1 turb_rot_npz \
   --dataset turb_rot_npz \
-  --data_root /workspace/Turb_Rot_testset.npz \
+  --data_root /workspace/Data/Turb_Rot_testset.npz \
   --output_dir unified_results/turb_rot_npz_external_models_n64/cuszhi_3d_packz_full_n1 \
   --npz_variable_index 0 \
   --section_index 0 \

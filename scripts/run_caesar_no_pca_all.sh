@@ -29,7 +29,7 @@ run_one 1 \
 
 run_one 2 \
   --dataset turb_rot_npz \
-  --data_root /workspace/Turb_Rot_testset.npz \
+  --data_root /workspace/Data/Turb_Rot_testset.npz \
   --output_dir unified_results/turb_rot_npz_caesar_no_pca \
   --max_samples 64 \
   --turb_rot_image_group_mode sections \

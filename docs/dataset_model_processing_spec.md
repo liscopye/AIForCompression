@@ -275,7 +275,7 @@ ERA5 的 z-score metadata 由 adapter 加入，并由 `build_image_groups()` 使
 |---|---|
 | Adapter | `TurbRotNPZAdapter` |
 | 原始数据 | NPZ `data`，layout `[V,S,T,H,W]` |
-| 当前本地数据 | `/workspace/Turb_Rot_testset.npz`，shape `[1,16,256,256,256]` |
+| 当前本地数据 | `/workspace/Data/Turb_Rot_testset.npz`，shape `[1,16,256,256,256]` |
 | 当前图像模型 sample | `[3,256,256]`，使用 `image_group_mode=sections`、`section_start=0` |
 | channel 规则 | variable `0` 的 sections `0/1/2`；这是三个真实 section，不是重复通道 |
 | 图像模型归一化 | per-sample、per-channel minmax |
@@ -287,7 +287,7 @@ ERA5 的 z-score metadata 由 adapter 加入，并由 `build_image_groups()` 使
 
 ```bash
 --dataset turb_rot_npz \
---data_root /workspace/Turb_Rot_testset.npz \
+--data_root /workspace/Data/Turb_Rot_testset.npz \
 --turb_rot_image_group_mode sections \
 --turb_rot_section_start 0 \
 --turb_rot_section_index 0
