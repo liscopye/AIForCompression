@@ -104,7 +104,7 @@ LPIPS 在 Kodak 和 UVG 的每个正式点均已统计。科学标量场没有�
 - EB 调度：`unified_results/objective_all_to_all_v1/eb_schedule.json`
 - 严格审计：`unified_results/objective_all_to_all_v1/objective_protocol_audit.json`
 - 分析 JSON：`unified_results/objective_all_to_all_v1/analysis/objective_analysis.json`
-- 中文报告：`unified_results/objective_all_to_all_v1/report/index.html`
+- 单文件中文结果索引：`unified_results/objective_all_to_all_v1/index.html`
 - 协议：`benchmark_protocols/objective_v1.json`
 - 协议说明：`docs/objective_benchmark_protocol.md`
 

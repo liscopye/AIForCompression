@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import base64
 import html
 import json
 import math
@@ -30,6 +31,18 @@ COLORS = {
     "DCMVC-IP": "#0072B2", "DCVC-RT-IP": "#D55E00",
 }
 MARKERS = ("o", "s", "^", "D", "v", "P", "X", "h", "*", "<", ">")
+DATASET_LABELS = {
+    "kodak": "Kodak 图像",
+    "uvg_twilight_1080p": "UVG 视频",
+    "tomo": "Tomo 层析",
+    "s2c": "Sentinel-2",
+    "lysozyme": "Lysozyme",
+    "e3sm_npz": "E3SM",
+    "era5_npy": "ERA5",
+    "hurricane": "Hurricane",
+    "nyx": "NYX",
+    "turb_rot_npz": "Turb-Rot",
+}
 
 
 def parse_args() -> argparse.Namespace:
@@ -249,6 +262,12 @@ def fmt_range(values: list[float], digits: int = 3) -> str:
     return f"{min(values):.{digits}g}–{max(values):.{digits}g}"
 
 
+def image_data_uri(path: Path) -> str:
+    """Embed report figures so the generated index remains portable."""
+    encoded = base64.b64encode(path.read_bytes()).decode("ascii")
+    return f"data:image/png;base64,{encoded}"
+
+
 def write_html(payload: dict[str, Any], root: Path) -> Path:
     report_dir = root / "report"
     report_dir.mkdir(parents=True, exist_ok=True)
@@ -265,6 +284,34 @@ def write_html(payload: dict[str, Any], root: Path) -> Path:
     )
     raw_row_count = sum(int(item["raw_rows"]) for item in payload["datasets"])
     valid_row_count = sum(int(item["valid_rows"]) for item in payload["datasets"])
+    all_curves = sorted({
+        point["curve"]
+        for dataset in payload["datasets"]
+        for point in dataset["pareto_points"]
+    })
+    overview_rows = []
+    for curve in all_curves:
+        cells = []
+        covered = 0
+        for dataset in payload["datasets"]:
+            curve_points = [point for point in dataset["pareto_points"] if point["curve"] == curve]
+            if not curve_points:
+                cells.append('<td class="missing">—</td>')
+                continue
+            covered += 1
+            bpps = [float(point["scientific_bpp_with_side_info"]) for point in curve_points]
+            psnrs = [float(point["normalized_psnr"]) for point in curve_points]
+            cells.append(
+                f'<td><a href="#{html.escape(dataset["dataset_id"])}">'
+                f'<b>{len(curve_points)} 点</b><small>{fmt_range(bpps)} BPP<br>{fmt_range(psnrs)} dB</small></a></td>'
+            )
+        overview_rows.append(
+            f'<tr><th>{html.escape(curve)}<small>{covered}/{dataset_count} 数据集</small></th>{"".join(cells)}</tr>'
+        )
+    overview_head = "".join(
+        f'<th><a href="#{html.escape(dataset["dataset_id"])}">{html.escape(DATASET_LABELS.get(dataset["dataset_id"], dataset["dataset_id"]))}</a></th>'
+        for dataset in payload["datasets"]
+    )
     sections = []
     for category_id, category_label, dataset_ids in categories:
         blocks = []
@@ -290,22 +337,28 @@ def write_html(payload: dict[str, Any], root: Path) -> Path:
                     f"<td>{fmt_range(memory, 4)}</td></tr>"
                 )
             image_items = [
-                (f"../analysis/{dataset_id}_objective_rd.png", "率失真"),
-                (f"../analysis/{dataset_id}_throughput_range.png", "端到端吞吐量"),
-                (f"../analysis/{dataset_id}_memory_range.png", "峰值显存"),
+                (analysis_path, label)
+                for analysis_path, label in [
+                    (root / "analysis" / f"{dataset_id}_objective_rd.png", "率失真"),
+                    (root / "analysis" / f"{dataset_id}_throughput_range.png", "端到端吞吐量"),
+                    (root / "analysis" / f"{dataset_id}_memory_range.png", "峰值显存"),
+                ]
+                if analysis_path.exists()
             ]
             if any(isinstance(point.get("lpips"), (int, float)) for point in points):
-                image_items.append((f"../analysis/{dataset_id}_lpips_rd.png", "LPIPS"))
+                lpips_path = root / "analysis" / f"{dataset_id}_lpips_rd.png"
+                if lpips_path.exists():
+                    image_items.append((lpips_path, "LPIPS"))
             figures = "".join(
-                f'<figure><img src="{src}" alt="{html.escape(dataset_id)} {label}"><figcaption>{label}</figcaption></figure>'
-                for src, label in image_items
+                f'<figure><img loading="lazy" src="{image_data_uri(path)}" alt="{html.escape(dataset_id)} {label}"><figcaption>{label}</figcaption></figure>'
+                for path, label in image_items
             )
             blocks.append(f"""
-              <article id="{html.escape(dataset_id)}">
-                <header><h3>{html.escape(dataset_id)}</h3><p>{dataset['raw_rows']} 条合规记录 · {len(dataset['points'])} 个完整 corpus 点 · {len(dataset['pareto_points'])} 个主图点</p></header>
-                <div class="figures">{figures}</div>
-                <div class="table-wrap"><table><thead><tr><th>方法</th><th>点</th><th>BPP 范围</th><th>固定尺度 PSNR</th><th>LPIPS</th><th>端到端 MB/s 平均（范围）</th><th>编码 MB/s</th><th>解码 MB/s</th><th>峰值显存 MB</th></tr></thead><tbody>{''.join(rows)}</tbody></table></div>
-              </article>
+              <details class="dataset" id="{html.escape(dataset_id)}">
+                <summary><span><b>{html.escape(DATASET_LABELS.get(dataset_id, dataset_id))}</b><small>{dataset['raw_rows']} 条合规记录 · {len(dataset['pareto_points'])} 个主图点</small></span><span class="open-label">查看图表与明细</span></summary>
+                <div class="dataset-body"><div class="figures">{figures}</div>
+                <div class="table-wrap"><table><thead><tr><th>方法</th><th>点</th><th>BPP 范围</th><th>固定尺度 PSNR</th><th>LPIPS</th><th>端到端 MB/s 平均（范围）</th><th>编码 MB/s</th><th>解码 MB/s</th><th>峰值显存 MB</th></tr></thead><tbody>{''.join(rows)}</tbody></table></div></div>
+              </details>
             """)
         sections.append(f'<section id="{category_id}"><h2>{category_label}</h2>{"".join(blocks)}</section>')
     nav_links = "".join(f'<a href="#{category_id}">{label}</a>' for category_id, label, _ in categories)
@@ -314,21 +367,41 @@ def write_html(payload: dict[str, Any], root: Path) -> Path:
 <title>AIForCompression Objective-v1</title><style>
 :root{{--ink:#181b20;--muted:#646b75;--line:#d9dde3;--paper:#fff;--wash:#f4f6f8;--accent:#087e8b;--warm:#a9561e}}
 *{{box-sizing:border-box}}html{{scroll-behavior:smooth}}body{{margin:0;color:var(--ink);background:var(--paper);font-family:Inter,"Noto Sans SC","Microsoft YaHei",sans-serif;letter-spacing:0;line-height:1.5}}
-nav{{position:sticky;top:0;z-index:4;display:flex;align-items:center;gap:22px;padding:11px max(20px,calc((100vw - 1440px)/2));background:rgba(255,255,255,.96);border-bottom:1px solid var(--line)}}nav strong{{margin-right:auto}}nav a{{color:var(--muted);text-decoration:none;font-size:14px}}nav a:hover{{color:var(--accent)}}
+nav{{position:sticky;top:0;z-index:4;display:flex;align-items:center;gap:22px;padding:11px max(20px,calc((100vw - 1440px)/2));background:rgba(255,255,255,.96);border-bottom:1px solid var(--line)}}nav strong{{margin-right:auto}}nav a,a{{color:var(--accent);text-decoration:none}}nav a{{font-size:14px}}nav a:hover,a:hover{{text-decoration:underline}}
 main{{max-width:1440px;margin:0 auto;padding:34px 28px 80px}}h1{{font-size:34px;margin:0 0 8px}}.lede{{max-width:980px;color:var(--muted);margin:0 0 24px}}.summary{{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;border-block:1px solid var(--line);margin-bottom:30px}}.metric{{padding:18px 20px;border-right:1px solid var(--line)}}.metric:last-child{{border:0}}.metric b{{display:block;font-size:25px}}.metric span{{font-size:13px;color:var(--muted)}}
-.method{{padding:18px 20px;background:var(--wash);border-left:4px solid var(--accent);margin:0 0 44px}}.method p{{margin:4px 0}}section{{margin-top:52px}}h2{{font-size:25px;border-bottom:2px solid var(--ink);padding-bottom:8px;margin-bottom:32px}}article{{padding:0 0 54px;margin-bottom:44px;border-bottom:1px solid var(--line)}}article header{{display:flex;align-items:baseline;gap:20px}}h3{{font-size:21px;margin:0}}article header p{{color:var(--muted);font-size:13px;margin:0}}
+.method{{padding:18px 20px;background:var(--wash);border-left:4px solid var(--accent);margin:0 0 36px}}.method p{{margin:4px 0}}section{{margin-top:46px}}h2{{font-size:25px;border-bottom:2px solid var(--ink);padding-bottom:8px;margin-bottom:20px}}
 .figures{{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;margin:18px 0 24px}}figure{{margin:0;min-width:0}}figure img{{display:block;width:100%;height:auto;border:1px solid var(--line)}}figcaption{{font-size:12px;color:var(--muted);margin-top:5px}}.table-wrap{{overflow:auto;border-block:1px solid var(--line)}}table{{border-collapse:collapse;width:100%;min-width:1080px;font-size:12px}}th,td{{padding:9px 10px;text-align:right;border-bottom:1px solid #eceef1;white-space:nowrap}}th:first-child,td:first-child{{text-align:left}}thead th{{color:var(--muted);font-weight:600;background:var(--wash)}}tbody th{{font-weight:600}}
+.overview table{{min-width:1320px}}.overview th,.overview td{{text-align:left;vertical-align:top}}.overview tbody th{{position:sticky;left:0;background:var(--paper);z-index:1}}.overview small,.dataset small{{display:block;color:var(--muted);font-weight:400;margin-top:2px}}.overview td b{{font-size:12px}}.overview td a{{display:block;color:var(--ink)}}.overview td small{{font-size:10px}}.missing{{color:var(--muted)}}
+.dataset{{border-bottom:1px solid var(--line);scroll-margin-top:60px}}.dataset summary{{cursor:pointer;display:flex;justify-content:space-between;align-items:center;padding:16px 4px;list-style:none}}.dataset summary::-webkit-details-marker{{display:none}}.dataset summary b{{font-size:18px}}.open-label{{font-size:12px;color:var(--accent)}}.dataset[open] .open-label{{font-size:0}}.dataset[open] .open-label::after{{content:"收起";font-size:12px}}.dataset-body{{padding:0 0 34px}}
 footer{{color:var(--muted);font-size:12px;border-top:1px solid var(--line);padding-top:16px}}footer a{{color:var(--accent)}}
 @media(max-width:800px){{nav{{overflow:auto}}nav strong{{display:none}}main{{padding:24px 15px 60px}}h1{{font-size:28px}}.summary{{grid-template-columns:repeat(2,1fr)}}.metric:nth-child(2){{border-right:0}}.figures{{grid-template-columns:1fr}}article header{{display:block}}}}
-</style></head><body><nav><strong>Objective-v1</strong>{nav_links}</nav><main>
+</style></head><body><nav><strong>Objective-v1</strong><a href="#overview">全模型汇总</a><a href="#legacy">历史模型</a>{nav_links}</nav><main>
 <h1>统一压缩基准结果</h1><p class="lede">同一数据集的所有 codec 从相同 canonical float32 数值、相同 crop、相同 mask 和相同数据集级外部归一化开始。codec 内部归一化、PCA、predictor、padding 与熵模型保持原实现。</p>
 <div class="summary"><div class="metric"><b>{complete_dataset_count} / {dataset_count}</b><span>完整数据集</span></div><div class="metric"><b>{valid_row_count} / {raw_row_count}</b><span>严格合规记录</span></div><div class="metric"><b>2 + 5</b><span>预热 + 正式重复</span></div><div class="metric"><b>64</b><span>CAESAR 官方推理 batch</span></div></div>
 <div class="method"><p><strong>主质量指标：</strong>数据集固定单位范围上的 normalized PSNR；BPP 包含必要辅助信息。</p><p><strong>吞吐量：</strong>canonical host tensor 到内存 bitstream 再回到 canonical host tensor，不含磁盘 I/O、模型加载和指标计算。</p><p><strong>LPIPS：</strong>仅 RGB 通用媒体主轨报告；科学数据暂不把未定义的伪彩色渲染作为排名指标。</p></div>
+<section class="overview" id="overview"><h2>全模型汇总</h2><p class="lede">每格给出该模型在对应数据集上的 Pareto 点数、完整 BPP 范围和 normalized PSNR 范围。点击单元格可查看图表与吞吐量明细。</p><div class="table-wrap"><table><thead><tr><th>模型</th>{overview_head}</tr></thead><tbody>{''.join(overview_rows)}</tbody></table></div></section>
+<section id="legacy"><h2>历史模型去向</h2><p class="lede">旧版“all models”页面中的模型均在此交代，避免把不同协议的数字混入正式横向排名。</p><div class="table-wrap"><table><thead><tr><th>历史模型/变体</th><th>当前处理</th><th>原因</th></tr></thead><tbody>
+<tr><th>Visemz / AIZ</th><td>保留为外部复现</td><td>没有通过 objective-v1 的统一输入、计时和完整样本 gate</td></tr>
+<tr><th>GraphComp</th><td>保留为复现与诊断</td><td>当前 runner 不是论文的完整 learned pipeline，不进入正式排名</td></tr>
+<tr><th>LIC-TCM</th><td>历史结果</td><td>未形成 objective-v1 合规的全数据集曲线</td></tr>
+<tr><th>CAESAR no-PCA</th><td>消融实验</td><td>不是默认正式推理路径</td></tr>
+<tr><th>DCAE / LIC-HPCM + CAESAR-PCA</th><td>消融实验</td><td>额外 PCA 路径不与模型原生结果混排</td></tr>
+</tbody></table></div></section>
 {''.join(sections)}
-<footer>原始汇总：<a href="../combined_summary.json">combined_summary.json</a> · 审计：<a href="../objective_protocol_audit.json">objective_protocol_audit.json</a> · 分析：<a href="../analysis/objective_analysis.json">objective_analysis.json</a></footer>
-</main></body></html>"""
-    output = report_dir / "index.html"
+<footer>原始汇总：combined_summary.json · 审计：objective_protocol_audit.json · 分析：analysis/objective_analysis.json · 本页已内嵌全部图表，可离线单文件查看。</footer>
+</main><script>
+function openTarget(){{const target=document.querySelector(location.hash);if(target&&target.matches("details"))target.open=true}}
+addEventListener("hashchange",openTarget);openTarget();
+</script></body></html>"""
+    content = "\n".join(line.rstrip() for line in content.splitlines()) + "\n"
+    output = root / "index.html"
     output.write_text(content, encoding="utf-8")
+    compatibility = report_dir / "index.html"
+    compatibility.write_text(
+        '<!doctype html><meta charset="utf-8"><meta http-equiv="refresh" content="0;url=../index.html">'
+        '<title>结果索引已移动</title><a href="../index.html">打开统一结果索引</a>',
+        encoding="utf-8",
+    )
     return output
 
 
