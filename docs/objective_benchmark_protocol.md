@@ -113,12 +113,7 @@ Kodak/UVG 使用 RGB PSNR、MS-SSIM 和 LPIPS。科学 LPIPS 只有在所有方�
 
 ## 自动审计
 
-检查旧结果：
-
-```bash
-python scripts/audit_objective_benchmark.py \
-  unified_results/final/all_models_fullstack_cuszhi_nvjpeg_pca_pcaanchored_nozero_zoom6_uvg_turb/combined_summary.json
-```
+旧 `unified_results/final/` 已在 2026-08-11 清理；其协议缺陷和模型去向已汇总进正式结果的单文件 `index.html`，不再提供旧结果审计入口。
 
 检查 matched validation：
 

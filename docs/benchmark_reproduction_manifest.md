@@ -19,7 +19,7 @@
 
 以下目录是历史结果或专项消融，不能直接与 objective-v1 主结果混合：
 
-- `unified_results/final/all_models_*`：旧统一网页，部分数据只用了 3 channel 或单 sample。
+- 旧 `unified_results/final/all_models_*`：部分数据只用了 3 channel 或单 sample，已在 2026-08-11 清理；历史模型去向见正式 `index.html`。
 - `unified_results/caesar_era5_daily_*`：CAESAR 训练诊断和直接 reconstruction 结果。
 - `unified_results/caesar_era5_daily_v_100k_eb_compare`：268 变量、16 天的初始/微调专项对比，但没有使用 objective-v1 的统一外部归一化。
 - `DCAE/HPCM+CAESAR-PCA`、`CAESAR no-PCA`：消融结果，除非按 objective-v1 重新运行，否则不进入主模型排名。
