@@ -1,7 +1,7 @@
-# ERA5 上 CAESAR 微调失败尝试记录
+# ERA5 上 CAESAR 微调有效结果与失败尝试记录
 
 > 状态日期：2026-08-11
-> 目的：记录没有进入最终交付的训练方向、失败证据和可复用经验，避免接手人重复消耗算力。
+> 目的：区分有效但未进入当前默认交付的微调曲线与真正失败的训练方向，并保留可复用经验。
 > 最终有效权重和完整结论见 `项目交接总览.md` 第 4 节。
 > 对应实验 checkpoint 和一次性脚本已清理；文中的旧路径仅是历史标识，不表示文件仍存在。
 
@@ -16,13 +16,53 @@
 5. CAESAR-D 必须运行完整 16 帧、固定 seed 的 diffusion sampling；
 6. 最终 checkpoint 由真实 codec RD 或 sampling PSNR 选择，不能由 surrogate loss 选择。
 
-因此，下文中的“失败”包括三类：
+因此，下文将结果分成两类：
 
-- 真实 codec 指标退化；
-- 改善只发生在错误的数据分布、错误指标或局部组件上；
-- 候选有效但被后续结果严格替代，不再值得保留大量中间 checkpoint。
+- 真实 codec RD 有明确改善，但因目标区间不同或后续路径更适合当前默认交付而未保留为默认权重；
+- 真实 codec 退化，或改善只发生在错误的数据分布、错误指标或局部组件上的失败尝试。
 
-## 2. 失败尝试总表
+旧版文档曾把“候选有效但被后续结果替代”也归入失败，这会掩盖曲线交叉和不同码率区间的差异，现已修正。
+
+## 2. 有效但未作为当前默认权重：CAESAR-V daily full 100k
+
+这就是早期效果较好的微调结果。其 checkpoint 为历史路径：
+
+```text
+checkpoints/caesar_era5_daily_v_full_100k/rd_lr3em5_lam3em5_update100000.pt
+```
+
+训练配置为 `100000 updates`、`lr=3e-5`、`lambda_rate=3e-5`、`rate_mode=bpp`、
+500-step warmup、`256x256` patch、batch 32、`mean_range`，并按 `frame_step=24` 对齐 daily cadence。
+
+它在 objective-v1 的完整 `268x16x240x240` ERA5 输入和真实 codec 路径上得到：
+
+| 曲线 | BPP 范围 | normalized PSNR 范围 |
+|---|---:|---:|
+| CAESAR-V original | `0.28730–30.13025` | `36.98–168.11 dB` |
+| daily full 100k | `0.24850–29.41828` | `39.01–168.11 dB` |
+
+在约 `39.01 dB` 的共同质量点，original 需要 `0.32044 BPP`，daily full 100k 需要
+`0.24850 BPP`，码率约降低 **22.45%**。在相同 EB 的低端点，它也从约
+`0.287 BPP / 44.03 dB` 改善到 `0.248 BPP / 45.80 dB`。因此这次训练应明确记为有效。
+
+后来的低码率 100k 在 `39.01 dB` 只需 `0.12464 BPP`，比旧 100k 再节省约
+`49.84%`，所以更适合进入 DCAE/HPCM 过渡区；但约 50 dB 以上旧 100k 在部分区间仍更好，
+两条曲线并非全范围严格支配关系。当前默认 decoder-only 路径以低码率与过渡区为优化目标，
+也不应被解释为旧 100k 在每个高质量控制点都失败。
+
+现存结果证据：
+
+```text
+unified_results/caesar_era5_daily_v_100k_eb_compare/
+unified_results_backup_20260811/objective_era5_caesar_v_finetuned_100k_rd/
+unified_results_backup_20260811/objective_era5_caesar_v_100k_best_compare/
+```
+
+历史结果 JSON 和图仍在，但该 checkpoint 已在 2026-08-11 按“只保留当前最佳微调权重”清理，
+本机目前无法直接重跑。若希望同时保留低码率最优和高质量区非支配候选，需要从外部备份或
+W&B artifact 恢复该 checkpoint；找不到备份时只能按上述配置重新训练。
+
+## 3. 失败尝试总表
 
 | 尝试 | 原始动机 | 结果 | 处置 |
 |---|---|---|---|
@@ -37,7 +77,7 @@
 | 历史 50k Stage2 曲线 | 检查长 Stage2 的 13 点 RD | watcher 使用了较早 decoder snapshot，不能做固定 decoder 对照 | 结果只作历史证据 |
 | hourly quality/source 大网格与 10k recovery | 搜索 loss、LR、lambda、冻结范围 | 筛选价值已完成，均被最终 100k + decoder-only 路径替代 | 中间 checkpoint 已清理 |
 
-## 3. Cadence 不匹配
+## 4. Cadence 不匹配
 
 ### 设置
 
@@ -56,7 +96,7 @@
 
 证据位于 `unified_results/caesar_era5_daily_cadence_real_codec/`，复现参数见 `docs/benchmark_reproduction_manifest.md`。
 
-## 4. Raw/source 全局 MSE 失败
+## 5. Raw/source 全局 MSE 失败
 
 ### 设置
 
@@ -72,7 +112,7 @@
 
 如果目标是平均变量质量和跨变量公平性，应以 normalized MSE 反向传播；source MSE 作为报告指标记录，不能作为唯一训练目标。
 
-## 5. 只微调 CAESAR-D Stage1 失败
+## 6. 只微调 CAESAR-D Stage1 失败
 
 ### 设置
 
@@ -89,7 +129,7 @@
 
 D 的 VAE 与 diffusion 必须匹配训练并作为完整 checkpoint 打包。不能用 Stage1 的独立改善代表完整 codec 改善。
 
-## 6. 短程 Stage2 noise-loss 微调失败
+## 7. 短程 Stage2 noise-loss 微调失败
 
 ### 设置
 
@@ -115,7 +155,7 @@ scripts/archive/caesar_experiments/run_caesar_era5_daily_d_stage2_pilot.sh
 scripts/archive/caesar_experiments/run_caesar_era5_stage2_grid.sh
 ```
 
-## 7. Stage2 长训练未超过 5k
+## 8. Stage2 长训练未超过 5k
 
 ### 设置
 
@@ -144,7 +184,7 @@ scripts/archive/caesar_experiments/run_caesar_era5_d_cpu_sampling_audit.sh
 logs/caesar_era5_d_stage2_full_200k/
 ```
 
-## 8. x0-only 与 hybrid objective 失败
+## 9. x0-only 与 hybrid objective 失败
 
 ### 设置
 
@@ -175,7 +215,7 @@ scripts/archive/caesar_experiments/run_caesar_era5_d_x0_objective_pilot.sh
 unified_results/diagnostics/caesar_era5_discarded_training_manifest.json
 ```
 
-## 9. Hard-channel specialist 失败
+## 10. Hard-channel specialist 失败
 
 ### 设置
 
@@ -201,7 +241,7 @@ logs/caesar_era5_d_hard_channel_specialists/
 scripts/evaluate_caesar_era5_d_hard_channel_specialists.sh
 ```
 
-## 10. 更强 D Stage1 码率惩罚未成为最终权重
+## 11. 更强 D Stage1 码率惩罚未成为最终权重
 
 `lambda_rate=1e-3` 的 D Stage1 把曲线扩展到 `0.07465–31.22213 BPP`，但与 D-original 的共同 BPP 区间平均为 `-1.164 dB`，最差 `-4.911 dB`；在 DCAE endpoint `0.13262 BPP` 处只有约 `32.632 dB`。
 
@@ -213,7 +253,7 @@ unified_results/objective_era5_caesar_d_lam1em3_decoder_best_original_stage2_rd/
 unified_results/objective_era5_caesar_d_lam1em3_decoder_best_original_stage2_compare/
 ```
 
-## 11. 历史 50k 曲线不能作为严格 Stage2 对照
+## 12. 历史 50k 曲线不能作为严格 Stage2 对照
 
 历史 50k 曾完成 13 点真实 codec 审计，但随后通过 tensor hash 发现 watcher 使用了同一路径下较早保存的 decoder snapshot，而不是最终 decoder-100k。该结果本身可解码，但不能支持“固定 decoder，只比较 Stage2 里程碑”的结论。
 
@@ -224,7 +264,7 @@ unified_results/objective_era5_caesar_d_stage2_50000_rd/
 unified_results/objective_era5_caesar_d_stage2_50000_compare/
 ```
 
-## 12. 被后续结果替代的筛选网格
+## 13. 被后续结果替代的筛选网格
 
 下列目录主要用于搜索 cadence、normalization、loss、LR、lambda、rate penalty、冻结范围和早期里程碑。它们并非全部“训练完全无效”，但筛选任务已完成，最终候选已被独立保存，因此中间 checkpoint 已删除：
 
@@ -249,7 +289,7 @@ caesar_era5_d_lam1em3_recovery_pilot
 unified_results/diagnostics/caesar_era5_discarded_training_manifest.json
 ```
 
-## 13. 已排除的伪故障：range coder/量化路径
+## 14. 已排除的伪故障：range coder/量化路径
 
 `scripts/archive/caesar_experiments/diagnose_caesar_quantization_paths.py` 对 forward quantization 和真实 range compress/decompress 做了逐 latent 对比：
 
@@ -263,7 +303,7 @@ unified_results/diagnostics/caesar_era5_discarded_training_manifest.json
 unified_results/caesar_quantization_path_diagnostic/
 ```
 
-## 14. 接手人应避免重复的做法
+## 15. 接手人应避免重复的做法
 
 1. 不要用连续小时 validation 选择 daily 测试权重。
 2. 不要用 3-variable 输入代替正式 268-variable ERA5。

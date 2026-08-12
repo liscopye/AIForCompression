@@ -87,7 +87,7 @@ ERA5 当前低码率和图像 codec 过渡区的最佳 CAESAR-V 微调权重：
 checkpoints/caesar_era5_v_decoder_quality_100k/from_lowrate_lr3em4.pt
 ```
 
-它是在低码率 100k 权重上冻结 encoder/entropy-rate 路径、只微调 decoder 的验证集最佳权重。训练和真实 codec 结果见第 9.4 节。此前的 `caesar_era5_daily_v_full_100k` 权重仍保留，适合复现第 9.1 节的历史实验。
+它是在低码率 100k 权重上冻结 encoder/entropy-rate 路径、只微调 decoder 的验证集最佳权重。旧 `caesar_era5_daily_v_full_100k` 是一条有效且在部分高质量区非支配的历史曲线，但其 checkpoint 已于 2026-08-11 清理；结果 JSON 和图仍保存在 `unified_results_backup_20260811/`。详细边界见 `ERA5_CAESAR失败尝试记录.md` 第 2 节。
 
 ## 4. 数据集和 canonical 输入
 
