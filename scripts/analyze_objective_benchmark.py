@@ -310,8 +310,6 @@ def image_data_uri(path: Path) -> str:
 
 
 def write_html(payload: dict[str, Any], root: Path) -> Path:
-    report_dir = root / "report"
-    report_dir.mkdir(parents=True, exist_ok=True)
     categories = [
         ("general", "通用图像与视频", ["kodak", "uvg_twilight_1080p"]),
         ("scientific-images", "科学图像", ["tomo", "s2c", "lysozyme"]),
@@ -325,17 +323,20 @@ def write_html(payload: dict[str, Any], root: Path) -> Path:
     )
     raw_row_count = sum(int(item["raw_rows"]) for item in payload["datasets"])
     valid_row_count = sum(int(item["valid_rows"]) for item in payload["datasets"])
+    complete_point_count = sum(len(item["points"]) for item in payload["datasets"])
+    pareto_point_count = sum(len(item["pareto_points"]) for item in payload["datasets"])
     all_curves = sorted({
         point["curve"]
         for dataset in payload["datasets"]
-        for point in dataset["pareto_points"]
+        for point in dataset["points"]
     })
     overview_rows = []
     for curve in all_curves:
         cells = []
         covered = 0
         for dataset in payload["datasets"]:
-            curve_points = [point for point in dataset["pareto_points"] if point["curve"] == curve]
+            curve_points = [point for point in dataset["points"] if point["curve"] == curve]
+            pareto_count = sum(point["curve"] == curve for point in dataset["pareto_points"])
             if not curve_points:
                 cells.append('<td class="missing">—</td>')
                 continue
@@ -344,7 +345,8 @@ def write_html(payload: dict[str, Any], root: Path) -> Path:
             psnrs = [float(point["normalized_psnr"]) for point in curve_points]
             cells.append(
                 f'<td><a href="#{html.escape(dataset["dataset_id"])}">'
-                f'<b>{len(curve_points)} 点</b><small>{fmt_range(bpps)} BPP<br>{fmt_range(psnrs)} dB</small></a></td>'
+                f'<b>{len(curve_points)} 点</b><small>{pareto_count} 个 Pareto 点<br>'
+                f'{fmt_range(bpps)} BPP<br>{fmt_range(psnrs)} dB</small></a></td>'
             )
         overview_rows.append(
             f'<tr><th>{html.escape(curve)}<small>{covered}/{dataset_count} 数据集</small></th>{"".join(cells)}</tr>'
@@ -358,7 +360,7 @@ def write_html(payload: dict[str, Any], root: Path) -> Path:
         blocks = []
         for dataset_id in dataset_ids:
             dataset = by_dataset[dataset_id]
-            points = dataset["pareto_points"]
+            points = dataset["points"]
             rows = []
             for curve in sorted({point["curve"] for point in points}):
                 curve_points = [point for point in points if point["curve"] == curve]
@@ -396,7 +398,7 @@ def write_html(payload: dict[str, Any], root: Path) -> Path:
             )
             blocks.append(f"""
               <details class="dataset" id="{html.escape(dataset_id)}">
-                <summary><span><b>{html.escape(DATASET_LABELS.get(dataset_id, dataset_id))}</b><small>{dataset['raw_rows']} 条合规记录 · {len(dataset['pareto_points'])} 个主图点</small></span><span class="open-label">查看图表与明细</span></summary>
+                <summary><span><b>{html.escape(DATASET_LABELS.get(dataset_id, dataset_id))}</b><small>{dataset['raw_rows']} 条合规记录 · {len(dataset['points'])} 个完整 corpus 点（{len(dataset['pareto_points'])} 个 Pareto 点）</small></span><span class="open-label">查看图表与明细</span></summary>
                 <div class="dataset-body"><div class="figures">{figures}</div>
                 <div class="table-wrap"><table><thead><tr><th>方法</th><th>点</th><th>BPP 范围</th><th>固定尺度 PSNR</th><th>LPIPS</th><th>端到端 MB/s 平均（范围）</th><th>编码 MB/s</th><th>解码 MB/s</th><th>峰值显存 MB</th></tr></thead><tbody>{''.join(rows)}</tbody></table></div></div>
               </details>
@@ -409,7 +411,7 @@ def write_html(payload: dict[str, Any], root: Path) -> Path:
 :root{{--ink:#181b20;--muted:#646b75;--line:#d9dde3;--paper:#fff;--wash:#f4f6f8;--accent:#087e8b;--warm:#a9561e}}
 *{{box-sizing:border-box}}html{{scroll-behavior:smooth}}body{{margin:0;color:var(--ink);background:var(--paper);font-family:Inter,"Noto Sans SC","Microsoft YaHei",sans-serif;letter-spacing:0;line-height:1.5}}
 nav{{position:sticky;top:0;z-index:4;display:flex;align-items:center;gap:22px;padding:11px max(20px,calc((100vw - 1440px)/2));background:rgba(255,255,255,.96);border-bottom:1px solid var(--line)}}nav strong{{margin-right:auto}}nav a,a{{color:var(--accent);text-decoration:none}}nav a{{font-size:14px}}nav a:hover,a:hover{{text-decoration:underline}}
-main{{max-width:1440px;margin:0 auto;padding:34px 28px 80px}}h1{{font-size:34px;margin:0 0 8px}}.lede{{max-width:980px;color:var(--muted);margin:0 0 24px}}.summary{{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;border-block:1px solid var(--line);margin-bottom:30px}}.metric{{padding:18px 20px;border-right:1px solid var(--line)}}.metric:last-child{{border:0}}.metric b{{display:block;font-size:25px}}.metric span{{font-size:13px;color:var(--muted)}}
+main{{max-width:1440px;margin:0 auto;padding:34px 28px 80px}}h1{{font-size:34px;margin:0 0 8px}}.lede{{max-width:980px;color:var(--muted);margin:0 0 24px}}.summary{{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:0;border-block:1px solid var(--line);margin-bottom:30px}}.metric{{padding:18px 20px;border-right:1px solid var(--line)}}.metric:last-child{{border:0}}.metric b{{display:block;font-size:25px}}.metric span{{font-size:13px;color:var(--muted)}}
 .method{{padding:18px 20px;background:var(--wash);border-left:4px solid var(--accent);margin:0 0 36px}}.method p{{margin:4px 0}}section{{margin-top:46px}}h2{{font-size:25px;border-bottom:2px solid var(--ink);padding-bottom:8px;margin-bottom:20px}}
 .figures{{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;margin:18px 0 24px}}figure{{margin:0;min-width:0}}figure img{{display:block;width:100%;height:auto;border:1px solid var(--line)}}figcaption{{font-size:12px;color:var(--muted);margin-top:5px}}.table-wrap{{overflow:auto;border-block:1px solid var(--line)}}table{{border-collapse:collapse;width:100%;min-width:1080px;font-size:12px}}th,td{{padding:9px 10px;text-align:right;border-bottom:1px solid #eceef1;white-space:nowrap}}th:first-child,td:first-child{{text-align:left}}thead th{{color:var(--muted);font-weight:600;background:var(--wash)}}tbody th{{font-weight:600}}
 .overview table{{min-width:1320px}}.overview th,.overview td{{text-align:left;vertical-align:top}}.overview tbody th{{position:sticky;left:0;background:var(--paper);z-index:1}}.overview small,.dataset small{{display:block;color:var(--muted);font-weight:400;margin-top:2px}}.overview td b{{font-size:12px}}.overview td a{{display:block;color:var(--ink)}}.overview td small{{font-size:10px}}.missing{{color:var(--muted)}}
@@ -418,9 +420,9 @@ footer{{color:var(--muted);font-size:12px;border-top:1px solid var(--line);paddi
 @media(max-width:800px){{nav{{overflow:auto}}nav strong{{display:none}}main{{padding:24px 15px 60px}}h1{{font-size:28px}}.summary{{grid-template-columns:repeat(2,1fr)}}.metric:nth-child(2){{border-right:0}}.figures{{grid-template-columns:1fr}}article header{{display:block}}}}
 </style></head><body><nav><strong>Objective-v1</strong><a href="#overview">全模型汇总</a><a href="#legacy">历史模型</a>{nav_links}</nav><main>
 <h1>统一压缩基准结果</h1><p class="lede">同一数据集的所有 codec 从相同 canonical float32 数值、相同 crop、相同 mask 和相同数据集级外部归一化开始。codec 内部归一化、PCA、predictor、padding 与熵模型保持原实现。</p>
-<div class="summary"><div class="metric"><b>{complete_dataset_count} / {dataset_count}</b><span>完整数据集</span></div><div class="metric"><b>{valid_row_count} / {raw_row_count}</b><span>严格合规记录</span></div><div class="metric"><b>2 + 5</b><span>预热 + 正式重复</span></div><div class="metric"><b>64</b><span>CAESAR 官方推理 batch</span></div></div>
+<div class="summary"><div class="metric"><b>{complete_dataset_count} / {dataset_count}</b><span>完整数据集</span></div><div class="metric"><b>{valid_row_count} / {raw_row_count}</b><span>严格合规记录</span></div><div class="metric"><b>{complete_point_count}</b><span>完整 corpus 点</span></div><div class="metric"><b>{pareto_point_count}</b><span>Pareto 点</span></div><div class="metric"><b>2 + 5</b><span>预热 + 正式重复</span></div></div>
 <div class="method"><p><strong>主质量指标：</strong>数据集固定单位范围上的 normalized PSNR；BPP 包含必要辅助信息。</p><p><strong>吞吐量：</strong>canonical host tensor 到内存 bitstream 再回到 canonical host tensor，不含磁盘 I/O、模型加载和指标计算。</p><p><strong>LPIPS：</strong>仅 RGB 通用媒体主轨报告；科学数据暂不把未定义的伪彩色渲染作为排名指标。</p></div>
-<section class="overview" id="overview"><h2>全模型汇总</h2><p class="lede">每格给出该模型在对应数据集上的 Pareto 点数、完整 BPP 范围和 normalized PSNR 范围。点击单元格可查看图表与吞吐量明细。</p><div class="table-wrap"><table><thead><tr><th>模型</th>{overview_head}</tr></thead><tbody>{''.join(overview_rows)}</tbody></table></div></section>
+<section class="overview" id="overview"><h2>全模型汇总</h2><p class="lede">每格展示该模型在对应数据集上的全部完整 corpus 点，同时标明其中的 Pareto 点数；BPP、normalized PSNR、图表和吞吐量统计均不再隐藏被支配或坐标重复的正式结果。原始逐样本记录完整保存在 combined_summary.json。</p><div class="table-wrap"><table><thead><tr><th>模型</th>{overview_head}</tr></thead><tbody>{''.join(overview_rows)}</tbody></table></div></section>
 <section id="legacy"><h2>历史模型去向</h2><p class="lede">旧版“all models”页面中的模型均在此交代，避免把不同协议的数字混入正式横向排名。</p><div class="table-wrap"><table><thead><tr><th>历史模型/变体</th><th>当前处理</th><th>原因</th></tr></thead><tbody>
 <tr><th>Visemz / AIZ</th><td>保留为外部复现</td><td>没有通过 objective-v1 的统一输入、计时和完整样本 gate</td></tr>
 <tr><th>GraphComp</th><td>结果已清理；源码与脚本保留</td><td>当前 runner 不是论文的完整 learned pipeline，不进入正式排名</td></tr>
@@ -437,12 +439,6 @@ addEventListener("hashchange",openTarget);openTarget();
     content = "\n".join(line.rstrip() for line in content.splitlines()) + "\n"
     output = root / "index.html"
     output.write_text(content, encoding="utf-8")
-    compatibility = report_dir / "index.html"
-    compatibility.write_text(
-        '<!doctype html><meta charset="utf-8"><meta http-equiv="refresh" content="0;url=../index.html">'
-        '<title>结果索引已移动</title><a href="../index.html">打开统一结果索引</a>',
-        encoding="utf-8",
-    )
     return output
 
 
@@ -472,16 +468,16 @@ def main() -> None:
             else:
                 points.append(point)
         pareto_points, dominated_points = pareto_partition(points)
-        if pareto_points:
-            plot_dataset(dataset_id, pareto_points, analysis_dir / f"{dataset_id}_objective_rd.png")
+        if points:
+            plot_dataset(dataset_id, points, analysis_dir / f"{dataset_id}_objective_rd.png")
             plot_throughput_bars(
-                dataset_id, pareto_points, analysis_dir / f"{dataset_id}_throughput_range.png",
+                dataset_id, points, analysis_dir / f"{dataset_id}_throughput_range.png",
             )
             plot_metric_ranges(
-                dataset_id, pareto_points, "peak_memory_MB", "Peak allocated memory (MB)",
+                dataset_id, points, "peak_memory_MB", "Peak allocated memory (MB)",
                 analysis_dir / f"{dataset_id}_memory_range.png",
             )
-            plot_lpips(dataset_id, pareto_points, analysis_dir / f"{dataset_id}_lpips_rd.png")
+            plot_lpips(dataset_id, points, analysis_dir / f"{dataset_id}_lpips_rd.png")
         datasets.append({
             "dataset_id": dataset_id, "expected_samples": sorted(expected_samples), "raw_rows": len(rows),
             "valid_rows": sum(len(value) for value in groups.values()), "invalid_rows": invalid,
