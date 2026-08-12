@@ -339,15 +339,6 @@ def write_html(payload: dict[str, Any], root: Path) -> Path:
         ("scientific-fields", "科学场数据", ["e3sm_npz", "era5_npy", "hurricane", "nyx", "turb_rot_npz"]),
     ]
     by_dataset = {item["dataset_id"]: item for item in payload["datasets"]}
-    dataset_count = len(payload["datasets"])
-    complete_dataset_count = sum(
-        not item["invalid_rows"] and not item["incomplete_points"]
-        for item in payload["datasets"]
-    )
-    raw_row_count = sum(int(item["raw_rows"]) for item in payload["datasets"])
-    valid_row_count = sum(int(item["valid_rows"]) for item in payload["datasets"])
-    complete_point_count = sum(len(item["points"]) for item in payload["datasets"])
-    pareto_point_count = sum(len(item["pareto_points"]) for item in payload["datasets"])
     sections = []
     for category_id, category_label, dataset_ids in categories:
         blocks = []
@@ -386,17 +377,14 @@ def write_html(payload: dict[str, Any], root: Path) -> Path:
 :root{{--ink:#181b20;--muted:#646b75;--line:#d9dde3;--paper:#fff;--wash:#f4f6f8;--accent:#087e8b;--warm:#a9561e}}
 *{{box-sizing:border-box}}html{{scroll-behavior:smooth}}body{{margin:0;color:var(--ink);background:var(--paper);font-family:Inter,"Noto Sans SC","Microsoft YaHei",sans-serif;letter-spacing:0;line-height:1.5}}
 nav{{position:sticky;top:0;z-index:4;display:flex;align-items:center;gap:22px;padding:11px max(20px,calc((100vw - 1440px)/2));background:rgba(255,255,255,.96);border-bottom:1px solid var(--line)}}nav strong{{margin-right:auto}}nav a,a{{color:var(--accent);text-decoration:none}}nav a{{font-size:14px}}nav a:hover,a:hover{{text-decoration:underline}}
-main{{max-width:1440px;margin:0 auto;padding:34px 28px 80px}}h1{{font-size:34px;margin:0 0 8px}}.lede{{max-width:980px;color:var(--muted);margin:0 0 24px}}.summary{{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:0;border-block:1px solid var(--line);margin-bottom:30px}}.metric{{padding:18px 20px;border-right:1px solid var(--line)}}.metric:last-child{{border:0}}.metric b{{display:block;font-size:25px}}.metric span{{font-size:13px;color:var(--muted)}}
-.method{{padding:18px 20px;background:var(--wash);border-left:4px solid var(--accent);margin:0 0 36px}}.method p{{margin:4px 0}}section{{margin-top:46px}}h2{{font-size:25px;border-bottom:2px solid var(--ink);padding-bottom:8px;margin-bottom:20px}}
+main{{max-width:1440px;margin:0 auto;padding:34px 28px 80px}}h1{{font-size:34px;margin:0 0 8px}}section{{margin-top:46px}}h2{{font-size:25px;border-bottom:2px solid var(--ink);padding-bottom:8px;margin-bottom:20px}}
 .figures{{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;margin:18px 0 24px}}figure{{margin:0;min-width:0}}figure img{{display:block;width:100%;height:auto;border:1px solid var(--line)}}figcaption{{font-size:12px;color:var(--muted);margin-top:5px}}.table-wrap{{overflow:auto;border-block:1px solid var(--line)}}table{{border-collapse:collapse;width:100%;min-width:1080px;font-size:12px}}th,td{{padding:9px 10px;text-align:right;border-bottom:1px solid #eceef1;white-space:nowrap}}th:first-child,td:first-child{{text-align:left}}thead th{{color:var(--muted);font-weight:600;background:var(--wash)}}tbody th{{font-weight:600}}
 .dataset{{border-bottom:1px solid var(--line);scroll-margin-top:60px}}.dataset summary{{cursor:pointer;display:flex;justify-content:space-between;align-items:center;padding:16px 4px;list-style:none}}.dataset summary::-webkit-details-marker{{display:none}}.dataset summary b{{font-size:18px}}.open-label{{font-size:12px;color:var(--accent)}}.dataset[open] .open-label{{font-size:0}}.dataset[open] .open-label::after{{content:"收起";font-size:12px}}.dataset-body{{padding:0 0 34px}}
 .dataset-note{{margin:16px 0 0;padding:12px 15px;background:#fff8e8;border-left:3px solid var(--warm);color:#4b4236;font-size:14px}}
 footer{{color:var(--muted);font-size:12px;border-top:1px solid var(--line);padding-top:16px}}footer a{{color:var(--accent)}}
-@media(max-width:800px){{nav{{overflow:auto}}nav strong{{display:none}}main{{padding:24px 15px 60px}}h1{{font-size:28px}}.summary{{grid-template-columns:repeat(2,1fr)}}.metric:nth-child(2){{border-right:0}}.figures{{grid-template-columns:1fr}}article header{{display:block}}}}
+@media(max-width:800px){{nav{{overflow:auto}}nav strong{{display:none}}main{{padding:24px 15px 60px}}h1{{font-size:28px}}.figures{{grid-template-columns:1fr}}article header{{display:block}}}}
 </style></head><body><nav><strong>Objective-v1</strong>{nav_links}</nav><main>
-<h1>统一压缩基准结果</h1><p class="lede">同一数据集的所有 codec 从相同 canonical float32 数值、相同 crop、相同 mask 和相同数据集级外部归一化开始。codec 内部归一化、PCA、predictor、padding 与熵模型保持原实现。</p>
-<div class="summary"><div class="metric"><b>{complete_dataset_count} / {dataset_count}</b><span>完整数据集</span></div><div class="metric"><b>{valid_row_count} / {raw_row_count}</b><span>严格合规记录</span></div><div class="metric"><b>{complete_point_count}</b><span>完整 corpus 点</span></div><div class="metric"><b>{pareto_point_count}</b><span>Pareto 点</span></div><div class="metric"><b>2 + 5</b><span>预热 + 正式重复</span></div></div>
-<div class="method"><p><strong>主质量指标：</strong>数据集固定单位范围上的 normalized PSNR；BPP 包含必要辅助信息。</p><p><strong>吞吐量：</strong>canonical host tensor 到内存 bitstream 再回到 canonical host tensor，不含磁盘 I/O、模型加载和指标计算。</p><p><strong>LPIPS：</strong>与 PSNR 同级放在各数据集内；自然图像使用原生 RGB，科学数据使用冻结 normalization 后的逐平面灰度诊断视图。LPIPS 越低越好。</p></div>
+<h1>统一压缩基准结果</h1>
 {''.join(sections)}
 <footer>原始汇总：combined_summary.json · 审计：objective_protocol_audit.json · 分析：analysis/objective_analysis.json · 本页已内嵌全部图表，可离线单文件查看。</footer>
 </main><script>
