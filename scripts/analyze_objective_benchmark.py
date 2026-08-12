@@ -105,7 +105,7 @@ def aggregate_point(rows: list[dict[str, Any]], expected_samples: set[str]) -> d
     lpips = (
         sum(float(row["lpips"]) * int(row["canonical_symbol_count"]) for row in lpips_rows)
         / sum(int(row["canonical_symbol_count"]) for row in lpips_rows)
-        if lpips_rows else None
+        if len(lpips_rows) == len(ordered) else None
     )
     psnr_samples = []
     if len(ordered) > 1:
@@ -210,23 +210,29 @@ def plot_metric_ranges(
             grouped.append((curve, min(values), statistics.mean(values), max(values)))
     if not grouped:
         return
-    fig_height = max(3.8, 0.42 * len(grouped) + 1.8)
-    fig, ax = plt.subplots(figsize=(8.8, fig_height), constrained_layout=True)
+    fig_width = max(8.8, 0.72 * len(grouped) + 2.4)
+    fig, ax = plt.subplots(figsize=(fig_width, 5.8), constrained_layout=True)
+    positions = np.arange(len(grouped))
+    means = [item[2] for item in grouped]
+    colors = [COLORS.get(item[0], plt.get_cmap("tab20")(index)) for index, item in enumerate(grouped)]
+    errors = [
+        [mean - minimum for _, minimum, mean, _ in grouped],
+        [maximum - mean for _, _, mean, maximum in grouped],
+    ]
+    bars = ax.bar(
+        positions, means, yerr=errors, color=colors, alpha=0.9,
+        error_kw={"ecolor": "#31363f", "elinewidth": 1.4, "capsize": 3},
+    )
     for index, (curve, minimum, mean, maximum) in enumerate(grouped):
-        color = COLORS.get(curve, plt.get_cmap("tab20")(index))
-        ax.errorbar(
-            mean, index, xerr=[[mean - minimum], [maximum - mean]], fmt="o", color=color,
-            ecolor=color, elinewidth=2.2, capsize=4, markersize=6,
-        )
-        ax.annotate(f"{minimum:.3g}", (minimum, index), xytext=(-5, 7), textcoords="offset points", ha="right", fontsize=7.5)
-        ax.annotate(f"{maximum:.3g}", (maximum, index), xytext=(5, 7), textcoords="offset points", ha="left", fontsize=7.5)
-    ax.set_yticks(range(len(grouped)), [item[0] for item in grouped])
+        ax.annotate(f"{mean:.3g}", (index, maximum), xytext=(0, 5), textcoords="offset points", ha="center", fontsize=7.5)
+    ax.set_xticks(positions, [item[0] for item in grouped], rotation=35, ha="right")
     if log_scale:
-        ax.set_xscale("log")
-    ax.set_xlabel(ylabel)
+        ax.set_yscale("log")
+    ax.set_ylabel(ylabel)
     ax.set_title(f"{dataset_id} · Mean and measured range", loc="left", fontweight="semibold")
-    ax.grid(True, axis="x", which="both", alpha=0.22)
-    ax.spines[["top", "right", "left"]].set_visible(False)
+    ax.grid(True, axis="y", which="both", alpha=0.22)
+    ax.set_axisbelow(True)
+    ax.spines[["top", "right"]].set_visible(False)
     fig.savefig(output, dpi=220)
     plt.close(fig)
 
@@ -247,8 +253,8 @@ def plot_throughput_bars(dataset_id: str, points: list[dict[str, Any]], output: 
     if not grouped:
         return
     grouped.sort(key=lambda item: item[2])
-    fig_height = max(3.8, 0.46 * len(grouped) + 1.8)
-    fig, ax = plt.subplots(figsize=(8.8, fig_height), constrained_layout=True)
+    fig_width = max(8.8, 0.72 * len(grouped) + 2.4)
+    fig, ax = plt.subplots(figsize=(fig_width, 5.8), constrained_layout=True)
     positions = np.arange(len(grouped))
     means = [item[2] for item in grouped]
     colors = [COLORS.get(item[0], plt.get_cmap("tab20")(index)) for index, item in enumerate(grouped)]
@@ -256,18 +262,18 @@ def plot_throughput_bars(dataset_id: str, points: list[dict[str, Any]], output: 
         [mean - minimum for _, minimum, mean, _ in grouped],
         [maximum - mean for _, _, mean, maximum in grouped],
     ]
-    bars = ax.barh(
-        positions, means, xerr=errors, color=colors, alpha=0.9,
+    bars = ax.bar(
+        positions, means, yerr=errors, color=colors, alpha=0.9,
         error_kw={"ecolor": "#31363f", "elinewidth": 1.4, "capsize": 3},
     )
     ax.bar_label(bars, labels=[f"{value:.3g}" for value in means], padding=4, fontsize=8)
-    ax.set_yticks(positions, [item[0] for item in grouped])
-    ax.set_xlabel("Mean end-to-end throughput (MB/s); whiskers show measured range")
+    ax.set_xticks(positions, [item[0] for item in grouped], rotation=35, ha="right")
+    ax.set_ylabel("Mean end-to-end throughput (MB/s); whiskers show measured range")
     ax.set_title(f"{dataset_id} · End-to-end throughput", loc="left", fontweight="semibold")
-    ax.grid(True, axis="x", alpha=0.22)
+    ax.grid(True, axis="y", alpha=0.22)
     ax.set_axisbelow(True)
-    ax.spines[["top", "right", "left"]].set_visible(False)
-    ax.margins(x=0.12)
+    ax.spines[["top", "right"]].set_visible(False)
+    ax.margins(y=0.12)
     fig.savefig(output, dpi=220)
     plt.close(fig)
 
@@ -325,29 +331,6 @@ def write_html(payload: dict[str, Any], root: Path) -> Path:
     valid_row_count = sum(int(item["valid_rows"]) for item in payload["datasets"])
     complete_point_count = sum(len(item["points"]) for item in payload["datasets"])
     pareto_point_count = sum(len(item["pareto_points"]) for item in payload["datasets"])
-    all_curves = sorted({
-        point["curve"]
-        for dataset in payload["datasets"]
-        for point in dataset["points"]
-    })
-    overview_bars = []
-    for curve in all_curves:
-        covered = 0
-        point_count = 0
-        pareto_count = 0
-        for dataset in payload["datasets"]:
-            curve_points = [point for point in dataset["points"] if point["curve"] == curve]
-            if not curve_points:
-                continue
-            covered += 1
-            point_count += len(curve_points)
-            pareto_count += sum(point["curve"] == curve for point in dataset["pareto_points"])
-        width = 100.0 * covered / dataset_count
-        overview_bars.append(
-            '<div class="coverage-row">'
-            f'<b>{html.escape(curve)}</b><div class="coverage-track"><span style="width:{width:.2f}%"></span></div>'
-            f'<small>{covered}/{dataset_count} 数据集 · {point_count} 个完整点 · {pareto_count} 个 Pareto 点</small></div>'
-        )
     sections = []
     for category_id, category_label, dataset_ids in categories:
         blocks = []
@@ -363,6 +346,9 @@ def write_html(payload: dict[str, Any], root: Path) -> Path:
                 ]
                 if analysis_path.exists()
             ]
+            lpips_path = root / "analysis" / f"{dataset_id}_lpips_rd.png"
+            if lpips_path.exists():
+                image_items.append((lpips_path, "LPIPS"))
             figures = "".join(
                 f'<figure><img loading="lazy" src="{image_data_uri(path)}" alt="{html.escape(dataset_id)} {label}"><figcaption>{label}</figcaption></figure>'
                 for path, label in image_items
@@ -375,14 +361,6 @@ def write_html(payload: dict[str, Any], root: Path) -> Path:
             """)
         sections.append(f'<section id="{category_id}"><h2>{category_label}</h2>{"".join(blocks)}</section>')
     nav_links = "".join(f'<a href="#{category_id}">{label}</a>' for category_id, label, _ in categories)
-    lpips_figures = "".join(
-        f'<figure><img loading="lazy" src="{image_data_uri(path)}" alt="{html.escape(label)} LPIPS"><figcaption>{html.escape(label)} · LPIPS 率失真曲线（越低越好）</figcaption></figure>'
-        for path, label in [
-            (root / "analysis" / "kodak_lpips_rd.png", "Kodak 图像"),
-            (root / "analysis" / "uvg_twilight_1080p_lpips_rd.png", "UVG 视频"),
-        ]
-        if path.exists()
-    )
     content = f"""<!doctype html>
 <html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>AIForCompression Objective-v1</title><style>
@@ -392,16 +370,13 @@ nav{{position:sticky;top:0;z-index:4;display:flex;align-items:center;gap:22px;pa
 main{{max-width:1440px;margin:0 auto;padding:34px 28px 80px}}h1{{font-size:34px;margin:0 0 8px}}.lede{{max-width:980px;color:var(--muted);margin:0 0 24px}}.summary{{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:0;border-block:1px solid var(--line);margin-bottom:30px}}.metric{{padding:18px 20px;border-right:1px solid var(--line)}}.metric:last-child{{border:0}}.metric b{{display:block;font-size:25px}}.metric span{{font-size:13px;color:var(--muted)}}
 .method{{padding:18px 20px;background:var(--wash);border-left:4px solid var(--accent);margin:0 0 36px}}.method p{{margin:4px 0}}section{{margin-top:46px}}h2{{font-size:25px;border-bottom:2px solid var(--ink);padding-bottom:8px;margin-bottom:20px}}
 .figures{{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;margin:18px 0 24px}}figure{{margin:0;min-width:0}}figure img{{display:block;width:100%;height:auto;border:1px solid var(--line)}}figcaption{{font-size:12px;color:var(--muted);margin-top:5px}}.table-wrap{{overflow:auto;border-block:1px solid var(--line)}}table{{border-collapse:collapse;width:100%;min-width:1080px;font-size:12px}}th,td{{padding:9px 10px;text-align:right;border-bottom:1px solid #eceef1;white-space:nowrap}}th:first-child,td:first-child{{text-align:left}}thead th{{color:var(--muted);font-weight:600;background:var(--wash)}}tbody th{{font-weight:600}}
-.coverage-chart{{display:grid;gap:11px;max-width:1050px}}.coverage-row{{display:grid;grid-template-columns:190px minmax(180px,1fr) 330px;align-items:center;gap:14px}}.coverage-row b{{font-size:13px}}.coverage-row small{{color:var(--muted)}}.coverage-track{{height:22px;background:#e8ebef;border-radius:3px;overflow:hidden}}.coverage-track span{{display:block;height:100%;background:var(--accent)}}
 .dataset{{border-bottom:1px solid var(--line);scroll-margin-top:60px}}.dataset summary{{cursor:pointer;display:flex;justify-content:space-between;align-items:center;padding:16px 4px;list-style:none}}.dataset summary::-webkit-details-marker{{display:none}}.dataset summary b{{font-size:18px}}.open-label{{font-size:12px;color:var(--accent)}}.dataset[open] .open-label{{font-size:0}}.dataset[open] .open-label::after{{content:"收起";font-size:12px}}.dataset-body{{padding:0 0 34px}}
 footer{{color:var(--muted);font-size:12px;border-top:1px solid var(--line);padding-top:16px}}footer a{{color:var(--accent)}}
-@media(max-width:800px){{nav{{overflow:auto}}nav strong{{display:none}}main{{padding:24px 15px 60px}}h1{{font-size:28px}}.summary{{grid-template-columns:repeat(2,1fr)}}.metric:nth-child(2){{border-right:0}}.figures{{grid-template-columns:1fr}}.coverage-row{{grid-template-columns:120px 1fr}}.coverage-row small{{grid-column:1/-1}}article header{{display:block}}}}
-</style></head><body><nav><strong>Objective-v1</strong><a href="#overview">模型覆盖</a><a href="#lpips">LPIPS</a>{nav_links}</nav><main>
+@media(max-width:800px){{nav{{overflow:auto}}nav strong{{display:none}}main{{padding:24px 15px 60px}}h1{{font-size:28px}}.summary{{grid-template-columns:repeat(2,1fr)}}.metric:nth-child(2){{border-right:0}}.figures{{grid-template-columns:1fr}}article header{{display:block}}}}
+</style></head><body><nav><strong>Objective-v1</strong>{nav_links}</nav><main>
 <h1>统一压缩基准结果</h1><p class="lede">同一数据集的所有 codec 从相同 canonical float32 数值、相同 crop、相同 mask 和相同数据集级外部归一化开始。codec 内部归一化、PCA、predictor、padding 与熵模型保持原实现。</p>
 <div class="summary"><div class="metric"><b>{complete_dataset_count} / {dataset_count}</b><span>完整数据集</span></div><div class="metric"><b>{valid_row_count} / {raw_row_count}</b><span>严格合规记录</span></div><div class="metric"><b>{complete_point_count}</b><span>完整 corpus 点</span></div><div class="metric"><b>{pareto_point_count}</b><span>Pareto 点</span></div><div class="metric"><b>2 + 5</b><span>预热 + 正式重复</span></div></div>
-<div class="method"><p><strong>主质量指标：</strong>数据集固定单位范围上的 normalized PSNR；BPP 包含必要辅助信息。</p><p><strong>吞吐量：</strong>canonical host tensor 到内存 bitstream 再回到 canonical host tensor，不含磁盘 I/O、模型加载和指标计算。</p><p><strong>LPIPS：</strong>仅 RGB 通用媒体主轨报告；科学数据暂不把未定义的伪彩色渲染作为排名指标。</p></div>
-<section class="overview" id="overview"><h2>模型覆盖</h2><p class="lede">柱长表示覆盖的数据集数量；标签同时给出全部完整 corpus 点和 Pareto 点数量。各数据集的 BPP、normalized PSNR、吞吐量和显存结果见下方图表，原始逐样本记录保存在 combined_summary.json。</p><div class="coverage-chart">{''.join(overview_bars)}</div></section>
-<section id="lpips"><h2>LPIPS</h2><p class="lede">LPIPS 越低越好。Objective-v1 只为原生 RGB 的 Kodak 和 UVG 报告该指标，两者的全部正式记录均包含 LPIPS；科学数据没有统一且物理合理的 RGB 渲染，因此不计算 LPIPS。</p><div class="figures">{lpips_figures}</div></section>
+<div class="method"><p><strong>主质量指标：</strong>数据集固定单位范围上的 normalized PSNR；BPP 包含必要辅助信息。</p><p><strong>吞吐量：</strong>canonical host tensor 到内存 bitstream 再回到 canonical host tensor，不含磁盘 I/O、模型加载和指标计算。</p><p><strong>LPIPS：</strong>与 PSNR 同级放在各数据集内；自然图像使用原生 RGB，科学数据使用冻结 normalization 后的逐平面灰度诊断视图。LPIPS 越低越好。</p></div>
 {''.join(sections)}
 <footer>原始汇总：combined_summary.json · 审计：objective_protocol_audit.json · 分析：analysis/objective_analysis.json · 本页已内嵌全部图表，可离线单文件查看。</footer>
 </main><script>

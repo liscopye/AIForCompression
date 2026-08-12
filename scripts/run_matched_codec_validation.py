@@ -204,6 +204,14 @@ def aggregate_rows(
         "sample_wall_time_total": wall,
         "sample_wall_throughput_MBps": original_bytes / wall / 1e6 if wall > 0 else None,
         "partition_count": len(rows),
+        "memory_usage_MB": max(
+            (float(row["memory_usage_MB"]) for row in rows if isinstance(row.get("memory_usage_MB"), (int, float))),
+            default=None,
+        ),
+        "memory_reserved_MB": max(
+            (float(row["memory_reserved_MB"]) for row in rows if isinstance(row.get("memory_reserved_MB"), (int, float))),
+            default=None,
+        ),
         "error_bound_satisfied": (
             all(row.get("error_bound_satisfied") is True for row in rows)
             if any("error_bound_satisfied" in row for row in rows)

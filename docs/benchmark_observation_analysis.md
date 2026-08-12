@@ -96,7 +96,7 @@ CAESAR 在 ERA5 上能较好摊薄固定开销，但 S2C 16-plane、UVG 30-frame
 
 论文主质量指标是固定单位范围上的 `normalized_mse/normalized_psnr`，其中 `normalized_psnr=-10 log10(max(normalized_mse,1e-30))`。legacy `psnr` 只作样本动态范围诊断。
 
-LPIPS 在 Kodak 和 UVG 的每个正式点均已统计。科学标量场没有统一、领域认可的 RGB 渲染，逐平面自适应渲染会破坏物理幅值，因此不把科学 LPIPS 作为主排名指标。
+LPIPS 在每个数据集的正式点均统计。Kodak 和 UVG 使用全部原生 RGB 图像/帧；每个科学 canonical sample 使用冻结 normalization 后按展平顺序等距抽取的 32 个固定平面，将灰度复制为 RGB，不做逐平面自适应 min/max，也不把 LPIPS 作为科学主排名指标。
 
 ## 可复现产物
 

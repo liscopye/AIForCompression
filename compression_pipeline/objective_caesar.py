@@ -114,6 +114,7 @@ def caesar_corpus_roundtrip(
     model_name: str,
     eb: float,
     canonical_symbol_count: int,
+    lpips_fn: Any | None = None,
 ) -> dict[str, Any]:
     recon, compressed_bytes, encode_seconds, decode_seconds, wall_seconds = caesar_corpus_raw_roundtrip(
         compressor, corpus, eb
@@ -126,7 +127,10 @@ def caesar_corpus_roundtrip(
         group_count=len(corpus.dataset),
         side_info_bytes=0,
         valid_mask=corpus.mask,
-        extra_metrics=torch_memory_usage_mb("cuda"),
+        extra_metrics={
+            **torch_memory_usage_mb("cuda"),
+            "lpips": lpips_fn(corpus.original, recon) if lpips_fn is not None else None,
+        },
     )
     metrics.update({
         "model_name": "CAESAR",

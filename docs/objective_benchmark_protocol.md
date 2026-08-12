@@ -78,7 +78,7 @@ normalized PSNR = -10 log10(NMSE)
 
 `scale_v` 每个物理变量只有一个，由声明的 calibration corpus 计算并冻结，不能按 sample 或 codec 重算。它只定义评价指标，不会拿去替换模型内部归一化。并列报告逐变量 PSNR 中位数、NRMSE、raw MSE、最大绝对误差。cuSZ-Hi 必须逐值验证请求 EB，违反 EB 的码流判为失败点。
 
-Kodak/UVG 使用 RGB PSNR、MS-SSIM 和 LPIPS。科学 LPIPS 只有在所有方法共享固定 rendering transform 时作为诊断项，不能作为科学数值主指标。
+所有数据集均报告 LPIPS。Kodak/UVG 使用全部原生 RGB 图像/帧；每个科学 canonical sample 在冻结数据集 normalization 后按展平顺序等距固定抽取 32 个二维平面，将灰度复制为三通道输入 LPIPS。该固定视图及索引对所有 codec 完全一致，只作诊断，不能替代科学数值主指标。
 
 ### 4. 端到端时间
 

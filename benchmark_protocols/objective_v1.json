@@ -58,7 +58,7 @@
     ],
     "general_media_metrics": ["rgb_psnr", "ms_ssim", "lpips"],
     "mask_rule": "Invalid values do not enter scale, MSE, PSNR or max-error. The decoder must reproduce the mask, or the mask must be declared shared for all codecs.",
-    "lpips_rule": "LPIPS is primary only for Kodak and UVG RGB. Scientific LPIPS is diagnostic and requires one fixed rendering transform for all codecs."
+    "lpips_rule": "LPIPS is reported for every dataset. Kodak and UVG use all native RGB images/frames. Each scientific canonical sample uses 32 planes selected at deterministic evenly spaced flattened indices after frozen dataset normalization; each plane is replicated to RGB and clipped only for the LPIPS network view. This diagnostic rendering is identical for every codec and is not a scientific ranking metric."
   },
   "timing": {
     "input_boundary": "canonical tensor resident in pageable host memory",

@@ -11,6 +11,7 @@ import numpy as np
 
 from compression_pipeline.canonical import CanonicalSample
 from compression_pipeline.metrics import base_metrics
+from compression_pipeline.gpu_memory import run_with_gpu_peak
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -138,6 +139,8 @@ def run_nvjpeg_sample(
         "codec_backend": "nvjpeg",
         "normalization": normalization,
         "sample_wall_time_total": time.time() - t0,
+        "memory_usage_MB": meta.get("memory_usage_MB"),
+        "memory_reserved_MB": None,
     }
     if memory_fn is not None:
         extra_metrics.update(memory_fn())
@@ -228,6 +231,8 @@ def run_nvjpeg2k_sample(
         "codec_backend": "nvjpeg2k",
         "normalization": "dataset_fixed_unit_range_uint16" if fixed_unit_range else "per_channel_min_range_uint16",
         "sample_wall_time_total": time.time() - t0,
+        "memory_usage_MB": meta.get("memory_usage_MB"),
+        "memory_reserved_MB": None,
     }
     if memory_fn is not None:
         extra_metrics.update(memory_fn())
@@ -318,13 +323,14 @@ def _run_nvjpeg_roundtrip(
     raw_in = tmp_root / "input.rgb"
     raw_out = tmp_root / "output.rgb"
     np.moveaxis(rgb_u8, 0, -1).copy().tofile(raw_in)
-    proc = subprocess.run(
+    proc, peak_memory_mb = run_with_gpu_peak(
         [str(binary), str(raw_in), str(w), str(h), str(quality), str(raw_out)],
         check=True,
         text=True,
         capture_output=True,
     )
     meta = json.loads(proc.stdout)
+    meta["memory_usage_MB"] = peak_memory_mb
     decoded = np.fromfile(raw_out, dtype=np.uint8).reshape(h, w, 3)
     return np.moveaxis(decoded, -1, 0), meta
 
@@ -375,13 +381,14 @@ def _run_roundtrip_stack(
     raw_in = tmp_root / "input_zhw.u16"
     raw_out = tmp_root / "output_zhw.u16"
     np.ascontiguousarray(array_u16, dtype=np.uint16).tofile(raw_in)
-    proc = subprocess.run(
+    proc, peak_memory_mb = run_with_gpu_peak(
         [str(binary), str(raw_in), str(w), str(h), str(z), str(target_psnr), str(raw_out)],
         check=True,
         text=True,
         capture_output=True,
     )
     meta = json.loads(proc.stdout)
+    meta["memory_usage_MB"] = peak_memory_mb
     decoded = np.fromfile(raw_out, dtype=np.uint16).reshape(z, h, w)
     return decoded, meta
 
@@ -397,12 +404,13 @@ def _run_roundtrip(
     raw_in = tmp_root / f"input_c{channel_idx:04d}.u16"
     raw_out = tmp_root / f"output_c{channel_idx:04d}.u16"
     channel_u16.astype(np.uint16, copy=False).tofile(raw_in)
-    proc = subprocess.run(
+    proc, peak_memory_mb = run_with_gpu_peak(
         [str(binary), str(raw_in), str(w), str(h), str(target_psnr), str(raw_out)],
         check=True,
         text=True,
         capture_output=True,
     )
     meta = json.loads(proc.stdout)
+    meta["memory_usage_MB"] = peak_memory_mb
     decoded = np.fromfile(raw_out, dtype=np.uint16).reshape(h, w)
     return decoded, meta

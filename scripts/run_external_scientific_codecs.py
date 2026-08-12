@@ -32,6 +32,7 @@ from compression_pipeline.adapters.tomo_h5 import TomoH5Adapter
 from compression_pipeline.adapters.turb_rot_npz import TurbRotNPZAdapter
 from compression_pipeline.canonical import CanonicalSample
 from compression_pipeline.metrics import base_metrics, make_lpips_fn, process_memory_usage_mb
+from compression_pipeline.gpu_memory import run_with_gpu_peak
 from compression_pipeline.runner import _normalization_side_info_bytes
 from compression_pipeline.views import build_image_groups, reconstruct_from_groups
 
@@ -945,12 +946,12 @@ def run_cuszhi_stack_sample(
             "-s",
             args.cuszhi_scheme,
         ]
-        enc_wall, enc_out = run_command(enc_cmd, env=env)
+        enc_wall, enc_out, enc_peak_mb = run_command_profiled(enc_cmd, env=env)
         comp = raw.with_suffix(raw.suffix + ".cusza")
         if not comp.exists():
             raise RuntimeError(f"cuSZ-Hi did not write compressed file. Output:\n{enc_out[-2000:]}")
         dec_cmd = [str(exe), "--report", "time", "-x", "-i", str(comp), "--compare", str(raw)]
-        dec_wall, dec_out = run_command(dec_cmd, env=env)
+        dec_wall, dec_out, dec_peak_mb = run_command_profiled(dec_cmd, env=env)
         recon_path = raw.with_suffix(raw.suffix + ".cuszx")
         if not recon_path.exists():
             raise RuntimeError(f"cuSZ-Hi did not write decompressed file. Output:\n{dec_out[-2000:]}")
@@ -965,7 +966,7 @@ def run_cuszhi_stack_sample(
             (parse_cusz_time(enc_out) or enc_wall, parse_cusz_time(dec_out) or dec_wall),
             group_count=1,
             valid_mask=valid_mask,
-            extra_metrics={"memory_usage_MB": process_memory_usage_mb(), "memory_reserved_MB": None},
+            extra_metrics={"memory_usage_MB": max(enc_peak_mb, dec_peak_mb), "memory_reserved_MB": None},
         )
         add_lpips(metrics, args, arr, recon)
         metrics["codec_stdout_tail"] = ("\n" + enc_out + "\n" + dec_out)[-2000:]
@@ -1235,6 +1236,17 @@ def run_command(cmd: list[str], env: dict[str, str]) -> tuple[float, str]:
     if proc.returncode != 0:
         raise RuntimeError(f"Command failed ({proc.returncode}): {' '.join(cmd)}\n{proc.stdout[-4000:]}")
     return elapsed, proc.stdout
+
+
+def run_command_profiled(cmd: list[str], env: dict[str, str]) -> tuple[float, str, float]:
+    start = time.perf_counter()
+    proc, peak_mb = run_with_gpu_peak(
+        cmd, env=env, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+    )
+    elapsed = time.perf_counter() - start
+    if proc.returncode != 0:
+        raise RuntimeError(f"Command failed ({proc.returncode}): {' '.join(cmd)}\n{proc.stdout[-4000:]}")
+    return elapsed, proc.stdout, float(peak_mb or 0.0)
 
 
 def parse_visemz_time(output: str) -> float | None:

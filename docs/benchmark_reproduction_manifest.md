@@ -46,7 +46,7 @@ normalized_mse = mean_v(MSE_v / frozen_scale_v^2)
 normalized_psnr = -10 * log10(normalized_mse)
 ```
 
-`frozen_scale_v` 来自数据集完整 objective corpus，不按 sample 或模型重新计算。Kodak/UVG 使用 RGB PSNR、MS-SSIM 和 LPIPS；科学数据的 LPIPS 只作诊断，不作为主排名指标。
+`frozen_scale_v` 来自数据集完整 objective corpus，不按 sample 或模型重新计算。Kodak/UVG 使用全部原生 RGB 图像/帧计算 LPIPS；每个科学 canonical sample 使用冻结 normalization 后按展平顺序等距抽取的 32 个固定平面，将灰度复制为 RGB，只作诊断，不作为主排名指标。
 
 正式时间边界是 host memory 中的 canonical tensor 到内存 bitstream，再到 host memory 中完整重建 tensor。包括 H2D/D2H、模型内部归一化、padding、PCA、熵编码和重组；不包括磁盘读取、模型初始化、权重加载、指标计算和绘图。正式吞吐量必须使用 `2` 次预热和 `5` 次测量。
 

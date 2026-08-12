@@ -136,11 +136,12 @@ def repeated_roundtrip(
 
     for _ in range(warmups):
         run_once()
-    measured = [run_once() for _ in range(repeats)]
+    metric_only_probe = metric_call is not None and warmups == 0 and repeats == 1
+    measured = [metric_call()] if metric_only_probe else [run_once() for _ in range(repeats)]
     if not measured:
         raise ValueError("At least one measured repetition is required")
     result = dict(measured[0])
-    if metric_call is not None:
+    if metric_call is not None and not metric_only_probe:
         metric_result = metric_call()
         if metric_result is not None:
             for field in ("lpips", "ms_ssim"):
@@ -317,7 +318,10 @@ def image_point(
     wall = time.perf_counter() - wall_start
     lpips_value = None
     if lpips_fn is not None:
-        values = [lpips_fn(normalized[:, index], reconstruction[:, index]) for index in range(normalized.shape[1])]
+        values = (
+            [lpips_fn(normalized[:, index], reconstruction[:, index]) for index in range(normalized.shape[1])]
+            if dataset_id in GENERAL_DATASETS else [lpips_fn(normalized, reconstruction)]
+        )
         values = [value for value in values if isinstance(value, (int, float))]
         lpips_value = float(np.mean(values)) if values else None
     extras = {"lpips": lpips_value}
@@ -357,7 +361,7 @@ def run_image_models(args, samples, normalization, manifests, append) -> None:
             if group:
                 selected.append(group[len(group) // 2])
         jobs = selected
-    lpips_fn = make_lpips_fn("cuda") if args.dataset in GENERAL_DATASETS and not args.no_lpips else None
+    lpips_fn = make_lpips_fn("cuda", max_image_pairs=32 if args.dataset in SCIENTIFIC_DATASETS else None) if not args.no_lpips else None
 
     for job in jobs:
         print(f"[load] {job.model_id}", flush=True)
@@ -389,13 +393,13 @@ def run_image_models(args, samples, normalization, manifests, append) -> None:
             torch.cuda.empty_cache()
 
 
-def cusz_point(args, sample, normalized, output_dir, eb) -> dict[str, Any]:
+def cusz_point(args, sample, normalized, output_dir, eb, lpips_fn=None) -> dict[str, Any]:
     from scripts.run_external_scientific_codecs import run_cuszhi_stack_sample
 
     codec_args = SimpleNamespace(
         cuszhi=str(PROJECT_ROOT / "models/cuSZ-Hi/build/cuszhi"), cuszhi_scheme="huffman",
         cuszhi_predictor="lorenzo", cuszhi_min_abs_eb=1e-20, cuszhi_eb_reference="range",
-        cuszhi_robust_low=0.1, cuszhi_robust_high=99.9, lpips_fn=None,
+        cuszhi_robust_low=0.1, cuszhi_robust_high=99.9, lpips_fn=lpips_fn,
     )
     rows = []
     if args.dataset == "s2c":
@@ -430,6 +434,8 @@ def corpus_lpips(dataset_id: str, packed, reconstruction: np.ndarray, lpips_fn: 
     elif dataset_id == "uvg_twilight_1080p":
         for index in range(packed.volume.shape[1]):
             values.append(lpips_fn(packed.volume[:, index], reconstruction[:, index]))
+    else:
+        values.append(lpips_fn(packed.volume, reconstruction))
     values = [value for value in values if isinstance(value, (int, float))]
     return float(np.mean(values)) if values else None
 
@@ -480,7 +486,7 @@ def run_cusz(args, samples, normalized_samples, manifests, output_dir, append) -
             ),
             packed.metadata,
         )
-        lpips_fn = make_lpips_fn("cuda") if args.dataset in GENERAL_DATASETS and not args.no_lpips else None
+        lpips_fn = make_lpips_fn("cuda", max_image_pairs=32) if not args.no_lpips else None
         for eb in controls:
             try:
                 row = repeated_roundtrip(
@@ -500,6 +506,7 @@ def run_cusz(args, samples, normalized_samples, manifests, output_dir, append) -
         return
     if args.dataset not in SCIENTIFIC_DATASETS:
         return
+    lpips_fn = make_lpips_fn("cuda", max_image_pairs=32 if args.dataset in SCIENTIFIC_DATASETS else None) if not args.no_lpips else None
     for eb in controls:
         for sample, normalized, manifest in zip(samples, normalized_samples, manifests):
             fields = objective_fields(manifest, manifest["external_input_manifest"], args.hardware, "error_bounded")
@@ -507,6 +514,9 @@ def run_cusz(args, samples, normalized_samples, manifests, output_dir, append) -
                 row = repeated_roundtrip(
                     lambda s=sample, n=normalized: cusz_point(args, s, n, output_dir, eb),
                     args.warmups, args.repeats,
+                    metric_call=(
+                        lambda s=sample, n=normalized: cusz_point(args, s, n, output_dir, eb, lpips_fn)
+                    ) if lpips_fn is not None else None,
                 )
                 append(finalize_row(row, fields))
             except Exception as exc:
@@ -523,7 +533,6 @@ def j2k_point(sample, normalized, output_dir, target, lpips_fn: Callable | None 
             for index in range(normalized.shape[1])
         ]
     else:
-        lpips_fn = None
         partitions = [
             (
                 np.ascontiguousarray(normalized[variable]),
@@ -551,7 +560,7 @@ def run_j2k(args, samples, normalized_samples, manifests, output_dir, append) ->
     if "nvJPEG2000" not in args.models:
         return
     controls = [args.j2k_psnr[len(args.j2k_psnr) // 2]] if args.smoke else args.j2k_psnr
-    lpips_fn = make_lpips_fn("cuda") if args.dataset in GENERAL_DATASETS and not args.no_lpips else None
+    lpips_fn = make_lpips_fn("cuda", max_image_pairs=32 if args.dataset in SCIENTIFIC_DATASETS else None) if not args.no_lpips else None
     for target in controls:
         for sample, normalized, manifest in zip(samples, normalized_samples, manifests):
             fields = objective_fields(manifest, manifest["external_input_manifest"], args.hardware, "rgb_intra" if args.dataset in GENERAL_DATASETS else "scientific_numeric")
@@ -657,6 +666,7 @@ def run_caesar(args, samples, normalized_samples, manifests, output_dir, append)
     )
 
     controls = [args.caesar_eb[len(args.caesar_eb) // 2]] if args.smoke else args.caesar_eb
+    lpips_fn = make_lpips_fn("cuda") if not args.no_lpips else None
     if args.dataset in {"s2c", "kodak", "uvg_twilight_1080p"}:
         packed = pack_objective_corpus(args.dataset, normalized_samples, [sample.mask for sample in samples])
         fields = corpus_objective_fields(
@@ -666,7 +676,6 @@ def run_caesar(args, samples, normalized_samples, manifests, output_dir, append)
             ),
             packed.metadata,
         )
-        lpips_fn = make_lpips_fn("cuda") if args.dataset in GENERAL_DATASETS and not args.no_lpips else None
         for cli_name, model_name in [("CAESAR-V", "caesar_v"), ("CAESAR-D", "caesar_d")]:
             if cli_name not in requested:
                 continue
@@ -743,6 +752,11 @@ def run_caesar(args, samples, normalized_samples, manifests, output_dir, append)
                                     compressor, c, model_name, e, manifest["canonical_symbol_count"]
                                 ),
                                 args.warmups, args.repeats,
+                                metric_call=(
+                                    lambda e=eb, c=corpus: caesar_corpus_roundtrip(
+                                        compressor, c, model_name, e, manifest["canonical_symbol_count"], lpips_fn
+                                    )
+                                ) if lpips_fn is not None else None,
                             )
                             row = tag_caesar_variant(row, args, model_name, eb)
                             append(finalize_row(row, fields))

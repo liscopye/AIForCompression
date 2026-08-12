@@ -178,7 +178,10 @@ def reset_torch_peak_memory(device: str = "cuda") -> None:
         return
 
 
-def make_lpips_fn(device: str = "cuda") -> Callable[[np.ndarray, np.ndarray], float | None]:
+def make_lpips_fn(
+    device: str = "cuda",
+    max_image_pairs: int | None = None,
+) -> Callable[[np.ndarray, np.ndarray], float | None]:
     model = _lpips_model(device)
 
     def _calculate(original: np.ndarray, reconstructed: np.ndarray) -> float | None:
@@ -188,12 +191,28 @@ def make_lpips_fn(device: str = "cuda") -> Callable[[np.ndarray, np.ndarray], fl
             import torch
 
             values = []
+            original_batch = []
+            reconstructed_batch = []
+
+            def flush() -> None:
+                if not original_batch:
+                    return
+                original_tensor = torch.cat(original_batch, dim=0)
+                reconstructed_tensor = torch.cat(reconstructed_batch, dim=0)
+                result = model(original_tensor, reconstructed_tensor).reshape(-1)
+                values.extend(float(value) for value in result.detach().cpu().tolist())
+                original_batch.clear()
+                reconstructed_batch.clear()
+
             with torch.no_grad():
-                for original_image, reconstructed_image in _iter_lpips_image_pairs(original, reconstructed):
-                    original_tensor = _lpips_tensor(original_image, device)
-                    reconstructed_tensor = _lpips_tensor(reconstructed_image, device)
-                    value = model(original_tensor, reconstructed_tensor)
-                    values.append(float(value.mean().detach().cpu().item()))
+                for original_image, reconstructed_image in _iter_lpips_image_pairs(
+                    original, reconstructed, max_image_pairs=max_image_pairs,
+                ):
+                    original_batch.append(_lpips_tensor(original_image, device))
+                    reconstructed_batch.append(_lpips_tensor(reconstructed_image, device))
+                    if len(original_batch) == 4:
+                        flush()
+                flush()
             if not values:
                 return None
             return float(np.mean(values))
@@ -229,17 +248,19 @@ def _lpips_tensor(array: np.ndarray, device: str):
         arr = arr[:3]
     elif arr.shape[0] == 2:
         arr = np.concatenate([arr, arr[-1:]], axis=0)
-    arr_min = float(np.min(arr))
-    arr_max = float(np.max(arr))
-    if arr_max > arr_min:
-        arr = (arr - arr_min) / (arr_max - arr_min)
-    else:
-        arr = np.zeros_like(arr, dtype=np.float32)
+    # Callers provide the frozen dataset-normalized [0, 1] view.  Never apply
+    # per-image min/max here: that would give every sample/model a different
+    # rendering and make scientific LPIPS incomparable.
+    arr = np.clip(arr, 0.0, 1.0)
     arr = arr * 2.0 - 1.0
     return torch.from_numpy(arr[None]).to(device=device, dtype=torch.float32)
 
 
-def _iter_lpips_image_pairs(original: np.ndarray, reconstructed: np.ndarray):
+def _iter_lpips_image_pairs(
+    original: np.ndarray,
+    reconstructed: np.ndarray,
+    max_image_pairs: int | None = None,
+):
     if original.shape != reconstructed.shape:
         raise ValueError(f"LPIPS arrays must have the same shape, got {original.shape} and {reconstructed.shape}")
     if original.ndim == 2:
@@ -252,5 +273,8 @@ def _iter_lpips_image_pairs(original: np.ndarray, reconstructed: np.ndarray):
         raise ValueError(f"LPIPS expects at least 2D arrays, got {original.shape}")
     original_flat = original.reshape((-1,) + original.shape[-2:])
     reconstructed_flat = reconstructed.reshape((-1,) + reconstructed.shape[-2:])
-    for original_image, reconstructed_image in zip(original_flat, reconstructed_flat):
-        yield original_image, reconstructed_image
+    indices = np.arange(len(original_flat))
+    if max_image_pairs is not None and len(indices) > max_image_pairs:
+        indices = np.linspace(0, len(indices) - 1, max_image_pairs, dtype=np.int64)
+    for index in indices:
+        yield original_flat[index], reconstructed_flat[index]
