@@ -16,6 +16,7 @@
 | 检查结果是否合规 | `unified_results/objective_all_to_all_v1/objective_protocol_audit.md` |
 | 查看正式协议 | `benchmark_protocols/objective_v1.json` |
 | 了解完整复现参数 | `docs/benchmark_reproduction_manifest.md` |
+| 查看 ERA5 CAESAR-V 微调记录 | `docs/ERA5_CAESAR-V微调记录.md` |
 | 查看 ERA5/CAESAR 微调结论 | `docs/项目交接总览.md` |
 | 迁移到其他机器 | `docs/迁移到新机器指南.md` |
 
