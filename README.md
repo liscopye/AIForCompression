@@ -9,6 +9,7 @@
 | 想做什么 | 入口 |
 |---|---|
 | 浏览文档导航 | `docs/README.md` |
+| 激活环境并启动测试 | `docs/环境激活与测试启动.md` |
 | 理解 Pipeline 架构 | `docs/compression_pipeline概览.md` |
 | 查看全部正式结果 | `unified_results/objective_all_to_all_v1/index.html` |
 | 查看机器可读汇总 | `unified_results/objective_all_to_all_v1/combined_summary.json` |

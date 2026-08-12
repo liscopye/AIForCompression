@@ -4,6 +4,7 @@
 
 | 文档 | 用途 |
 |---|---|
+| `环境激活与测试启动.md` | 当前机器激活环境、smoke、普通测试与 Objective-v1 正式测试命令 |
 | `compression_pipeline概览.md` | Pipeline 架构、数据流、核心模块和扩展方法 |
 | `objective_benchmark_protocol.md` | 正式评测的公平性边界和指标定义 |
 | `benchmark_reproduction_manifest.md` | 数据、样本、EB、权重和完整复现参数 |
