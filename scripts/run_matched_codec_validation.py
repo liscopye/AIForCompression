@@ -182,6 +182,8 @@ def aggregate_rows(
         if isinstance(row.get(quality_key), (int, float)) and math.isfinite(float(row[quality_key]))
     ]
     wall = sum(float(row.get("sample_wall_time_total", 0)) for row in rows)
+    lpips_rows = [row for row in rows if isinstance(row.get("lpips"), (int, float))]
+    lpips_weight = sum(int(row.get("valid_voxel_count", row.get("voxel_count", 0))) for row in lpips_rows)
     result = dict(fields)
     result.update({
         "mse": mse,
@@ -204,6 +206,13 @@ def aggregate_rows(
         "sample_wall_time_total": wall,
         "sample_wall_throughput_MBps": original_bytes / wall / 1e6 if wall > 0 else None,
         "partition_count": len(rows),
+        "lpips": (
+            sum(
+                float(row["lpips"]) * int(row.get("valid_voxel_count", row.get("voxel_count", 0)))
+                for row in lpips_rows
+            ) / lpips_weight
+            if lpips_weight > 0 and len(lpips_rows) == len(rows) else None
+        ),
         "memory_usage_MB": max(
             (float(row["memory_usage_MB"]) for row in rows if isinstance(row.get("memory_usage_MB"), (int, float))),
             default=None,

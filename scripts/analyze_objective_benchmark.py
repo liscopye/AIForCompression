@@ -43,6 +43,14 @@ DATASET_LABELS = {
     "nyx": "NYX",
     "turb_rot_npz": "Turb-Rot",
 }
+DATASET_NOTES = {
+    "nyx": (
+        "NYX 波折说明：该 corpus 的原始值范围约为 0.058–115862，固定 min/max 归一化受极端大值主导，"
+        "绝大多数体素被压缩到接近 0 的很窄区间。通用学习模型的 checkpoint 档位是训练分布上的率失真档位，"
+        "在这种分布外数据上不保证按 BPP 单调；因此图中保留实测点和原始档位，不做排序修正或平滑。"
+        "显式 error bound 控制的 CAESAR 与 cuSZ 曲线可作为单调性对照。"
+    ),
+}
 
 
 def parse_args() -> argparse.Namespace:
@@ -282,23 +290,32 @@ def plot_lpips(dataset_id: str, points: list[dict[str, Any]], output: Path) -> N
     curves = sorted({row["curve"] for row in points if isinstance(row.get("lpips"), (int, float))})
     if not curves:
         return
-    fig, ax = plt.subplots(figsize=(8.8, 5.6), constrained_layout=True)
-    for index, curve in enumerate(curves):
-        rows = sorted(
-            (row for row in points if row["curve"] == curve and isinstance(row.get("lpips"), (int, float))),
-            key=lambda row: row["scientific_bpp_with_side_info"],
-        )
-        ax.plot(
-            [row["scientific_bpp_with_side_info"] for row in rows], [row["lpips"] for row in rows],
-            marker=MARKERS[index % len(MARKERS)], linewidth=1.8, markersize=5.5,
-            color=COLORS.get(curve, plt.get_cmap("tab20")(index)), label=curve,
-        )
-    ax.set_xscale("log")
-    ax.set_xlabel("BPP including required side information")
-    ax.set_ylabel("LPIPS (lower is better)")
-    ax.set_title(f"{dataset_id} · Perceptual RD", loc="left", fontweight="semibold")
-    ax.grid(True, which="both", alpha=0.22)
-    ax.legend(frameon=False, ncol=2)
+    grouped = []
+    for curve in curves:
+        curve_points = [row for row in points if row["curve"] == curve]
+        values = [float(row["lpips"]) for row in curve_points if isinstance(row.get("lpips"), (int, float))]
+        grouped.append((curve, min(values), statistics.mean(values), max(values)))
+    fig_width = max(8.8, 0.72 * len(grouped) + 2.4)
+    fig, ax = plt.subplots(figsize=(fig_width, 5.8), constrained_layout=True)
+    positions = np.arange(len(grouped))
+    means = [item[2] for item in grouped]
+    errors = [
+        [mean - minimum for _, minimum, mean, _ in grouped],
+        [maximum - mean for _, _, mean, maximum in grouped],
+    ]
+    colors = [COLORS.get(item[0], plt.get_cmap("tab20")(index)) for index, item in enumerate(grouped)]
+    bars = ax.bar(
+        positions, means, yerr=errors, color=colors, alpha=0.9,
+        error_kw={"ecolor": "#31363f", "elinewidth": 1.4, "capsize": 3},
+    )
+    ax.bar_label(bars, labels=[f"{mean:.3g}" for mean in means], padding=4, fontsize=8)
+    ax.set_xticks(positions, [item[0] for item in grouped], rotation=35, ha="right")
+    ax.set_ylabel("Mean LPIPS (lower is better); whiskers show control-point range")
+    ax.set_title(f"{dataset_id} · LPIPS by model", loc="left", fontweight="semibold")
+    ax.grid(True, axis="y", alpha=0.22)
+    ax.set_axisbelow(True)
+    ax.spines[["top", "right"]].set_visible(False)
+    ax.margins(y=0.18)
     fig.savefig(output, dpi=220)
     plt.close(fig)
 
@@ -353,10 +370,12 @@ def write_html(payload: dict[str, Any], root: Path) -> Path:
                 f'<figure><img loading="lazy" src="{image_data_uri(path)}" alt="{html.escape(dataset_id)} {label}"><figcaption>{label}</figcaption></figure>'
                 for path, label in image_items
             )
+            note = DATASET_NOTES.get(dataset_id)
+            note_html = f'<p class="dataset-note">{html.escape(note)}</p>' if note else ""
             blocks.append(f"""
               <details class="dataset" id="{html.escape(dataset_id)}">
                 <summary><span><b>{html.escape(DATASET_LABELS.get(dataset_id, dataset_id))}</b></span><span class="open-label">查看图表与明细</span></summary>
-                <div class="dataset-body"><div class="figures">{figures}</div></div>
+                <div class="dataset-body">{note_html}<div class="figures">{figures}</div></div>
               </details>
             """)
         sections.append(f'<section id="{category_id}"><h2>{category_label}</h2>{"".join(blocks)}</section>')
@@ -371,6 +390,7 @@ main{{max-width:1440px;margin:0 auto;padding:34px 28px 80px}}h1{{font-size:34px;
 .method{{padding:18px 20px;background:var(--wash);border-left:4px solid var(--accent);margin:0 0 36px}}.method p{{margin:4px 0}}section{{margin-top:46px}}h2{{font-size:25px;border-bottom:2px solid var(--ink);padding-bottom:8px;margin-bottom:20px}}
 .figures{{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;margin:18px 0 24px}}figure{{margin:0;min-width:0}}figure img{{display:block;width:100%;height:auto;border:1px solid var(--line)}}figcaption{{font-size:12px;color:var(--muted);margin-top:5px}}.table-wrap{{overflow:auto;border-block:1px solid var(--line)}}table{{border-collapse:collapse;width:100%;min-width:1080px;font-size:12px}}th,td{{padding:9px 10px;text-align:right;border-bottom:1px solid #eceef1;white-space:nowrap}}th:first-child,td:first-child{{text-align:left}}thead th{{color:var(--muted);font-weight:600;background:var(--wash)}}tbody th{{font-weight:600}}
 .dataset{{border-bottom:1px solid var(--line);scroll-margin-top:60px}}.dataset summary{{cursor:pointer;display:flex;justify-content:space-between;align-items:center;padding:16px 4px;list-style:none}}.dataset summary::-webkit-details-marker{{display:none}}.dataset summary b{{font-size:18px}}.open-label{{font-size:12px;color:var(--accent)}}.dataset[open] .open-label{{font-size:0}}.dataset[open] .open-label::after{{content:"收起";font-size:12px}}.dataset-body{{padding:0 0 34px}}
+.dataset-note{{margin:16px 0 0;padding:12px 15px;background:#fff8e8;border-left:3px solid var(--warm);color:#4b4236;font-size:14px}}
 footer{{color:var(--muted);font-size:12px;border-top:1px solid var(--line);padding-top:16px}}footer a{{color:var(--accent)}}
 @media(max-width:800px){{nav{{overflow:auto}}nav strong{{display:none}}main{{padding:24px 15px 60px}}h1{{font-size:28px}}.summary{{grid-template-columns:repeat(2,1fr)}}.metric:nth-child(2){{border-right:0}}.figures{{grid-template-columns:1fr}}article header{{display:block}}}}
 </style></head><body><nav><strong>Objective-v1</strong>{nav_links}</nav><main>

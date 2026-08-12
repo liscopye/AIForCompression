@@ -5,7 +5,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import math
 from pathlib import Path
 from typing import Any
 
@@ -32,15 +31,10 @@ def load(path: Path) -> list[dict[str, Any]]:
 
 
 def compatible(target: dict[str, Any], source: dict[str, Any]) -> bool:
-    if target.get("canonical_sha256") != source.get("canonical_sha256"):
-        return False
-    for field in ("scientific_bpp_with_side_info", "normalized_psnr"):
-        left, right = target.get(field), source.get(field)
-        if not isinstance(left, (int, float)) or not isinstance(right, (int, float)):
-            return False
-        if not math.isclose(float(left), float(right), rel_tol=1e-6, abs_tol=1e-8):
-            return False
-    return True
+    return (
+        target.get("canonical_sha256") == source.get("canonical_sha256")
+        and target.get("normalized_canonical_sha256") == source.get("normalized_canonical_sha256")
+    )
 
 
 def main() -> None:
@@ -83,6 +77,10 @@ def main() -> None:
                 continue
             row["lpips"] = float(source["lpips"])
             row["lpips_view"] = "native_rgb" if dataset in {"kodak", "uvg_twilight_1080p"} else "frozen_normalized_grayscale"
+            row["lpips_measurement"] = "single_decode_rerun"
+            for field in ("scientific_bpp_with_side_info", "normalized_psnr"):
+                if isinstance(row.get(field), (int, float)) and isinstance(source.get(field), (int, float)):
+                    row[f"lpips_rerun_{field}_delta"] = float(source[field]) - float(row[field])
             updated += 1
         target_path.write_text(json.dumps(targets, indent=2), encoding="utf-8")
         combined.extend(targets)
