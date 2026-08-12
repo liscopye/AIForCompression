@@ -19,6 +19,7 @@
 | `build_objective_all_to_all.py` | 合并正式来源并应用完整性/有效性筛选。 |
 | `audit_objective_benchmark.py` | 检查 objective 协议、覆盖率、指标和误差界。 |
 | `analyze_objective_benchmark.py` | 生成正式图表、表格和 HTML 总览。 |
+| `organize_objective_results.py` | 将散落的 objective 补测与专项结果按数据集归档到 `unified_results/objective_runs/`。 |
 
 ## Codec 与验证依赖
 
@@ -47,7 +48,6 @@
 
 | 文件 | 用途 |
 |---|---|
-| `download_jhtdb_local.py` | 下载 JHTDB 湍流数据供 isotropic 数据集使用。 |
 | `run_era5_hourly_download.sh` | 下载 ERA5 hourly pressure/single-level 数据并持续生成 shard。 |
 | `prepare_lysozyme_data.py` | 将 Lysozyme HDF5 转为训练/评测数组。 |
 | `run_turb_rot_benchmark.sh` | 本机 Turb_Rot 原始/tuned CAESAR 与图像模型整套评测及绘图。 |

@@ -74,8 +74,6 @@ Pipeline 的整体职责和扩展方法见 `docs/compression_pipeline概览.md`�
 - `DCAE`
 - `LIC_TCM`
 - `LIC-HPCM`
-- `RwkvCompress`
-- `WeConvene`
 - `DCVC-RT` intra wrapper
 - `DCMVC` intra wrapper
 
