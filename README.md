@@ -177,7 +177,6 @@ unified_results/
 ## 深入阅读
 
 - `docs/结果目录索引.md`：哪些结果应看、哪些已废弃。
-- `docs/benchmark_observation_analysis.md`：主结果的简要观察。
 - `docs/benchmark_reproduction_manifest.md`：数据、EB、权重和完整命令。
 - `docs/objective_benchmark_protocol.md`：公平性边界与指标定义。
 - `docs/项目交接总览.md`：ERA5/CAESAR 权重、结论和项目状态。
