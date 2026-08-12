@@ -67,7 +67,7 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--data_root", required=True)
     parser.add_argument("--output_dir", required=True)
-    parser.add_argument("--models", nargs="+", default=["cuSZ-Hi", "visemz", "GraphComp"])
+    parser.add_argument("--models", nargs="+", default=["cuSZ-Hi-3D", "visemz", "GraphComp"])
     parser.add_argument("--max_samples", type=int, default=64)
     parser.add_argument("--resolution", type=int, nargs=2, default=None, metavar=("H", "W"))
     parser.add_argument("--npz_image_mode", choices=["auto", "variables", "sections"], default="auto")
@@ -143,12 +143,9 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--cuszhi_sample_mode",
-        choices=["auto", "channelwise", "stack", "whole3d"],
-        default="auto",
-        help=(
-            "cuSZ-Hi sample layout. auto uses stack for Turb_Rot and channelwise otherwise. "
-            "whole3d is an explicit alias for stack."
-        ),
+        choices=["stack", "whole3d"],
+        default="whole3d",
+        help="cuSZ-Hi always compresses the complete [Z,H,W] sample as one 3D volume; stack is an alias.",
     )
     parser.add_argument("--visemz_bin", default=str(DEFAULT_VISMS))
     parser.add_argument("--visemz_analysis", default=str(DEFAULT_VISEMZ_ANALYSIS))
@@ -184,11 +181,7 @@ def main() -> None:
 
     for requested in args.models:
         model, model_id_name, cuszhi_mode_override = normalize_model_request(requested)
-        if (
-            model == "cuSZ-Hi"
-            and cuszhi_mode_override is None
-            and args.cuszhi_sample_mode in {"stack", "whole3d"}
-        ):
+        if model == "cuSZ-Hi":
             model_id_name = "cuSZ-Hi-3D"
         for eb in args.eb:
             for sample in samples:
@@ -894,27 +887,16 @@ def run_cuszhi_sample(
     arr = np.ascontiguousarray(sample.array.astype(np.float32, copy=False))
     arr, valid_mask, mask_metrics = prepare_codec_array(sample, args, arr)
     mode = mode_override or args.cuszhi_sample_mode
-    if mode == "auto":
-        mode = "stack" if sample.dataset_id == "turb_rot_npz" else "channelwise"
-    if mode in {"stack", "whole3d"}:
-        return run_cuszhi_stack_sample(
-            sample,
-            args,
-            eb,
-            output_dir,
-            arr,
-            exe,
-            requested_mode=mode,
-            valid_mask=valid_mask,
-            mask_metrics=mask_metrics,
-        )
-    return run_cuszhi_channelwise_sample(
+    if mode not in {"stack", "whole3d"}:
+        raise ValueError(f"cuSZ-Hi only supports 3D stack mode, got {mode!r}")
+    return run_cuszhi_stack_sample(
         sample,
         args,
         eb,
         output_dir,
         arr,
         exe,
+        requested_mode="whole3d",
         valid_mask=valid_mask,
         mask_metrics=mask_metrics,
     )
@@ -1002,110 +984,6 @@ def run_cuszhi_stack_sample(
         if return_reconstruction:
             metrics["_reconstruction"] = recon
         return metrics
-
-
-def run_cuszhi_channelwise_sample(
-    sample: CanonicalSample,
-    args: argparse.Namespace,
-    eb: float,
-    output_dir: Path,
-    arr: np.ndarray,
-    exe: Path,
-    valid_mask: np.ndarray | None = None,
-    mask_metrics: dict | None = None,
-) -> dict:
-    wall_start = time.perf_counter()
-    channels, height, width = arr.shape
-    recon_channels = []
-    bitstream_bytes = 0
-    encode_time = 0.0
-    decode_time = 0.0
-    requested_abs_ebs = []
-    max_abs_errors = []
-    with tempfile.TemporaryDirectory(prefix="cuszhi_", dir=output_dir) as tmp_dir:
-        tmp = Path(tmp_dir)
-        env = os.environ.copy()
-        env["LD_LIBRARY_PATH"] = prepend_ld_library_path(env, exe.parent)
-        stdout_tail = ""
-        for channel in range(channels):
-            channel_arr = np.ascontiguousarray(arr[channel : channel + 1])
-            channel_mask = valid_mask[channel : channel + 1] if valid_mask is not None else None
-            raw = tmp / f"{sample.sample_id}_c{channel}.f32"
-            channel_arr.tofile(raw)
-            data_range = cuszhi_error_reference_range(channel_arr, args, channel_mask)
-            range_for_eb = data_range if data_range >= 1e-8 else 1.0
-            abs_eb = max(float(eb) * range_for_eb, float(args.cuszhi_min_abs_eb))
-            requested_abs_ebs.append(abs_eb)
-            enc_cmd = [
-                str(exe),
-                "--report",
-                "time,cr",
-                "-z",
-                "-t",
-                "f32",
-                "-m",
-                "abs",
-                "--dim3",
-                f"{width}x{height}x1",
-                "-e",
-                str(abs_eb),
-                "--predictor",
-                args.cuszhi_predictor,
-                "-i",
-                str(raw),
-                "-s",
-                args.cuszhi_scheme,
-            ]
-            enc_wall, enc_out = run_command(enc_cmd, env=env)
-            comp = raw.with_suffix(raw.suffix + ".cusza")
-            if not comp.exists():
-                raise RuntimeError(f"cuSZ-Hi did not write compressed file. Output:\n{enc_out[-2000:]}")
-            dec_cmd = [str(exe), "--report", "time", "-x", "-i", str(comp), "--compare", str(raw)]
-            dec_wall, dec_out = run_command(dec_cmd, env=env)
-            recon_path = raw.with_suffix(raw.suffix + ".cuszx")
-            if not recon_path.exists():
-                raise RuntimeError(f"cuSZ-Hi did not write decompressed file. Output:\n{dec_out[-2000:]}")
-            recon_channel = np.fromfile(recon_path, dtype=np.float32).reshape(channel_arr.shape)
-            recon_channels.append(recon_channel)
-            channel_error = np.abs(
-                (channel_arr - recon_channel)[channel_mask] if channel_mask is not None else (channel_arr - recon_channel)
-            )
-            max_abs_errors.append(float(np.max(channel_error)) if channel_error.size else 0.0)
-            bitstream_bytes += comp.stat().st_size
-            encode_time += parse_cusz_time(enc_out) or enc_wall
-            decode_time += parse_cusz_time(dec_out) or dec_wall
-            stdout_tail = (stdout_tail + "\n" + enc_out + "\n" + dec_out)[-2000:]
-    recon = np.concatenate(recon_channels, axis=0)
-    wall_time = time.perf_counter() - wall_start
-    error_values = np.abs((arr - recon)[valid_mask] if valid_mask is not None else (arr - recon))
-    max_abs_error = float(np.max(error_values)) if error_values.size else 0.0
-    metrics = base_metrics(
-        arr,
-        recon,
-        bitstream_bytes,
-        (encode_time, decode_time),
-        group_count=channels,
-        valid_mask=valid_mask,
-        extra_metrics={"memory_usage_MB": process_memory_usage_mb(), "memory_reserved_MB": None},
-    )
-    add_lpips(metrics, args, arr, recon)
-    metrics["codec_stdout_tail"] = stdout_tail
-    metrics["cuszhi_channelwise"] = True
-    metrics["cuszhi_sample_mode"] = "channelwise"
-    metrics["cuszhi_min_abs_eb"] = float(args.cuszhi_min_abs_eb)
-    metrics["max_abs_error"] = max_abs_error
-    metrics["requested_abs_eb_by_channel"] = requested_abs_ebs
-    metrics["max_abs_error_by_channel"] = max_abs_errors
-    metrics["error_bound_satisfied"] = bool(all(
-        error <= bound * (1.0 + 1e-4) + 1e-12
-        for error, bound in zip(max_abs_errors, requested_abs_ebs)
-    ))
-    metrics["sample_wall_time_total"] = wall_time
-    metrics["sample_wall_throughput_MBps"] = metrics["original_bytes"] / wall_time / 1e6 if wall_time > 0 else None
-    metrics["cuszhi_eb_reference"] = args.cuszhi_eb_reference
-    if mask_metrics:
-        metrics.update(mask_metrics)
-    return metrics
 
 
 def cuszhi_error_reference_range(
@@ -1379,9 +1257,9 @@ def prepend_ld_library_path(env: dict[str, str], *paths: Path) -> str:
 
 def normalize_model_request(name: str) -> tuple[str, str, str | None]:
     aliases = {
-        "cuszhi": ("cuSZ-Hi", "cuSZ-Hi", None),
-        "cusz-hi": ("cuSZ-Hi", "cuSZ-Hi", None),
-        "cuSZ-Hi": ("cuSZ-Hi", "cuSZ-Hi", None),
+        "cuszhi": ("cuSZ-Hi", "cuSZ-Hi-3D", "whole3d"),
+        "cusz-hi": ("cuSZ-Hi", "cuSZ-Hi-3D", "whole3d"),
+        "cuSZ-Hi": ("cuSZ-Hi", "cuSZ-Hi-3D", "whole3d"),
         "cuszhi-3d": ("cuSZ-Hi", "cuSZ-Hi-3D", "whole3d"),
         "cusz-hi-3d": ("cuSZ-Hi", "cuSZ-Hi-3D", "whole3d"),
         "cuSZ-Hi-3D": ("cuSZ-Hi", "cuSZ-Hi-3D", "whole3d"),
