@@ -71,14 +71,14 @@ def test_iter_samples_pads_last_section_group_by_repeating_last_section(tmp_path
     np.testing.assert_array_equal(samples[0].array[2], data[0, 3, 0])
 
 
-def test_load_sequence_selects_one_section_for_caesar_vthw(tmp_path):
+def test_load_sequence_stacks_three_sections_for_single_variable_caesar_vthw(tmp_path):
     npz_path = tmp_path / "tiny_turb_rot.npz"
     data = _write_tiny_turb_rot(npz_path)
 
     sequence, timestamps = TurbRotNPZAdapter(npz_path, section_index=2).load_sequence(max_samples=4)
 
-    assert sequence.shape == (1, 4, 6, 7)
-    np.testing.assert_array_equal(sequence, data[:, 2, :4])
+    assert sequence.shape == (3, 4, 6, 7)
+    np.testing.assert_array_equal(sequence, data[0, [2, 3, 3], :4])
     assert timestamps == [
         "turb_rot_t0000",
         "turb_rot_t0001",

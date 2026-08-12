@@ -66,7 +66,7 @@ def run_repetition(args: argparse.Namespace, model: str, index: int, measured_lp
     command = [
         sys.executable,
         "-u",
-        str(PROJECT_ROOT / "scripts/test_uvg_pframe.py"),
+        str(PROJECT_ROOT / "scripts/run_uvg_pframe_codecs.py"),
         "--model", model,
         "--data_dir", str(args.root / DATASET_ID / "frames"),
         "--output_dir", str(run_dir),

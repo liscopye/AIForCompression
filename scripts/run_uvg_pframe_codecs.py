@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Minimal single-process P-frame test for DCVC-RT and DCMVC on UVG PNG frames."""
+"""Run DCVC-RT and DCMVC P-frame codecs on canonical UVG PNG frames."""
 import argparse, json, os, struct, sys, time
 from pathlib import Path
 
