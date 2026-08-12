@@ -22,7 +22,6 @@ fi
   date -u '+started_utc=%Y-%m-%dT%H:%M:%SZ'
   printf 'data_dir=%s\n' "$DATA_DIR"
   printf 'lowrate_source=%s\n' "$LOWRATE_SOURCE"
-  printf 'decoder_10k_source=%s\n' "$DECODER_10K_SOURCE"
   printf 'objective=frozen_encoder_decoder_quality_100k\n'
   sha256sum "$LOWRATE_SOURCE"
 } >"$OUTPUT_DIR/source_manifest.txt"

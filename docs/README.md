@@ -11,7 +11,6 @@
 | `Data数据资产盘点.md` | `/workspace/Data` 每个数据集的下载量、本地占用、格式和派生副本 |
 | `结果目录索引.md` | 正式结果、专项结果和诊断证据的位置 |
 | `项目交接总览.md` | 当前项目状态与 ERA5/CAESAR 最终交接 |
-| `ERA5_CAESAR失败尝试记录.md` | ERA5 CAESAR 有效但未默认交付的曲线，以及已验证失败的训练方向 |
 | `迁移到新机器指南.md` | 新机器安装、数据和权重复制及迁移验收 |
 
 机器可读正式协议位于 `benchmark_protocols/objective_v1.json`；正式结果入口是 `unified_results/objective_all_to_all_v1/index.html`。

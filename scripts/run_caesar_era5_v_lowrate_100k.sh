@@ -3,38 +3,37 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DATA_DIR="${ERA5_SHARD_DIR:-/workspace/Data/ERA5/hourly_center512_shards_20240301_90d}"
-LOWRATE_DIR="$ROOT/checkpoints/caesar_era5_vd_lowrate_100k"
-OUTPUT_DIR="${CAESAR_D_DECODER_100K_DIR:-$ROOT/checkpoints/caesar_era5_d_decoder_quality_100k}"
-LOG_DIR="${CAESAR_D_DECODER_100K_LOG_DIR:-$ROOT/logs/caesar_era5_d_decoder_quality_100k}"
+OUTPUT_DIR="${CAESAR_V_LOWRATE_100K_DIR:-$ROOT/checkpoints/caesar_era5_vd_lowrate_100k}"
+LOG_DIR="${CAESAR_V_LOWRATE_100K_LOG_DIR:-$ROOT/logs/caesar_era5_v_lowrate_100k}"
+V_SOURCE="$ROOT/checkpoints/caesar/caesar_v.pt"
 
 source /workspace/ai4cp/bin/activate
 mkdir -p "$OUTPUT_DIR" "$LOG_DIR"
+test -f "$V_SOURCE"
 wandb login --verify >/dev/null
 
-lam3_lowrate="$LOWRATE_DIR/d_s1_lr1em5_lam3em4_full100k_update100000.pt"
-for source in "$lam3_lowrate"; do
-  test -f "$source"
-done
+actual_days=$(find "$DATA_DIR" -maxdepth 1 -name '*_hourly.npy' -type f 2>/dev/null | wc -l)
+if [[ "$actual_days" -lt 90 ]]; then
+  echo "Refusing to start: found $actual_days/90 completed ERA5 shards in $DATA_DIR" >&2
+  exit 2
+fi
 
 {
   date -u '+started_utc=%Y-%m-%dT%H:%M:%SZ'
   printf 'data_dir=%s\n' "$DATA_DIR"
-  printf 'objective=frozen_rate_caesar_d_stage1_decoder_quality_100k\n'
-  printf 'trainable_scope=decoder\n'
+  printf 'v_source=%s\n' "$V_SOURCE"
   printf 'iterations=100000\n'
-  sha256sum "$lam3_lowrate"
+  printf 'optimizer_restart=from_original\n'
+  sha256sum "$V_SOURCE"
 } >"$OUTPUT_DIR/source_manifest.txt"
 
 common=(
-  --model_type D
   --stage 1
   --data_backend npy_shards
   --data_dir "$DATA_DIR"
   --train_timesteps 1776
   --val_timesteps 384
-  --n_frame 16
   --frame_step 24
-  --temporal_stride 1
   --netcdf_val_channel_stride 4
   --netcdf_max_open_file_pairs 8
   --train_size 256
@@ -45,32 +44,37 @@ common=(
   --iterations 100000
   --rate_mode bpp
   --distortion_domain normalized
-  --lambda_rate 0
-  --trainable_scope decoder
-  --warmup_updates 250
-  --log_interval 200
-  --val_interval 2500
+  --warmup_updates 500
+  --log_interval 100
+  --val_interval 10000
   --save_interval 25000
   --milestone_steps 10000 25000 50000 75000 100000
   --norm_type mean_range
+  --lr 1e-5
   --wandb_project caesar-era5-hourly-tuning
-  --wandb_group d-stage1-frozen-rate-decoder-quality-100k
-  --wandb_tags era5 caesar-d stage1 decoder-only frozen-rate quality-recovery 100k
+  --wandb_group v-lowrate-from-original-100k
+  --wandb_tags era5 daily-cadence low-rate from-original full-100k
   --require_wandb
   --device cuda:0
 )
 
 run_one() {
   local gpu="$1"
-  local name="$2"
-  local source="$3"
-  local lr="$4"
+  local model="$2"
+  local name="$3"
+  local lambda_rate="$4"
+  local checkpoint="$V_SOURCE"
+  local n_frame=8
+  local temporal_stride=8
 
-  echo "GPU $gpu: $name source=$(basename "$source") lr=$lr"
+  echo "GPU $gpu: $name model=$model source=$checkpoint lambda=$lambda_rate"
   CUDA_VISIBLE_DEVICES="$gpu" python -u "$ROOT/scripts/finetune_caesar_era5.py" \
     "${common[@]}" \
-    --ckpt_path "$source" \
-    --lr "$lr" \
+    --model_type "$model" \
+    --n_frame "$n_frame" \
+    --temporal_stride "$temporal_stride" \
+    --ckpt_path "$checkpoint" \
+    --lambda_rate "$lambda_rate" \
     --output_ckpt "$OUTPUT_DIR/$name.pt" \
     --wandb_run_name "$name" \
     >"$LOG_DIR/$name.log" 2>&1
@@ -82,15 +86,16 @@ names=()
 
 launch() {
   local gpu="$1"
-  local name="$2"
-  local source="$3"
-  local lr="$4"
-  run_one "$gpu" "$name" "$source" "$lr" &
+  local model="$2"
+  local name="$3"
+  local lambda_rate="$4"
+  run_one "$gpu" "$model" "$name" "$lambda_rate" &
   pids+=("$!")
   names+=("$name")
 }
 
-launch 5 lam3em4_from_lowrate_lr3em4 "$lam3_lowrate" 3e-4
+# Retain only the Stage-1 path used by the selected ERA5 CAESAR-V model.
+launch 4 V v_lr1em5_lam1em3_full100k 1e-3
 
 failed=0
 for index in "${!pids[@]}"; do

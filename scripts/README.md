@@ -31,18 +31,15 @@
 | `analyze_dataset_structure.py` | 跨 adapter 检查数据 shape、range、样本组织和 3D packing。 |
 | `analyze_benchmark_observations.py` | 从正式结果重建 benchmark 观察报告和 CSV。 |
 
-## 最佳 ERA5 CAESAR 微调链
+## ERA5 CAESAR-V 微调链
 
-以下四个 shell 脚本按顺序运行，共同调用 `finetune_caesar_era5.py`；最后一步调用 `package_caesar_d_stage1.py` 生成完整 D checkpoint。
+以下两个 shell 脚本按顺序运行，共同调用 `finetune_caesar_era5.py`。仓库没有保留未经完整正式评测的 ERA5 CAESAR-D 微调路径；正式 D 评测使用 original checkpoint。
 
 | 文件 | 用途 |
 |---|---|
-| `run_caesar_era5_vd_lowrate_100k.sh` | 训练最终 V/D 使用的低码率 Stage1 起点。 |
+| `run_caesar_era5_v_lowrate_100k.sh` | 训练最终 V 使用的低码率 Stage1 起点。 |
 | `run_caesar_era5_v_decoder_quality_100k.sh` | 训练最终 CAESAR-V decoder。 |
-| `run_caesar_era5_d_decoder_quality_100k.sh` | 训练最终 CAESAR-D Stage1 decoder。 |
-| `run_caesar_era5_d_stage2_overlap_5k.sh` | 训练 matching Stage2 并打包最终完整 D。 |
 | `finetune_caesar_era5.py` | ERA5 shard 数据、Stage1/Stage2、验证和 checkpoint 保存的共享实现。 |
-| `package_caesar_d_stage1.py` | 将选定 VAE 与 diffusion 合并为完整 CAESAR-D checkpoint。 |
 
 ## 数据获取与预处理
 

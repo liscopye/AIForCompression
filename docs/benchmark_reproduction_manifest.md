@@ -87,7 +87,7 @@ ERA5 当前低码率和图像 codec 过渡区的最佳 CAESAR-V 微调权重：
 checkpoints/caesar_era5_v_decoder_quality_100k/from_lowrate_lr3em4.pt
 ```
 
-它是在低码率 100k 权重上冻结 encoder/entropy-rate 路径、只微调 decoder 的验证集最佳权重。旧 `caesar_era5_daily_v_full_100k` 是一条有效且在部分高质量区非支配的历史曲线，但其 checkpoint 已于 2026-08-11 清理；结果 JSON 和图仍保存在 `unified_results_backup_20260811/`。详细边界见 `ERA5_CAESAR失败尝试记录.md` 第 2 节。
+它是在低码率 100k 权重上冻结 encoder/entropy-rate 路径、只微调 decoder 的验证集最佳权重。旧 `caesar_era5_daily_v_full_100k` 是一条有效且在部分高质量区非支配的历史曲线，但其 checkpoint 已于 2026-08-11 清理；结果 JSON 和图仍保存在 `unified_results_backup_20260811/`。
 
 ## 4. 数据集和 canonical 输入
 
@@ -249,39 +249,30 @@ python scripts/analyze_objective_benchmark.py \
 9. 正式吞吐量使用 `2+5`；快速 RD 可以 `0+1`，但必须在结果 manifest 中标注。
 10. 合并前运行 strict audit；失败点保留在原始 JSON，主图只使用通过 gate 的有效点。
 
-## 9. ERA5 最佳微调模型
+## 9. ERA5 CAESAR-V 微调模型
 
-ERA5 只保留当前最佳 V/D 微调权重，不再保留搜索网格、中间里程碑和失败候选。
+ERA5 只保留经过筛选的 CAESAR-V 微调权重，不保留搜索网格、中间里程碑和失败候选。CAESAR-D 没有完成可作为正式结论的微调评测，因此只保留 original checkpoint 和通用 benchmark 支持。
 
 | 用途 | 权重 | SHA-256 |
 |---|---|---|
 | CAESAR-V original | `checkpoints/caesar/caesar_v.pt` | `4acebeb189ab0f8b99de167326cc32b5390bc9c5025a85d9502641b73a7ad355` |
 | CAESAR-D original | `checkpoints/caesar/caesar_d.pt` | `3cb2bbadbd9756275504500801f2b28f32ce6320fd084d7d63c4d8178cfbdbbe` |
 | ERA5 V 最佳 | `checkpoints/caesar_era5_v_decoder_quality_100k/from_lowrate_lr3em4.pt` | `e44f2951844d6e873b024b4c288da315e50d015f9d323262e24b5d1e5e7dae57` |
-| ERA5 D 最佳 | `checkpoints/caesar_era5_d_complete_candidates/lam3em4_decoder100k_stage2_overlap5000.pt` | `658ee9c282c9df62786153f33c619a1345952f0db840686166c04666b0ee712e` |
 
-最佳模型训练链只保留以下四个入口，必须按顺序运行：
+V 微调链只保留以下两个入口，必须按顺序运行：
 
 ```bash
-bash scripts/run_caesar_era5_vd_lowrate_100k.sh
+bash scripts/run_caesar_era5_v_lowrate_100k.sh
 bash scripts/run_caesar_era5_v_decoder_quality_100k.sh
-bash scripts/run_caesar_era5_d_decoder_quality_100k.sh
-bash scripts/run_caesar_era5_d_stage2_overlap_5k.sh
 ```
 
-四个脚本已经删去未入选的并行候选，只生成最终 V/D 所需路径；共同训练实现为
-`scripts/finetune_caesar_era5.py`。训练链会重新生成中间 Stage1/Stage2 权重，仓库只长期保留最终完整权重。
+两个脚本只生成最终 V 所需路径；共同训练实现为 `scripts/finetune_caesar_era5.py`。训练链会重新生成中间 Stage1 权重，仓库只长期保留最终入选权重。
 
-最佳 V 是低码率 Stage1 后冻结编码器和码率路径、只优化 decoder 的 100k 路径。最佳 D 使用
-`lambda_rate=3e-4` 的 Stage1 decoder 与 5k matching Stage2。更长 Stage2、hard-channel、
-x0/hybrid 和其他网格均未通过真实 codec/sampling 筛选，相关权重与脚本已经清理。
+最佳 V 是低码率 Stage1 后冻结编码器和码率路径、只优化 decoder 的 100k 路径。
 
 既有正式结果仍位于：
 
 ```text
 unified_results/objective_runs/era5_npy/objective_era5_caesar_v_decoder_final_rd/
-unified_results/objective_runs/era5_npy/objective_era5_caesar_d_decoder100k_stage2_overlap5k_rd/
 unified_results/objective_all_to_all_v1/
 ```
-
-失败实验的结论保留在 `docs/ERA5_CAESAR失败尝试记录.md`，但已删除入口不再作为可执行脚本。

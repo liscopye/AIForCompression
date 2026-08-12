@@ -17,7 +17,6 @@
 | 查看正式协议 | `benchmark_protocols/objective_v1.json` |
 | 了解完整复现参数 | `docs/benchmark_reproduction_manifest.md` |
 | 查看 ERA5/CAESAR 微调结论 | `docs/项目交接总览.md` |
-| 查看失败尝试 | `docs/ERA5_CAESAR失败尝试记录.md` |
 | 迁移到其他机器 | `docs/迁移到新机器指南.md` |
 
 最简单的阅读方式是用浏览器打开：
@@ -154,11 +153,10 @@ unified_results/
 │   ├── era5_npy/<run_name>/
 │   ├── uvg_twilight_1080p/<run_name>/
 │   └── <dataset>/<run_name>/
-├── diagnostic_caesar_d_stage2_cpu_full268/          # Stage2 选择证据
 └── diagnostics/                                     # 失败实验机器记录
 ```
 
-`objective_all_to_all_v1` 是跨模型主排名，页面及正式 JSON 保持自包含；`objective_runs` 保存生成正式结果时的来源记录，避免补测目录散落在 `unified_results/` 根目录。ERA5 微调专项位于 `objective_runs/era5_npy/`，不能只看主目录判断微调效果。可用 `python scripts/organize_objective_results.py` 预览归档计划，确认后加 `--execute` 执行。
+`objective_all_to_all_v1` 是跨模型主排名，页面及正式 JSON 保持自包含；`objective_runs` 保存生成正式结果时的来源记录，避免补测目录散落在 `unified_results/` 根目录。ERA5 CAESAR-V 微调专项位于 `objective_runs/era5_npy/`。可用 `python scripts/organize_objective_results.py` 预览归档计划，确认后加 `--execute` 执行。
 
 ## 仓库结构
 
@@ -180,5 +178,4 @@ unified_results/
 - `docs/benchmark_reproduction_manifest.md`：数据、EB、权重和完整命令。
 - `docs/objective_benchmark_protocol.md`：公平性边界与指标定义。
 - `docs/项目交接总览.md`：ERA5/CAESAR 权重、结论和项目状态。
-- `docs/ERA5_CAESAR失败尝试记录.md`：失败方向及避免重复训练的建议。
 - `docs/迁移到新机器指南.md`：新机器的软件安装、数据和权重复制及迁移验收。
