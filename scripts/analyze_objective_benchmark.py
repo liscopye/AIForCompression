@@ -355,7 +355,7 @@ def write_html(payload: dict[str, Any], root: Path) -> Path:
             )
             blocks.append(f"""
               <details class="dataset" id="{html.escape(dataset_id)}">
-                <summary><span><b>{html.escape(DATASET_LABELS.get(dataset_id, dataset_id))}</b><small>{dataset['raw_rows']} 条合规记录 · {len(dataset['points'])} 个完整 corpus 点（{len(dataset['pareto_points'])} 个 Pareto 点）</small></span><span class="open-label">查看图表与明细</span></summary>
+                <summary><span><b>{html.escape(DATASET_LABELS.get(dataset_id, dataset_id))}</b></span><span class="open-label">查看图表与明细</span></summary>
                 <div class="dataset-body"><div class="figures">{figures}</div></div>
               </details>
             """)
