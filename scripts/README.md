@@ -52,4 +52,4 @@
 | `prepare_lysozyme_data.py` | 将 Lysozyme HDF5 转为训练/评测数组。 |
 | `run_turb_rot_benchmark.sh` | 本机 Turb_Rot 原始/tuned CAESAR 与图像模型整套评测及绘图。 |
 
-正式工作流的参数和数据协议仍以 `docs/benchmark_reproduction_manifest.md` 与 `docs/dataset_model_processing_spec.md` 为准。
+正式工作流的参数和数据协议以 `docs/benchmark_reproduction_manifest.md` 与 `benchmark_protocols/objective_v1.json` 为准。

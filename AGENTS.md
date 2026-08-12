@@ -61,7 +61,7 @@ AIForCompression/
 - `isot1024`：各向同性湍流 HDF5 速度数据。
 - `lysozyme`：CHESS lysozyme HDF5 衍射帧。
 
-Pipeline 的整体职责和扩展方法见 `docs/compression_pipeline概览.md`。数据集和模型的详细处理规则见 `docs/dataset_model_processing_spec.md`。通道分组、归一化、CAESAR 序列形状、BPP、PSNR、LPIPS、显存和吞吐量均以后者为评测契约。
+Pipeline 的整体职责和扩展方法见 `docs/compression_pipeline概览.md`。正式数据集和模型的处理规则见 `docs/benchmark_reproduction_manifest.md`，机器可读的评测契约见 `benchmark_protocols/objective_v1.json`。通道分组、归一化、CAESAR 序列形状、BPP、PSNR、LPIPS、显存和吞吐量以这两者为准。
 
 面向图像模型的 adapter 必须输出 `CanonicalSample(layout="channel_height_width")`。支持序列的 adapter 还可以实现 `load_sequence()`，为 CAESAR 返回 `[V,T,H,W]` 和时间戳。
 

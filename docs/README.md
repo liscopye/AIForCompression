@@ -8,7 +8,6 @@
 | `compression_pipeline概览.md` | Pipeline 架构、数据流、核心模块和扩展方法 |
 | `objective_benchmark_protocol.md` | 正式评测的公平性边界和指标定义 |
 | `benchmark_reproduction_manifest.md` | 数据、样本、EB、权重和完整复现参数 |
-| `dataset_model_processing_spec.md` | 各数据集与模型的输入、归一化和指标处理规范 |
 | `Data数据资产盘点.md` | `/workspace/Data` 每个数据集的下载量、本地占用、格式和派生副本 |
 | `benchmark_observation_analysis.md` | objective-v1 主结果观察 |
 | `结果目录索引.md` | 正式结果、专项结果和诊断证据的位置 |

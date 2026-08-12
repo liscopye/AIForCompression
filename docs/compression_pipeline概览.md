@@ -183,7 +183,7 @@ python scripts/audit_objective_benchmark.py \
 
 ## 11. 进一步阅读
 
-- `docs/dataset_model_processing_spec.md`：逐数据集、逐模型的精确处理规范。
+- `docs/Data数据集.md`：本机数据集内容、格式与路径。
 - `docs/objective_benchmark_protocol.md`：正式公平性和指标定义。
 - `docs/benchmark_reproduction_manifest.md`：正式样本、参数、权重与命令。
 - `docs/结果目录索引.md`：结果应该写到哪里、正式结果在哪里。
