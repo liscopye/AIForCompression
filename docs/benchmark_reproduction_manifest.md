@@ -279,8 +279,8 @@ x0/hybrid 和其他网格均未通过真实 codec/sampling 筛选，相关权重
 既有正式结果仍位于：
 
 ```text
-unified_results/objective_era5_caesar_v_decoder_final_rd/
-unified_results/objective_era5_caesar_d_decoder100k_stage2_overlap5k_rd/
+unified_results/objective_runs/era5_npy/objective_era5_caesar_v_decoder_final_rd/
+unified_results/objective_runs/era5_npy/objective_era5_caesar_d_decoder100k_stage2_overlap5k_rd/
 unified_results/objective_all_to_all_v1/
 ```
 

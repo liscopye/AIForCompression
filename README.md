@@ -148,17 +148,16 @@ python scripts/audit_objective_benchmark.py \
 
 ```text
 unified_results/
-├── objective_all_to_all_v1/                         # 正式全模型主结果
-├── objective_era5_caesar_v_decoder_final_rd/        # ERA5 CAESAR-V 最终微调曲线
-├── objective_era5_caesar_v_decoder_final_compare/   # CAESAR-V 对比图
-├── objective_era5_caesar_d_decoder100k_stage2_overlap5k_rd/
-├── objective_era5_caesar_d_decoder100k_stage2_overlap5k_compare/
-├── objective_era5_caesar_vd_complete_compare/       # ERA5 V/D 最终统一对比
+├── objective_all_to_all_v1/                         # 正式全模型主结果；直接查看 index.html
+├── objective_runs/                                  # 补测、微调和探针来源，按数据集归档
+│   ├── era5_npy/<run_name>/
+│   ├── uvg_twilight_1080p/<run_name>/
+│   └── <dataset>/<run_name>/
 ├── diagnostic_caesar_d_stage2_cpu_full268/          # Stage2 选择证据
 └── diagnostics/                                     # 失败实验机器记录
 ```
 
-`objective_all_to_all_v1` 是跨模型主排名；ERA5 微调后的最终专项结果仍单独保留，不能只看主目录判断微调效果。
+`objective_all_to_all_v1` 是跨模型主排名，页面及正式 JSON 保持自包含；`objective_runs` 保存生成正式结果时的来源记录，避免补测目录散落在 `unified_results/` 根目录。ERA5 微调专项位于 `objective_runs/era5_npy/`，不能只看主目录判断微调效果。可用 `python scripts/organize_objective_results.py` 预览归档计划，确认后加 `--execute` 执行。
 
 ## 仓库结构
 

@@ -113,8 +113,8 @@
     },
     "video_temporal": {
       "datasets": ["uvg_twilight_1080p"],
-      "main_methods": ["DCAE", "LIC-HPCM", "CAESAR-V", "CAESAR-D", "cuSZ-Hi", "DCMVC-IP", "DCVC-RT-IP", "nvJPEG"],
-      "rule": "Use the same 30 consecutive frames. DCMVC and DCVC-RT use their P-frame paths and rate/timing include the I-frame anchor amortized over the complete sequence. DCAE, HPCM and nvJPEG are frame-intra baselines. CAESAR uses RGB variables with the genuine time axis; cuSZ uses one genuine time-volume per RGB channel."
+      "main_methods": ["DCAE", "LIC-HPCM", "CAESAR-V", "CAESAR-D", "cuSZ-Hi", "DCMVC-I", "DCVC-RT-I", "DCMVC-IP", "DCVC-RT-IP", "nvJPEG"],
+      "rule": "Use the same 30 consecutive frames. DCMVC and DCVC-RT report both released I-frame-only baselines and P-frame paths; P-frame rate/timing include the I-frame anchor amortized over the complete sequence. DCAE, HPCM and nvJPEG are frame-intra baselines. CAESAR uses RGB variables with the genuine time axis; cuSZ uses one genuine time-volume per RGB channel."
     },
     "error_bounded": {
       "datasets": ["e3sm_npz", "era5_npy", "hurricane", "nyx", "turb_rot_npz", "tomo", "lysozyme", "s2c"],

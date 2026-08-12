@@ -51,11 +51,15 @@ def key(row: dict[str, Any]) -> tuple[str, str, str]:
 
 
 def read_dataset_rows(root: Path, dataset: str) -> list[dict[str, Any]]:
-    path = root / dataset / "summary.json"
-    if not path.exists():
-        return []
-    payload = json.loads(path.read_text(encoding="utf-8"))
-    return payload if isinstance(payload, list) else []
+    paths = (root / dataset / "summary.json", root / "summary.json")
+    for path in paths:
+        if not path.exists():
+            continue
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        if not isinstance(payload, list):
+            return []
+        return [row for row in payload if str(row.get("dataset_id")) == dataset]
+    return []
 
 
 def selected_control(row: dict[str, Any], schedule: dict[str, Any]) -> bool:
