@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-DEFAULT_ROOT = Path("unified_results/matched_validation_20260721")
+DEFAULT_ROOT = Path("/workspace/tmp/aifc_matched_validation")
 COLORS = {
     "DCAE": "#087E8B",
     "HPCM": "#4C78A8",

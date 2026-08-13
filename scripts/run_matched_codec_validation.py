@@ -32,7 +32,7 @@ DEFAULT_J2K_PSNR = [20, 30, 40, 50, 60, 70, 80]
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run codecs on exactly matched canonical tensors.")
     parser.add_argument("--dataset", choices=DEFAULT_DATASETS, required=True)
-    parser.add_argument("--output-root", type=Path, default=Path("unified_results/matched_validation"))
+    parser.add_argument("--output-root", type=Path, default=Path("/workspace/tmp/aifc_matched_validation"))
     parser.add_argument("--gpu", required=True)
     parser.add_argument("--models", nargs="+", default=["DCAE", "HPCM", "CAESAR-V", "CAESAR-D", "cuSZ-Hi", "nvJPEG2000"])
     parser.add_argument("--image-checkpoints", type=int, nargs="+", default=[1, 3, 6])

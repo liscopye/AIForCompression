@@ -1,0 +1,105 @@
+[
+  {
+    "model_name": "CAESAR",
+    "model_id": "caesar_v",
+    "sample_id": "era5_npy_caesar_v",
+    "metric": "mse",
+    "params": 1501356,
+    "model_view": "caesar_vsthw",
+    "caesar_postprocess": "pca",
+    "caesar_norm_type": "mean_range",
+    "timestamps": [
+      "era5_t0000",
+      "era5_t0001",
+      "era5_t0002",
+      "era5_t0003",
+      "era5_t0004",
+      "era5_t0005",
+      "era5_t0006",
+      "era5_t0007"
+    ],
+    "start_index": 0,
+    "shape": [
+      [
+        268,
+        1,
+        8,
+        240,
+        240
+      ],
+      [
+        268,
+        1,
+        8,
+        240,
+        240
+      ]
+    ],
+    "original_min": -93.70352172851562,
+    "original_max": 97.28641510009766,
+    "voxel_count": 246988800,
+    "mse": 0.015279973039560718,
+    "rmse": 0.1236121880704355,
+    "psnr": 63.77898382192316,
+    "average_variable_psnr": 43.89824794543534,
+    "average_frame_psnr": 58.79138466336854,
+    "bpp": 0.2958734970978441,
+    "scientific_bpp": 0.2958734970978441,
+    "scientific_bpp_with_side_info": 0.2958734970978441,
+    "bitstream_bytes": 9134680.0,
+    "side_info_bytes": 0.0,
+    "total_bytes_with_side_info": 9134680.0,
+    "original_bytes": 987955200,
+    "compression_ratio": 108.1543305293672,
+    "encode_time_avg": 166.88107204437256,
+    "decode_time_avg": 112.92788243293762,
+    "encode_throughput": 5920115.372564897,
+    "decode_throughput": 8748549.771016017,
+    "sample_setup_time": 16.664223983185366,
+    "model_load_time": 1.2964620909187943,
+    "sample_wall_time_total": 110.68110599322245,
+    "sample_wall_throughput_MBps": 4.463070689140463,
+    "lpips": null,
+    "memory_usage_MB": 8717.9775390625,
+    "memory_reserved_MB": 14012.0,
+    "caesar_num_windows": 2,
+    "caesar_window_start_indices": [
+      0,
+      8
+    ],
+    "caesar_window_stride": 8,
+    "window_results": [
+      {
+        "start_index": 0,
+        "shape": [
+          268,
+          1,
+          8,
+          240,
+          240
+        ],
+        "bpp": 0.2982901896766169,
+        "psnr": 63.06582445685392,
+        "mse": 0.015726483477988898,
+        "encode_time_avg": 62.85009837150574,
+        "decode_time_avg": 31.16659426689148
+      },
+      {
+        "start_index": 8,
+        "shape": [
+          268,
+          1,
+          8,
+          240,
+          240
+        ],
+        "bpp": 0.2934568045190713,
+        "psnr": 63.545405932394075,
+        "mse": 0.014833462601132542,
+        "encode_time_avg": 104.03097367286682,
+        "decode_time_avg": 81.76128816604614
+      }
+    ],
+    "eb": 0.003
+  }
+]

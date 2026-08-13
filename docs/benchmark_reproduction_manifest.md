@@ -17,12 +17,7 @@
 - 画图和网页：`scripts/analyze_objective_benchmark.py`
 - 当前完整结果：`unified_results/objective_all_to_all_v1`
 
-以下目录是历史结果或专项消融，不能直接与 objective-v1 主结果混合：
-
-- 旧 `unified_results/final/all_models_*`：部分数据只用了 3 channel 或单 sample，已在 2026-08-11 清理；历史模型去向见正式 `index.html`。
-- `unified_results/caesar_era5_daily_*`：CAESAR 训练诊断和直接 reconstruction 结果。
-- `unified_results/caesar_era5_daily_v_100k_eb_compare`：268 变量、16 天的初始/微调专项对比，但没有使用 objective-v1 的统一外部归一化。
-- `DCAE/HPCM+CAESAR-PCA`、`CAESAR no-PCA`：消融结果，除非按 objective-v1 重新运行，否则不进入主模型排名。
+另外两组微调专项位于 `unified_results/era5_caesar_v` 和 `unified_results/lysozyme_caesar_tuned`。它们用于比较原始与微调 CAESAR，不与 objective-v1 主结果混合。
 
 ## 2. 公平性边界和指标
 
@@ -87,7 +82,7 @@ ERA5 当前低码率和图像 codec 过渡区的最佳 CAESAR-V 微调权重：
 checkpoints/caesar_era5_v_decoder_quality_100k/from_lowrate_lr3em4.pt
 ```
 
-它是在低码率 100k 权重上冻结 encoder/entropy-rate 路径、只微调 decoder 的验证集最佳权重。旧 `caesar_era5_daily_v_full_100k` 是一条有效且在部分高质量区非支配的历史曲线，但其 checkpoint 已于 2026-08-11 清理；结果 JSON 和图仍保存在 `unified_results_backup_20260811/`。训练配置、有效区间和失败方向见 `ERA5_CAESAR-V微调记录.md`。
+它是在低码率 100k 权重上冻结 encoder/entropy-rate 路径、只微调 decoder 的验证集最佳权重。旧 `caesar_era5_daily_v_full_100k` 是一条有效且在部分高质量区非支配的历史曲线；保留结果位于 `unified_results/era5_caesar_v/`。训练配置、有效区间和失败方向见 `ERA5_CAESAR-V微调记录.md`。
 
 ## 4. 数据集和 canonical 输入
 
@@ -273,6 +268,6 @@ bash scripts/run_caesar_era5_v_decoder_quality_100k.sh
 既有正式结果仍位于：
 
 ```text
-unified_results/objective_runs/era5_npy/objective_era5_caesar_v_decoder_final_rd/
+unified_results/era5_caesar_v/decoder_final_rd/
 unified_results/objective_all_to_all_v1/
 ```

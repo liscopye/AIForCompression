@@ -19,7 +19,7 @@
 | `build_objective_all_to_all.py` | 合并正式来源并应用完整性/有效性筛选。 |
 | `audit_objective_benchmark.py` | 检查 objective 协议、覆盖率、指标和误差界。 |
 | `analyze_objective_benchmark.py` | 生成正式图表、表格和 HTML 总览。 |
-| `organize_objective_results.py` | 将散落的 objective 补测与专项结果按数据集归档到 `unified_results/objective_runs/`。 |
+| `organize_objective_results.py` | 将散落的 objective 补测与专项结果归档到临时工作区，默认不写入正式结果目录。 |
 
 ## Codec 与验证依赖
 

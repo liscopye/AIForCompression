@@ -133,14 +133,18 @@ def make_sweep_comparison_plot(groups_v: dict, groups_d: dict, out_base: Path):
 def main():
     p = argparse.ArgumentParser(description="Plot CAESAR lysozyme EB sweep results")
     p.add_argument("--model_type", default="D", choices=["V", "D", "both"])
-    p.add_argument("--sweep_dir", default="/workspace/AIForCompression/results")
+    p.add_argument(
+        "--sweep_dir",
+        default="/workspace/AIForCompression/unified_results/lysozyme_caesar_tuned",
+        help="Directory containing v/sweep_results.json and d/sweep_results.json.",
+    )
     args = p.parse_args()
 
     base = Path(args.sweep_dir)
     groups_v, groups_d = {}, {}
 
     if args.model_type in ("V", "both"):
-        sweep_path = base / "eb_sweep" / "sweep_results.json"
+        sweep_path = base / "v" / "sweep_results.json"
         if sweep_path.exists():
             groups_v = load_results(str(sweep_path))
             print(f"Loaded V results: {sum(len(v) for v in groups_v.values())} entries")
@@ -148,12 +152,12 @@ def main():
                 for r in items:
                     print(f"  {name:30s} eb={r['eb']:.1e}  PSNR={r['psnr']:.2f}  BPP={r['bpp']:.5f}")
 
-            out_dir = base / "eb_sweep"
+            out_dir = base / "v"
             plot_psnr_vs_bpp(groups_v, out_dir, "V")
             plot_time_vs_eb(groups_v, out_dir, "V")
 
     if args.model_type in ("D", "both"):
-        sweep_path = base / "eb_sweep_D" / "sweep_results.json"
+        sweep_path = base / "d" / "sweep_results.json"
         if sweep_path.exists():
             groups_d = load_results(str(sweep_path))
             print(f"Loaded D results: {sum(len(v) for v in groups_d.values())} entries")
@@ -161,7 +165,7 @@ def main():
                 for r in items:
                     print(f"  {name:30s} eb={r['eb']:.1e}  PSNR={r['psnr']:.2f}  BPP={r['bpp']:.5f}")
 
-            out_dir = base / "eb_sweep_D"
+            out_dir = base / "d"
             plot_psnr_vs_bpp(groups_d, out_dir, "D")
             plot_time_vs_eb(groups_d, out_dir, "D")
 

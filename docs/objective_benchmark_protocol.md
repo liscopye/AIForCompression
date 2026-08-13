@@ -103,24 +103,17 @@ normalized PSNR = -10 log10(NMSE)
 - 先聚合整个 canonical corpus 的总字节和总 SSE，再计算 BPP/PSNR；不能把每张图的 PSNR 简单平均作为主结果。
 - 对 sample/变量 bootstrap，报告 95% CI；吞吐量范围来自 5 次正式测量。
 
-## 旧结果与 matched validation 的定位
+## 结果定位
 
 | 结果集 | 可以做什么 | 不能做什么 |
 |---|---|---|
-| 旧 `combined_summary.json` | 检查模型覆盖、找历史日志和候选控制点 | 跨 codec 客观排名、统一吞吐排名 |
-| `matched_validation_20260721` | 验证同一输入、side-info BPP、逐变量指标和 wall-time 方向 | 最终峰值、置信区间、全数据集结论 |
 | `objective-v1` 正式重测 | 论文主 RD、吞吐量和数据集分轨结论 | 跨轨道宣称统一优胜者 |
+| `era5_caesar_v` | ERA5 上 CAESAR-V 原始与有效微调权重的专项比较 | 代替全模型正式排名 |
+| `lysozyme_caesar_tuned` | Lysozyme 上 CAESAR-V/D 原始与微调权重的专项比较 | 代替完整 Objective-v1 corpus |
 
 ## 自动审计
 
-旧 `unified_results/final/` 已在 2026-08-11 清理；其协议缺陷和模型去向已汇总进正式结果的单文件 `index.html`，不再提供旧结果审计入口。
-
-检查 matched validation：
-
-```bash
-python scripts/audit_objective_benchmark.py \
-  unified_results/matched_validation_20260721
-```
+旧结果、中间来源和 matched validation 已清理；正式模型去向汇总在单文件 `index.html` 中。
 
 正式流水线应在发布结果前使用 `--strict`。只有所有 objective sample、主方法、checksum、固定指标、side information 和重复计时均通过时，命令才返回成功。
 

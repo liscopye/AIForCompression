@@ -17,6 +17,7 @@
 | 查看正式协议 | `benchmark_protocols/objective_v1.json` |
 | 了解完整复现参数 | `docs/benchmark_reproduction_manifest.md` |
 | 查看 ERA5 CAESAR-V 微调记录 | `docs/ERA5_CAESAR-V微调记录.md` |
+| 复现 ERA5/Lysozyme CAESAR 微调与测试 | `docs/ERA5与Lysozyme_CAESAR微调测试复现.md` |
 | 查看 ERA5/CAESAR 微调结论 | `docs/项目交接总览.md` |
 | 迁移到其他机器 | `docs/迁移到新机器指南.md` |
 
@@ -150,14 +151,11 @@ python scripts/audit_objective_benchmark.py \
 ```text
 unified_results/
 ├── objective_all_to_all_v1/                         # 正式全模型主结果；直接查看 index.html
-├── objective_runs/                                  # 补测、微调和探针来源，按数据集归档
-│   ├── era5_npy/<run_name>/
-│   ├── uvg_twilight_1080p/<run_name>/
-│   └── <dataset>/<run_name>/
-└── diagnostics/                                     # 失败实验机器记录
+├── era5_caesar_v/                                   # ERA5 CAESAR-V 有效微调结果
+└── lysozyme_caesar_tuned/                           # Lysozyme CAESAR-V/D 微调对比
 ```
 
-`objective_all_to_all_v1` 是跨模型主排名，页面及正式 JSON 保持自包含；`objective_runs` 保存生成正式结果时的来源记录，避免补测目录散落在 `unified_results/` 根目录。ERA5 CAESAR-V 微调专项位于 `objective_runs/era5_npy/`。可用 `python scripts/organize_objective_results.py` 预览归档计划，确认后加 `--execute` 执行。
+`objective_all_to_all_v1` 是跨模型主排名，页面及正式 JSON 保持自包含。其余中间来源、失败筛选和探针结果已清理，只保留两组确认有效的微调专项。
 
 ## 仓库结构
 

@@ -26,11 +26,11 @@ checkpoints/caesar_era5_daily_v_full_100k/rd_lr3em5_lam3em5_update100000.pt
 
 后来的低码率 100k 在 `39.01 dB` 只需 `0.12464 BPP`，更适合当前低码率与过渡区；但 daily full 100k 在约 50 dB 以上的部分区间仍非支配，两条曲线不存在全范围严格优劣。
 
-历史结果保存在：
+保留结果位于：
 
 ```text
-unified_results_backup_20260811/objective_era5_caesar_v_finetuned_100k_rd/
-unified_results_backup_20260811/objective_era5_caesar_v_100k_best_compare/
+unified_results/era5_caesar_v/daily_v_100k_eb_compare/
+unified_results/era5_caesar_v/decoder_final_rd/
 ```
 
 该权重已于 2026-08-11 清理。如果外部备份和 W&B 云端模型备份均无副本，只能按上述配置重新训练。
@@ -53,7 +53,7 @@ bash scripts/run_caesar_era5_v_decoder_quality_100k.sh
 第一步从 original CAESAR-V 训练低码率 Stage 1；第二步冻结 encoder 与码率路径，只优化 decoder 100k updates。正式结果位于：
 
 ```text
-unified_results/objective_runs/era5_npy/objective_era5_caesar_v_decoder_final_rd/
+unified_results/era5_caesar_v/decoder_final_rd/
 ```
 
 ### 最佳路径的训练数据处理

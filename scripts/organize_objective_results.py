@@ -12,13 +12,13 @@ DATASETS = {
     "e3sm_npz", "era5_npy", "hurricane", "kodak", "lysozyme", "nyx",
     "s2c", "tomo", "turb_rot_npz", "uvg_twilight_1080p",
 }
-EXCLUDED = {"objective_all_to_all_v1", "objective_runs", "objective_runs_staging"}
+EXCLUDED = {"objective_all_to_all_v1"}
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=Path("unified_results"))
-    parser.add_argument("--destination", type=Path, default=Path("unified_results/objective_runs"))
+    parser.add_argument("--destination", type=Path, default=Path("/workspace/tmp/aifc_objective_runs"))
     parser.add_argument("--execute", action="store_true", help="Move files; otherwise print the plan.")
     return parser.parse_args()
 

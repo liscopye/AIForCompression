@@ -9,6 +9,7 @@
 | `objective_benchmark_protocol.md` | 正式评测的公平性边界和指标定义 |
 | `benchmark_reproduction_manifest.md` | 数据、样本、EB、权重和完整复现参数 |
 | `ERA5_CAESAR-V微调记录.md` | ERA5 CAESAR-V 的有效历史结果、失败方向和当前训练链 |
+| `ERA5与Lysozyme_CAESAR微调测试复现.md` | ERA5 与 Lysozyme 的 CAESAR 微调、权重和测试复现命令 |
 | `Data数据资产盘点.md` | `/workspace/Data` 每个数据集的下载量、本地占用、格式和派生副本 |
 | `结果目录索引.md` | 正式结果、专项结果和诊断证据的位置 |
 | `项目交接总览.md` | 当前项目状态与 ERA5/CAESAR 最终交接 |
