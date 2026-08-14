@@ -90,7 +90,7 @@ unified_results/objective_all_to_all_v1/
 | `normalization/` | 旧 ERA5 NetCDF 流程的逐日统计，不是 objective 的通用 normalization |
 | `unified_results/` | 正式结果、图表和必要的微调证据 |
 | `tests/` | Pipeline、数据处理和结果审计测试 |
-| `docs/` | 使用、复现、迁移和设计文档 |
+| `docs/` | 使用、复现和设计文档 |
 
 更完整的目录说明见 `目录说明.md`。
 
@@ -106,7 +106,6 @@ unified_results/objective_all_to_all_v1/
 | ERA5/Lysozyme CAESAR 微调复现 | `docs/ERA5与Lysozyme_CAESAR微调测试复现.md` |
 | 结果文件说明 | `unified_results/README.md` |
 | 数据集说明 | `docs/Data数据集.md` |
-| 迁移到其他机器 | `docs/迁移到新机器指南.md` |
 
 ## 开发与检查
 

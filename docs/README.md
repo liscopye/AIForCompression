@@ -1,6 +1,6 @@
 # 文档导航
 
-日常使用先看仓库根目录的 `README.md`。本目录只保留当前有效的协议、复现、结果和交接资料。
+日常使用先看仓库根目录的 `README.md`。本目录只保留当前有效的协议、复现、数据和环境资料。
 
 | 文档 | 用途 |
 |---|---|
@@ -10,11 +10,6 @@
 | `benchmark_reproduction_manifest.md` | 数据、样本、EB、权重和完整复现参数 |
 | `ERA5_CAESAR-V微调记录.md` | ERA5 CAESAR-V 的有效历史结果、失败方向和当前训练链 |
 | `ERA5与Lysozyme_CAESAR微调测试复现.md` | ERA5 与 Lysozyme 的 CAESAR 微调、权重和测试复现命令 |
-| `Data数据资产盘点.md` | `/workspace/Data` 每个数据集的下载量、本地占用、格式和派生副本 |
-| `结果目录索引.md` | 正式结果、专项结果和诊断证据的位置 |
-| `项目交接总览.md` | 当前项目状态与 ERA5/CAESAR 最终交接 |
-| `迁移到新机器指南.md` | 新机器安装、数据和权重复制及迁移验收 |
+| `Data数据集.md` | `/workspace/Data` 每个数据集的下载量、本地占用、格式和派生副本 |
 
-机器可读正式协议位于 `benchmark_protocols/objective_v1.json`；正式结果入口是 `unified_results/objective_all_to_all_v1/index.html`。
-
-已删除的文档主要是早期设计计划、重复的 Pipeline 教程、过期的清理审计，以及已经合并进交接总览或失败记录的长篇阶段分析。需要追溯时可从 Git 历史恢复。
+机器可读正式协议位于 `benchmark_protocols/objective_v1.json`；正式结果入口是 `unified_results/objective_all_to_all_v1/index.html`，结果文件说明见 `unified_results/README.md`。
