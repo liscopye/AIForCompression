@@ -1,0 +1,154 @@
+[
+  {
+    "protocol_id": "aifc-objective-v1",
+    "dataset_id": "s2c",
+    "canonical_sample_id": "T51RUQ_20260509T022531_B02_10m_bands4_t000x004",
+    "canonical_shape": [
+      4,
+      1,
+      1024,
+      1024
+    ],
+    "canonical_dtype": "float32",
+    "canonical_symbol_count": 4194304,
+    "canonical_valid_symbol_count": 4194304,
+    "canonical_sha256": "31a598067034804adc655f8dbcc8d58540f703265463ca1aadc8549f73938d04",
+    "normalized_canonical_sha256": "903e9b1ff8176559b521cf3460551cb392b3cafff721d8f4fd9b5c16fbae04a0",
+    "external_input_manifest": {
+      "normalization_id": "s2c-objective-corpus-minmax-v1",
+      "scope": "dataset",
+      "type": "fixed_affine_minmax",
+      "minimum": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        45204.0,
+        41258.0,
+        38738.0,
+        35632.0
+      ],
+      "source": "complete objective evaluation corpus",
+      "clipping": false,
+      "dtype": "float32"
+    },
+    "source": "/workspace/Data/S2C_MSIL2A_20260509T022531_N0512_R046_T51RUQ_20260509T055911/S2C_MSIL2A_20260509T022531_N0512_R046_T51RUQ_20260509T055911.SAFE",
+    "layout": "variable,time_or_depth,height,width"
+  },
+  {
+    "protocol_id": "aifc-objective-v1",
+    "dataset_id": "s2c",
+    "canonical_sample_id": "T51RUQ_20260509T022531_B02_10m_bands4_t000x005",
+    "canonical_shape": [
+      4,
+      1,
+      1024,
+      1024
+    ],
+    "canonical_dtype": "float32",
+    "canonical_symbol_count": 4194304,
+    "canonical_valid_symbol_count": 4194304,
+    "canonical_sha256": "b3c3caee04fdfd4ad3c075c8a4c39c9baf4f2f04fb0a3efa903249af763dc4b5",
+    "normalized_canonical_sha256": "9b55bce11ada8631bfb507201314b70d76aa21cb917e99c551cc1dd7dd335b71",
+    "external_input_manifest": {
+      "normalization_id": "s2c-objective-corpus-minmax-v1",
+      "scope": "dataset",
+      "type": "fixed_affine_minmax",
+      "minimum": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        45204.0,
+        41258.0,
+        38738.0,
+        35632.0
+      ],
+      "source": "complete objective evaluation corpus",
+      "clipping": false,
+      "dtype": "float32"
+    },
+    "source": "/workspace/Data/S2C_MSIL2A_20260509T022531_N0512_R046_T51RUQ_20260509T055911/S2C_MSIL2A_20260509T022531_N0512_R046_T51RUQ_20260509T055911.SAFE",
+    "layout": "variable,time_or_depth,height,width"
+  },
+  {
+    "protocol_id": "aifc-objective-v1",
+    "dataset_id": "s2c",
+    "canonical_sample_id": "T51RUQ_20260509T022531_B02_10m_bands4_t000x006",
+    "canonical_shape": [
+      4,
+      1,
+      1024,
+      1024
+    ],
+    "canonical_dtype": "float32",
+    "canonical_symbol_count": 4194304,
+    "canonical_valid_symbol_count": 4194304,
+    "canonical_sha256": "9f06afa1c36385b9d1676b6d004cebf138d23c0d76c4376cd569e655359a7b80",
+    "normalized_canonical_sha256": "7104c216e9ba49e61e31aa50969ec48f81bc2bec2a3fce02419f0dc251ae46b1",
+    "external_input_manifest": {
+      "normalization_id": "s2c-objective-corpus-minmax-v1",
+      "scope": "dataset",
+      "type": "fixed_affine_minmax",
+      "minimum": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        45204.0,
+        41258.0,
+        38738.0,
+        35632.0
+      ],
+      "source": "complete objective evaluation corpus",
+      "clipping": false,
+      "dtype": "float32"
+    },
+    "source": "/workspace/Data/S2C_MSIL2A_20260509T022531_N0512_R046_T51RUQ_20260509T055911/S2C_MSIL2A_20260509T022531_N0512_R046_T51RUQ_20260509T055911.SAFE",
+    "layout": "variable,time_or_depth,height,width"
+  },
+  {
+    "protocol_id": "aifc-objective-v1",
+    "dataset_id": "s2c",
+    "canonical_sample_id": "T51RUQ_20260509T022531_B02_10m_bands4_t000x007",
+    "canonical_shape": [
+      4,
+      1,
+      1024,
+      1024
+    ],
+    "canonical_dtype": "float32",
+    "canonical_symbol_count": 4194304,
+    "canonical_valid_symbol_count": 4194304,
+    "canonical_sha256": "249e8569cd3cd050509f552f3a5eba1333c3f60579e088f2ebf24b5a03a7c443",
+    "normalized_canonical_sha256": "ef7362a63ad00876419755d31acc658d457d9f61504c895b761191eed1519389",
+    "external_input_manifest": {
+      "normalization_id": "s2c-objective-corpus-minmax-v1",
+      "scope": "dataset",
+      "type": "fixed_affine_minmax",
+      "minimum": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        45204.0,
+        41258.0,
+        38738.0,
+        35632.0
+      ],
+      "source": "complete objective evaluation corpus",
+      "clipping": false,
+      "dtype": "float32"
+    },
+    "source": "/workspace/Data/S2C_MSIL2A_20260509T022531_N0512_R046_T51RUQ_20260509T055911/S2C_MSIL2A_20260509T022531_N0512_R046_T51RUQ_20260509T055911.SAFE",
+    "layout": "variable,time_or_depth,height,width"
+  }
+]

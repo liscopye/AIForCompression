@@ -1,0 +1,22 @@
+{
+  "normalization_id": "e3sm_npz-objective-corpus-minmax-v1",
+  "scope": "dataset",
+  "type": "fixed_affine_minmax",
+  "minimum": [
+    2.9463964892784134e-05,
+    0.0,
+    228.01449584960938,
+    227.30674743652344,
+    224.24290466308594
+  ],
+  "scale": [
+    0.021937228739261627,
+    0.0022851405665278435,
+    78.69082641601562,
+    85.36415100097656,
+    77.13780212402344
+  ],
+  "source": "complete objective evaluation corpus",
+  "clipping": false,
+  "dtype": "float32"
+}

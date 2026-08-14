@@ -1,0 +1,14 @@
+{
+  "normalization_id": "nyx-objective-corpus-minmax-v1",
+  "scope": "dataset",
+  "type": "fixed_affine_minmax",
+  "minimum": [
+    0.057996965944767
+  ],
+  "scale": [
+    115862.234375
+  ],
+  "source": "complete objective evaluation corpus",
+  "clipping": false,
+  "dtype": "float32"
+}

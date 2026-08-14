@@ -1,0 +1,14 @@
+{
+  "normalization_id": "lysozyme-objective-corpus-minmax-v1",
+  "scope": "dataset",
+  "type": "fixed_affine_minmax",
+  "minimum": [
+    0.0
+  ],
+  "scale": [
+    18443.0
+  ],
+  "source": "complete objective evaluation corpus",
+  "clipping": false,
+  "dtype": "float32"
+}

@@ -1,0 +1,38 @@
+[
+  {
+    "protocol_id": "aifc-objective-v1",
+    "dataset_id": "uvg_twilight_1080p",
+    "canonical_sample_id": "twilight_frames000-029_1080p",
+    "canonical_shape": [
+      3,
+      30,
+      1080,
+      1920
+    ],
+    "canonical_dtype": "float32",
+    "canonical_symbol_count": 186624000,
+    "canonical_valid_symbol_count": 186624000,
+    "canonical_sha256": "273bb16dc7c244448c89548e9e44b5870d76d9539634e6634671682b292ca1ef",
+    "normalized_canonical_sha256": "273bb16dc7c244448c89548e9e44b5870d76d9539634e6634671682b292ca1ef",
+    "external_input_manifest": {
+      "normalization_id": "uvg_twilight_1080p-objective-corpus-minmax-v1",
+      "scope": "dataset",
+      "type": "fixed_affine_minmax",
+      "minimum": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "source": "fixed dataset convention [0,1]",
+      "clipping": false,
+      "dtype": "float32"
+    },
+    "source": "/workspace/Data/UVG_Twilight_1080p",
+    "layout": "variable,time_or_depth,height,width"
+  }
+]

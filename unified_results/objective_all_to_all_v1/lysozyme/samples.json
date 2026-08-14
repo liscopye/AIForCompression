@@ -1,0 +1,66 @@
+[
+  {
+    "protocol_id": "aifc-objective-v1",
+    "dataset_id": "lysozyme",
+    "canonical_sample_id": "test_chunks000-030_frames000-495",
+    "canonical_shape": [
+      1,
+      496,
+      1024,
+      1024
+    ],
+    "canonical_dtype": "float32",
+    "canonical_symbol_count": 520093696,
+    "canonical_valid_symbol_count": 501270747,
+    "canonical_sha256": "04596c9f1792129d4b73483567419a4da117ddbc19040489b6e3e4ff7ffbd1d4",
+    "normalized_canonical_sha256": "8848fa6b1bb5d839e9dfe4fe26c1512bb6281b132bd994f898f6b258f51b06cc",
+    "external_input_manifest": {
+      "normalization_id": "lysozyme-objective-corpus-minmax-v1",
+      "scope": "dataset",
+      "type": "fixed_affine_minmax",
+      "minimum": [
+        0.0
+      ],
+      "scale": [
+        18443.0
+      ],
+      "source": "complete objective evaluation corpus",
+      "clipping": false,
+      "dtype": "float32"
+    },
+    "source": "/workspace/Data/lysozyme_processed/mmap/lysozyme_test_nf16.npy",
+    "layout": "variable,time_or_depth,height,width"
+  },
+  {
+    "protocol_id": "aifc-objective-v1",
+    "dataset_id": "lysozyme",
+    "canonical_sample_id": "test_chunks031-061_frames000-495",
+    "canonical_shape": [
+      1,
+      496,
+      1024,
+      1024
+    ],
+    "canonical_dtype": "float32",
+    "canonical_symbol_count": 520093696,
+    "canonical_valid_symbol_count": 501271867,
+    "canonical_sha256": "82a26ece3d7c11b6625ad4c0e2c56974038b017cdf5954a42f74422eca10640c",
+    "normalized_canonical_sha256": "ada49c752db08c0a9288bb9297d16ce7f831d94964aa7cc0d43d06fad319bf5e",
+    "external_input_manifest": {
+      "normalization_id": "lysozyme-objective-corpus-minmax-v1",
+      "scope": "dataset",
+      "type": "fixed_affine_minmax",
+      "minimum": [
+        0.0
+      ],
+      "scale": [
+        18443.0
+      ],
+      "source": "complete objective evaluation corpus",
+      "clipping": false,
+      "dtype": "float32"
+    },
+    "source": "/workspace/Data/lysozyme_processed/mmap/lysozyme_test_nf16.npy",
+    "layout": "variable,time_or_depth,height,width"
+  }
+]

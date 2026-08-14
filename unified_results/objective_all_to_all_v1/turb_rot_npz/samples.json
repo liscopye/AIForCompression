@@ -1,0 +1,66 @@
+[
+  {
+    "protocol_id": "aifc-objective-v1",
+    "dataset_id": "turb_rot_npz",
+    "canonical_sample_id": "var000_sec000_t000-255",
+    "canonical_shape": [
+      1,
+      256,
+      256,
+      256
+    ],
+    "canonical_dtype": "float32",
+    "canonical_symbol_count": 16777216,
+    "canonical_valid_symbol_count": 16777216,
+    "canonical_sha256": "708afea2f048aaa155dbdbe57198e5dd32d2f08dbf5878fc2b10a62f32de8e47",
+    "normalized_canonical_sha256": "5898671291c33456ef94ee5d7785065d1ba0aba3b4b46fa1eb9d0d06a433afe5",
+    "external_input_manifest": {
+      "normalization_id": "turb_rot_npz-objective-corpus-minmax-v1",
+      "scope": "dataset",
+      "type": "fixed_affine_minmax",
+      "minimum": [
+        -11.864131927490234
+      ],
+      "scale": [
+        18.3592472076416
+      ],
+      "source": "complete objective evaluation corpus",
+      "clipping": false,
+      "dtype": "float32"
+    },
+    "source": "/workspace/Turb_Rot_testset.npz",
+    "layout": "variable,time_or_depth,height,width"
+  },
+  {
+    "protocol_id": "aifc-objective-v1",
+    "dataset_id": "turb_rot_npz",
+    "canonical_sample_id": "var000_sec008_t000-255",
+    "canonical_shape": [
+      1,
+      256,
+      256,
+      256
+    ],
+    "canonical_dtype": "float32",
+    "canonical_symbol_count": 16777216,
+    "canonical_valid_symbol_count": 16777216,
+    "canonical_sha256": "57a275806dd7f1df625a280b855bdb288d940e0057d4f16434ca03e0346d8e63",
+    "normalized_canonical_sha256": "a3f27b40a3d470ae3e684b52585d721b7ac8ac4ff8820be71a863992336eceec",
+    "external_input_manifest": {
+      "normalization_id": "turb_rot_npz-objective-corpus-minmax-v1",
+      "scope": "dataset",
+      "type": "fixed_affine_minmax",
+      "minimum": [
+        -11.864131927490234
+      ],
+      "scale": [
+        18.3592472076416
+      ],
+      "source": "complete objective evaluation corpus",
+      "clipping": false,
+      "dtype": "float32"
+    },
+    "source": "/workspace/Turb_Rot_testset.npz",
+    "layout": "variable,time_or_depth,height,width"
+  }
+]

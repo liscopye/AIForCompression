@@ -1,0 +1,18 @@
+{
+  "normalization_id": "kodak-objective-corpus-minmax-v1",
+  "scope": "dataset",
+  "type": "fixed_affine_minmax",
+  "minimum": [
+    0.0,
+    0.0,
+    0.0
+  ],
+  "scale": [
+    255.0,
+    255.0,
+    255.0
+  ],
+  "source": "fixed dataset convention [0,255]",
+  "clipping": false,
+  "dtype": "float32"
+}

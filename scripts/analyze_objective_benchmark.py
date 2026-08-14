@@ -29,6 +29,8 @@ COLORS = {
     "CAESAR-V-Turb-tuned": "#F2C14E", "CAESAR-D-Turb-tuned": "#7A3E00",
     "nvJPEG2000": "#6F4E9C", "nvJPEG": "#777777", "DCMVC-I": "#009E73", "DCVC-RT-I": "#CC476B",
     "DCMVC-IP": "#0072B2", "DCVC-RT-IP": "#D55E00",
+    "DCAE+CAESAR-PCA": "#00A087", "HPCM-base+CAESAR-PCA": "#3C5488",
+    "HPCM-large+CAESAR-PCA": "#4DBBD5",
 }
 MARKERS = ("o", "s", "^", "D", "v", "P", "X", "h", "*", "<", ">")
 DATASET_LABELS = {
@@ -63,6 +65,10 @@ def parse_args() -> argparse.Namespace:
 def curve_name(row: dict[str, Any]) -> str:
     family = model_family(row)
     model_id = str(row.get("model_id", ""))
+    if family == "PCA-hybrid":
+        if "dcae" in model_id.lower():
+            return "DCAE+CAESAR-PCA"
+        return "HPCM-large+CAESAR-PCA" if "large" in model_id.lower() else "HPCM-base+CAESAR-PCA"
     if family == "LIC-HPCM":
         return "LIC-HPCM-large" if "large" in model_id.lower() else "LIC-HPCM-base"
     return family
@@ -191,6 +197,7 @@ def plot_dataset(dataset_id: str, points: list[dict[str, Any]], output: Path) ->
             [row["scientific_bpp_with_side_info"] for row in rows],
             [row["normalized_psnr"] for row in rows],
             marker=MARKERS[index % len(MARKERS)], linewidth=1.8, markersize=5.5,
+            linestyle="--" if curve.endswith("+CAESAR-PCA") else "-",
             color=COLORS.get(curve, plt.get_cmap("tab20")(index)), label=curve,
         )
     ax.set_xscale("log")
@@ -357,6 +364,9 @@ def write_html(payload: dict[str, Any], root: Path) -> Path:
             lpips_path = root / "analysis" / f"{dataset_id}_lpips_rd.png"
             if lpips_path.exists():
                 image_items.append((lpips_path, "LPIPS"))
+            pca_path = root / "analysis" / f"{dataset_id}_pca_hybrid_rd.png"
+            if pca_path.exists():
+                image_items.append((pca_path, "PCA 消融与全部模型对比"))
             figures = "".join(
                 f'<figure><img loading="lazy" src="{image_data_uri(path)}" alt="{html.escape(dataset_id)} {label}"><figcaption>{label}</figcaption></figure>'
                 for path, label in image_items
@@ -406,6 +416,9 @@ def main() -> None:
     for dataset_id, contract in protocol["datasets"].items():
         summary_path = args.root / dataset_id / "summary.json"
         rows = json.loads(summary_path.read_text(encoding="utf-8")) if summary_path.exists() else []
+        ablation_path = args.root / "pca_hybrids" / dataset_id / "summary.json"
+        if ablation_path.exists():
+            rows.extend(json.loads(ablation_path.read_text(encoding="utf-8")))
         expected_samples = set(contract["objective_samples"])
         groups: dict[tuple[str, str], list[dict[str, Any]]] = defaultdict(list)
         invalid = []
@@ -422,22 +435,33 @@ def main() -> None:
                 incomplete.append({"curve": key[0], "model_id": key[1], "present_samples": sorted({row["canonical_sample_id"] for row in point_rows})})
             else:
                 points.append(point)
-        pareto_points, dominated_points = pareto_partition(points)
-        if points:
-            plot_dataset(dataset_id, points, analysis_dir / f"{dataset_id}_objective_rd.png")
+        ablation_points = [point for point in points if point["curve"].endswith("+CAESAR-PCA")]
+        main_points = [point for point in points if not point["curve"].endswith("+CAESAR-PCA")]
+        pareto_points, dominated_points = pareto_partition(main_points)
+        ablation_pareto_points, ablation_dominated_points = pareto_partition(ablation_points)
+        if main_points:
+            plot_dataset(dataset_id, main_points, analysis_dir / f"{dataset_id}_objective_rd.png")
             plot_throughput_bars(
-                dataset_id, points, analysis_dir / f"{dataset_id}_throughput_range.png",
+                dataset_id, main_points, analysis_dir / f"{dataset_id}_throughput_range.png",
             )
             plot_metric_ranges(
-                dataset_id, points, "peak_memory_MB", "Peak allocated memory (MB)",
+                dataset_id, main_points, "peak_memory_MB", "Peak allocated memory (MB)",
                 analysis_dir / f"{dataset_id}_memory_range.png",
             )
-            plot_lpips(dataset_id, points, analysis_dir / f"{dataset_id}_lpips_rd.png")
+            plot_lpips(dataset_id, main_points, analysis_dir / f"{dataset_id}_lpips_rd.png")
+        if ablation_points:
+            plot_dataset(
+                dataset_id,
+                [*main_points, *ablation_points],
+                analysis_dir / f"{dataset_id}_pca_hybrid_rd.png",
+            )
         datasets.append({
             "dataset_id": dataset_id, "expected_samples": sorted(expected_samples), "raw_rows": len(rows),
             "valid_rows": sum(len(value) for value in groups.values()), "invalid_rows": invalid,
-            "incomplete_points": incomplete, "points": points, "pareto_points": pareto_points,
+            "incomplete_points": incomplete, "points": main_points, "pareto_points": pareto_points,
             "dominated_points": dominated_points,
+            "ablation_points": ablation_points, "ablation_pareto_points": ablation_pareto_points,
+            "ablation_dominated_points": ablation_dominated_points,
         })
     payload = {"protocol_id": protocol["protocol_id"], "datasets": datasets}
     output_json = analysis_dir / "objective_analysis.json"

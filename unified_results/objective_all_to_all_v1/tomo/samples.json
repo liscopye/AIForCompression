@@ -1,0 +1,66 @@
+[
+  {
+    "protocol_id": "aifc-objective-v1",
+    "dataset_id": "tomo",
+    "canonical_sample_id": "projection0000-0511_crop512",
+    "canonical_shape": [
+      1,
+      512,
+      512,
+      512
+    ],
+    "canonical_dtype": "float32",
+    "canonical_symbol_count": 134217728,
+    "canonical_valid_symbol_count": 134217728,
+    "canonical_sha256": "020e6d3f34ebc6c2df61d174a942d6ed3dac0079a415f72ecc0008e6bdc488c0",
+    "normalized_canonical_sha256": "cbc939664c435a20b51bdc6288e88d4a67d2307f6c9726dbbcd8a654d7eb2e53",
+    "external_input_manifest": {
+      "normalization_id": "tomo-objective-corpus-minmax-v1",
+      "scope": "dataset",
+      "type": "fixed_affine_minmax",
+      "minimum": [
+        0.0
+      ],
+      "scale": [
+        65535.0
+      ],
+      "source": "fixed dataset convention [0,65535]",
+      "clipping": false,
+      "dtype": "float32"
+    },
+    "source": "/workspace/Data/tomo_00001.h5",
+    "layout": "variable,time_or_depth,height,width"
+  },
+  {
+    "protocol_id": "aifc-objective-v1",
+    "dataset_id": "tomo",
+    "canonical_sample_id": "projection0989-1500_crop512",
+    "canonical_shape": [
+      1,
+      512,
+      512,
+      512
+    ],
+    "canonical_dtype": "float32",
+    "canonical_symbol_count": 134217728,
+    "canonical_valid_symbol_count": 134217728,
+    "canonical_sha256": "eae80e8070f5563f650560c63c90e0beb4d0e830b2388a0abb5d9010f8182a83",
+    "normalized_canonical_sha256": "514ce579d0fb0a045370a50e3c56a633d9300ccc2a06ebd254f52c42625bd2e9",
+    "external_input_manifest": {
+      "normalization_id": "tomo-objective-corpus-minmax-v1",
+      "scope": "dataset",
+      "type": "fixed_affine_minmax",
+      "minimum": [
+        0.0
+      ],
+      "scale": [
+        65535.0
+      ],
+      "source": "fixed dataset convention [0,65535]",
+      "clipping": false,
+      "dtype": "float32"
+    },
+    "source": "/workspace/Data/tomo_00001.h5",
+    "layout": "variable,time_or_depth,height,width"
+  }
+]

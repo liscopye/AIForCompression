@@ -1,0 +1,866 @@
+[
+  {
+    "protocol_id": "aifc-objective-v1",
+    "dataset_id": "kodak",
+    "canonical_sample_id": "kodim01",
+    "canonical_shape": [
+      3,
+      1,
+      512,
+      768
+    ],
+    "canonical_dtype": "float32",
+    "canonical_symbol_count": 1179648,
+    "canonical_valid_symbol_count": 1179648,
+    "canonical_sha256": "5703838ad0da5074de340694e448647bd40ecdc110b69e2e5fa1d26b54233008",
+    "normalized_canonical_sha256": "d3f913274c87dc9a8b0e49c2be46541bd18e24909b413604eb15d055447f76ec",
+    "external_input_manifest": {
+      "normalization_id": "kodak-objective-corpus-minmax-v1",
+      "scope": "dataset",
+      "type": "fixed_affine_minmax",
+      "minimum": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        255.0,
+        255.0,
+        255.0
+      ],
+      "source": "fixed dataset convention [0,255]",
+      "clipping": false,
+      "dtype": "float32"
+    },
+    "source": "/workspace/Data/Kodac/kodim01.png",
+    "layout": "variable,time_or_depth,height,width"
+  },
+  {
+    "protocol_id": "aifc-objective-v1",
+    "dataset_id": "kodak",
+    "canonical_sample_id": "kodim02",
+    "canonical_shape": [
+      3,
+      1,
+      512,
+      768
+    ],
+    "canonical_dtype": "float32",
+    "canonical_symbol_count": 1179648,
+    "canonical_valid_symbol_count": 1179648,
+    "canonical_sha256": "d45840e789bffa08322a1e0f17742a14d823500d82601f03c524d668f9d4087d",
+    "normalized_canonical_sha256": "a838bf163c09721118c482d43f49bd60e347544e921d61ea085c24027ad2cef0",
+    "external_input_manifest": {
+      "normalization_id": "kodak-objective-corpus-minmax-v1",
+      "scope": "dataset",
+      "type": "fixed_affine_minmax",
+      "minimum": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        255.0,
+        255.0,
+        255.0
+      ],
+      "source": "fixed dataset convention [0,255]",
+      "clipping": false,
+      "dtype": "float32"
+    },
+    "source": "/workspace/Data/Kodac/kodim02.png",
+    "layout": "variable,time_or_depth,height,width"
+  },
+  {
+    "protocol_id": "aifc-objective-v1",
+    "dataset_id": "kodak",
+    "canonical_sample_id": "kodim03",
+    "canonical_shape": [
+      3,
+      1,
+      512,
+      768
+    ],
+    "canonical_dtype": "float32",
+    "canonical_symbol_count": 1179648,
+    "canonical_valid_symbol_count": 1179648,
+    "canonical_sha256": "de640536cb96e94bf7f61bdc9cda192c712007dc27c4e43bf06237aae2857461",
+    "normalized_canonical_sha256": "6b0b568aa830cc8bd48a33c9567b8da15079ac93b55a3e458ebac0a8d3c69ae8",
+    "external_input_manifest": {
+      "normalization_id": "kodak-objective-corpus-minmax-v1",
+      "scope": "dataset",
+      "type": "fixed_affine_minmax",
+      "minimum": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        255.0,
+        255.0,
+        255.0
+      ],
+      "source": "fixed dataset convention [0,255]",
+      "clipping": false,
+      "dtype": "float32"
+    },
+    "source": "/workspace/Data/Kodac/kodim03.png",
+    "layout": "variable,time_or_depth,height,width"
+  },
+  {
+    "protocol_id": "aifc-objective-v1",
+    "dataset_id": "kodak",
+    "canonical_sample_id": "kodim04",
+    "canonical_shape": [
+      3,
+      1,
+      768,
+      512
+    ],
+    "canonical_dtype": "float32",
+    "canonical_symbol_count": 1179648,
+    "canonical_valid_symbol_count": 1179648,
+    "canonical_sha256": "515a48fe391b6befce23797a9d3ac538b27a0e88ed5085b2f391a8e130481138",
+    "normalized_canonical_sha256": "02a0fffee4844a48d312f0e334449db8b7bce169333491df1061b85762a389ad",
+    "external_input_manifest": {
+      "normalization_id": "kodak-objective-corpus-minmax-v1",
+      "scope": "dataset",
+      "type": "fixed_affine_minmax",
+      "minimum": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        255.0,
+        255.0,
+        255.0
+      ],
+      "source": "fixed dataset convention [0,255]",
+      "clipping": false,
+      "dtype": "float32"
+    },
+    "source": "/workspace/Data/Kodac/kodim04.png",
+    "layout": "variable,time_or_depth,height,width"
+  },
+  {
+    "protocol_id": "aifc-objective-v1",
+    "dataset_id": "kodak",
+    "canonical_sample_id": "kodim05",
+    "canonical_shape": [
+      3,
+      1,
+      512,
+      768
+    ],
+    "canonical_dtype": "float32",
+    "canonical_symbol_count": 1179648,
+    "canonical_valid_symbol_count": 1179648,
+    "canonical_sha256": "c2248896ee3089e2fc8364934ba273b35c7a5d4282879353df0f8a853a723827",
+    "normalized_canonical_sha256": "e4333443e02ec4944cb4c74958408090e7180ee1ebe4dc98ad289944e0a77c3b",
+    "external_input_manifest": {
+      "normalization_id": "kodak-objective-corpus-minmax-v1",
+      "scope": "dataset",
+      "type": "fixed_affine_minmax",
+      "minimum": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        255.0,
+        255.0,
+        255.0
+      ],
+      "source": "fixed dataset convention [0,255]",
+      "clipping": false,
+      "dtype": "float32"
+    },
+    "source": "/workspace/Data/Kodac/kodim05.png",
+    "layout": "variable,time_or_depth,height,width"
+  },
+  {
+    "protocol_id": "aifc-objective-v1",
+    "dataset_id": "kodak",
+    "canonical_sample_id": "kodim06",
+    "canonical_shape": [
+      3,
+      1,
+      512,
+      768
+    ],
+    "canonical_dtype": "float32",
+    "canonical_symbol_count": 1179648,
+    "canonical_valid_symbol_count": 1179648,
+    "canonical_sha256": "77a308075fb5053bd7a81e7b25af78875202ba6acfc817fa1af171d57a57c818",
+    "normalized_canonical_sha256": "01550d396e4da1e11236beafa21ef45c069c47de07750677140a559505a33524",
+    "external_input_manifest": {
+      "normalization_id": "kodak-objective-corpus-minmax-v1",
+      "scope": "dataset",
+      "type": "fixed_affine_minmax",
+      "minimum": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        255.0,
+        255.0,
+        255.0
+      ],
+      "source": "fixed dataset convention [0,255]",
+      "clipping": false,
+      "dtype": "float32"
+    },
+    "source": "/workspace/Data/Kodac/kodim06.png",
+    "layout": "variable,time_or_depth,height,width"
+  },
+  {
+    "protocol_id": "aifc-objective-v1",
+    "dataset_id": "kodak",
+    "canonical_sample_id": "kodim07",
+    "canonical_shape": [
+      3,
+      1,
+      512,
+      768
+    ],
+    "canonical_dtype": "float32",
+    "canonical_symbol_count": 1179648,
+    "canonical_valid_symbol_count": 1179648,
+    "canonical_sha256": "fcf0bb6924c0807a35004590d8a0f00b407c01ee7536709218ec24d1ff1edcc4",
+    "normalized_canonical_sha256": "f818accb28006d9cb2334b96a724f521938518cf3da6613c5c9bf8c4a6ff703d",
+    "external_input_manifest": {
+      "normalization_id": "kodak-objective-corpus-minmax-v1",
+      "scope": "dataset",
+      "type": "fixed_affine_minmax",
+      "minimum": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        255.0,
+        255.0,
+        255.0
+      ],
+      "source": "fixed dataset convention [0,255]",
+      "clipping": false,
+      "dtype": "float32"
+    },
+    "source": "/workspace/Data/Kodac/kodim07.png",
+    "layout": "variable,time_or_depth,height,width"
+  },
+  {
+    "protocol_id": "aifc-objective-v1",
+    "dataset_id": "kodak",
+    "canonical_sample_id": "kodim08",
+    "canonical_shape": [
+      3,
+      1,
+      512,
+      768
+    ],
+    "canonical_dtype": "float32",
+    "canonical_symbol_count": 1179648,
+    "canonical_valid_symbol_count": 1179648,
+    "canonical_sha256": "c76203602ce01c234dd90110fca3532d01dabdf45023917e1a34e0a9c70a85e6",
+    "normalized_canonical_sha256": "5448ddc12373060f4c34ef7f56e834312d5bd996baea61b32a1114048623de25",
+    "external_input_manifest": {
+      "normalization_id": "kodak-objective-corpus-minmax-v1",
+      "scope": "dataset",
+      "type": "fixed_affine_minmax",
+      "minimum": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        255.0,
+        255.0,
+        255.0
+      ],
+      "source": "fixed dataset convention [0,255]",
+      "clipping": false,
+      "dtype": "float32"
+    },
+    "source": "/workspace/Data/Kodac/kodim08.png",
+    "layout": "variable,time_or_depth,height,width"
+  },
+  {
+    "protocol_id": "aifc-objective-v1",
+    "dataset_id": "kodak",
+    "canonical_sample_id": "kodim09",
+    "canonical_shape": [
+      3,
+      1,
+      768,
+      512
+    ],
+    "canonical_dtype": "float32",
+    "canonical_symbol_count": 1179648,
+    "canonical_valid_symbol_count": 1179648,
+    "canonical_sha256": "2b1246f5532516c70a6e16825c04eb76975b84c303cf80f4764b9a2f3f5acb98",
+    "normalized_canonical_sha256": "b279c52283257f99f78f1fee12a3308c63070a7acb11090691e35b0061a84296",
+    "external_input_manifest": {
+      "normalization_id": "kodak-objective-corpus-minmax-v1",
+      "scope": "dataset",
+      "type": "fixed_affine_minmax",
+      "minimum": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        255.0,
+        255.0,
+        255.0
+      ],
+      "source": "fixed dataset convention [0,255]",
+      "clipping": false,
+      "dtype": "float32"
+    },
+    "source": "/workspace/Data/Kodac/kodim09.png",
+    "layout": "variable,time_or_depth,height,width"
+  },
+  {
+    "protocol_id": "aifc-objective-v1",
+    "dataset_id": "kodak",
+    "canonical_sample_id": "kodim10",
+    "canonical_shape": [
+      3,
+      1,
+      768,
+      512
+    ],
+    "canonical_dtype": "float32",
+    "canonical_symbol_count": 1179648,
+    "canonical_valid_symbol_count": 1179648,
+    "canonical_sha256": "5a00df7249397a931523988c4e24961d033820f6b3cb2e3efe430a8dd448239f",
+    "normalized_canonical_sha256": "8971597f9922af8849b1617b62793fadb6e2b0e1d029e3de5ceb4004955b69bb",
+    "external_input_manifest": {
+      "normalization_id": "kodak-objective-corpus-minmax-v1",
+      "scope": "dataset",
+      "type": "fixed_affine_minmax",
+      "minimum": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        255.0,
+        255.0,
+        255.0
+      ],
+      "source": "fixed dataset convention [0,255]",
+      "clipping": false,
+      "dtype": "float32"
+    },
+    "source": "/workspace/Data/Kodac/kodim10.png",
+    "layout": "variable,time_or_depth,height,width"
+  },
+  {
+    "protocol_id": "aifc-objective-v1",
+    "dataset_id": "kodak",
+    "canonical_sample_id": "kodim11",
+    "canonical_shape": [
+      3,
+      1,
+      512,
+      768
+    ],
+    "canonical_dtype": "float32",
+    "canonical_symbol_count": 1179648,
+    "canonical_valid_symbol_count": 1179648,
+    "canonical_sha256": "65757cb2127d4f34e89768ceeb5058d813a05ce76c5ac96d3b46f4fb7811a607",
+    "normalized_canonical_sha256": "6afde307601ea41273caf4e1974efe3dc2b4f26b195c4a3f9e0ab48c93031f01",
+    "external_input_manifest": {
+      "normalization_id": "kodak-objective-corpus-minmax-v1",
+      "scope": "dataset",
+      "type": "fixed_affine_minmax",
+      "minimum": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        255.0,
+        255.0,
+        255.0
+      ],
+      "source": "fixed dataset convention [0,255]",
+      "clipping": false,
+      "dtype": "float32"
+    },
+    "source": "/workspace/Data/Kodac/kodim11.png",
+    "layout": "variable,time_or_depth,height,width"
+  },
+  {
+    "protocol_id": "aifc-objective-v1",
+    "dataset_id": "kodak",
+    "canonical_sample_id": "kodim12",
+    "canonical_shape": [
+      3,
+      1,
+      512,
+      768
+    ],
+    "canonical_dtype": "float32",
+    "canonical_symbol_count": 1179648,
+    "canonical_valid_symbol_count": 1179648,
+    "canonical_sha256": "c8ec25569f860ac96567616f9289fcbb0dcdb168b38144fb7b8f4d15654eb6bf",
+    "normalized_canonical_sha256": "69962a166966fcfe18fea8daa3e7c237932d3b7fa13d82392f4de0995771dc41",
+    "external_input_manifest": {
+      "normalization_id": "kodak-objective-corpus-minmax-v1",
+      "scope": "dataset",
+      "type": "fixed_affine_minmax",
+      "minimum": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        255.0,
+        255.0,
+        255.0
+      ],
+      "source": "fixed dataset convention [0,255]",
+      "clipping": false,
+      "dtype": "float32"
+    },
+    "source": "/workspace/Data/Kodac/kodim12.png",
+    "layout": "variable,time_or_depth,height,width"
+  },
+  {
+    "protocol_id": "aifc-objective-v1",
+    "dataset_id": "kodak",
+    "canonical_sample_id": "kodim13",
+    "canonical_shape": [
+      3,
+      1,
+      512,
+      768
+    ],
+    "canonical_dtype": "float32",
+    "canonical_symbol_count": 1179648,
+    "canonical_valid_symbol_count": 1179648,
+    "canonical_sha256": "62c5b050171cda5b3ea7e0399b413c2f8b6be46285638e0f0a6565b175af4fa5",
+    "normalized_canonical_sha256": "8be7472ad510d7224e1a4a3bf5271482a54724dca604334704a733359e29e4e0",
+    "external_input_manifest": {
+      "normalization_id": "kodak-objective-corpus-minmax-v1",
+      "scope": "dataset",
+      "type": "fixed_affine_minmax",
+      "minimum": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        255.0,
+        255.0,
+        255.0
+      ],
+      "source": "fixed dataset convention [0,255]",
+      "clipping": false,
+      "dtype": "float32"
+    },
+    "source": "/workspace/Data/Kodac/kodim13.png",
+    "layout": "variable,time_or_depth,height,width"
+  },
+  {
+    "protocol_id": "aifc-objective-v1",
+    "dataset_id": "kodak",
+    "canonical_sample_id": "kodim14",
+    "canonical_shape": [
+      3,
+      1,
+      512,
+      768
+    ],
+    "canonical_dtype": "float32",
+    "canonical_symbol_count": 1179648,
+    "canonical_valid_symbol_count": 1179648,
+    "canonical_sha256": "ded573b83bd3f07634cd7fd1da70424b86d37fa1fc7ab127ab881be67daaac61",
+    "normalized_canonical_sha256": "860798f407e9f5280abe4c3d0ba26131d3a84a6234e32cbc27ec1f7b74e0f242",
+    "external_input_manifest": {
+      "normalization_id": "kodak-objective-corpus-minmax-v1",
+      "scope": "dataset",
+      "type": "fixed_affine_minmax",
+      "minimum": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        255.0,
+        255.0,
+        255.0
+      ],
+      "source": "fixed dataset convention [0,255]",
+      "clipping": false,
+      "dtype": "float32"
+    },
+    "source": "/workspace/Data/Kodac/kodim14.png",
+    "layout": "variable,time_or_depth,height,width"
+  },
+  {
+    "protocol_id": "aifc-objective-v1",
+    "dataset_id": "kodak",
+    "canonical_sample_id": "kodim15",
+    "canonical_shape": [
+      3,
+      1,
+      512,
+      768
+    ],
+    "canonical_dtype": "float32",
+    "canonical_symbol_count": 1179648,
+    "canonical_valid_symbol_count": 1179648,
+    "canonical_sha256": "9d9ef96512a05d2f6b945a2669120b16b5b2a5b3d7896985d4d892cc940edd1d",
+    "normalized_canonical_sha256": "0bd115ca141b4f407682d2ba3a400ecb0a5c5ec3ae98289673cc779fc2528cd1",
+    "external_input_manifest": {
+      "normalization_id": "kodak-objective-corpus-minmax-v1",
+      "scope": "dataset",
+      "type": "fixed_affine_minmax",
+      "minimum": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        255.0,
+        255.0,
+        255.0
+      ],
+      "source": "fixed dataset convention [0,255]",
+      "clipping": false,
+      "dtype": "float32"
+    },
+    "source": "/workspace/Data/Kodac/kodim15.png",
+    "layout": "variable,time_or_depth,height,width"
+  },
+  {
+    "protocol_id": "aifc-objective-v1",
+    "dataset_id": "kodak",
+    "canonical_sample_id": "kodim16",
+    "canonical_shape": [
+      3,
+      1,
+      512,
+      768
+    ],
+    "canonical_dtype": "float32",
+    "canonical_symbol_count": 1179648,
+    "canonical_valid_symbol_count": 1179648,
+    "canonical_sha256": "46b051272f2275f066c4ec9e11d9b5a4c16b0c6e54bda8872ee04dc621587211",
+    "normalized_canonical_sha256": "f16bad086962e229456c7ea29162b340c7f3530fd6826957e4811eacbb0dc64c",
+    "external_input_manifest": {
+      "normalization_id": "kodak-objective-corpus-minmax-v1",
+      "scope": "dataset",
+      "type": "fixed_affine_minmax",
+      "minimum": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        255.0,
+        255.0,
+        255.0
+      ],
+      "source": "fixed dataset convention [0,255]",
+      "clipping": false,
+      "dtype": "float32"
+    },
+    "source": "/workspace/Data/Kodac/kodim16.png",
+    "layout": "variable,time_or_depth,height,width"
+  },
+  {
+    "protocol_id": "aifc-objective-v1",
+    "dataset_id": "kodak",
+    "canonical_sample_id": "kodim17",
+    "canonical_shape": [
+      3,
+      1,
+      768,
+      512
+    ],
+    "canonical_dtype": "float32",
+    "canonical_symbol_count": 1179648,
+    "canonical_valid_symbol_count": 1179648,
+    "canonical_sha256": "5f0c1ff60206be4a22ee39e3a9fbca0d570df00bd1b017ab2aeeeb16a07237c4",
+    "normalized_canonical_sha256": "346ea9186a1c70351d5b6a901bd2e7840b401efde3f3b8e9fa39909207f76ab5",
+    "external_input_manifest": {
+      "normalization_id": "kodak-objective-corpus-minmax-v1",
+      "scope": "dataset",
+      "type": "fixed_affine_minmax",
+      "minimum": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        255.0,
+        255.0,
+        255.0
+      ],
+      "source": "fixed dataset convention [0,255]",
+      "clipping": false,
+      "dtype": "float32"
+    },
+    "source": "/workspace/Data/Kodac/kodim17.png",
+    "layout": "variable,time_or_depth,height,width"
+  },
+  {
+    "protocol_id": "aifc-objective-v1",
+    "dataset_id": "kodak",
+    "canonical_sample_id": "kodim18",
+    "canonical_shape": [
+      3,
+      1,
+      768,
+      512
+    ],
+    "canonical_dtype": "float32",
+    "canonical_symbol_count": 1179648,
+    "canonical_valid_symbol_count": 1179648,
+    "canonical_sha256": "a799493112d45e7baa36dca04e974128b808ffb3de7b0e3bb71440dd42c63b6c",
+    "normalized_canonical_sha256": "a9f7a236502d3d1416087c38f5f6b91a81a94d28313f19ca9657a4b9ab4fbca0",
+    "external_input_manifest": {
+      "normalization_id": "kodak-objective-corpus-minmax-v1",
+      "scope": "dataset",
+      "type": "fixed_affine_minmax",
+      "minimum": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        255.0,
+        255.0,
+        255.0
+      ],
+      "source": "fixed dataset convention [0,255]",
+      "clipping": false,
+      "dtype": "float32"
+    },
+    "source": "/workspace/Data/Kodac/kodim18.png",
+    "layout": "variable,time_or_depth,height,width"
+  },
+  {
+    "protocol_id": "aifc-objective-v1",
+    "dataset_id": "kodak",
+    "canonical_sample_id": "kodim19",
+    "canonical_shape": [
+      3,
+      1,
+      768,
+      512
+    ],
+    "canonical_dtype": "float32",
+    "canonical_symbol_count": 1179648,
+    "canonical_valid_symbol_count": 1179648,
+    "canonical_sha256": "ed976a9dea98ac67134c2c4d0c23009bae5492a9928e69296f6a323d2824fa7f",
+    "normalized_canonical_sha256": "e5bbe81bea71adca2c65c430c4049d81afdfa45a08cb57ceac9fc7da383496cd",
+    "external_input_manifest": {
+      "normalization_id": "kodak-objective-corpus-minmax-v1",
+      "scope": "dataset",
+      "type": "fixed_affine_minmax",
+      "minimum": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        255.0,
+        255.0,
+        255.0
+      ],
+      "source": "fixed dataset convention [0,255]",
+      "clipping": false,
+      "dtype": "float32"
+    },
+    "source": "/workspace/Data/Kodac/kodim19.png",
+    "layout": "variable,time_or_depth,height,width"
+  },
+  {
+    "protocol_id": "aifc-objective-v1",
+    "dataset_id": "kodak",
+    "canonical_sample_id": "kodim20",
+    "canonical_shape": [
+      3,
+      1,
+      512,
+      768
+    ],
+    "canonical_dtype": "float32",
+    "canonical_symbol_count": 1179648,
+    "canonical_valid_symbol_count": 1179648,
+    "canonical_sha256": "dc488eef8a0631f704a3af9c4132ef306656c83d3342dbb226b4b15c21440676",
+    "normalized_canonical_sha256": "7cda6c495bbbeb353d189ba0798352b1d62401c0223c60a3c512360d7f9aa5cc",
+    "external_input_manifest": {
+      "normalization_id": "kodak-objective-corpus-minmax-v1",
+      "scope": "dataset",
+      "type": "fixed_affine_minmax",
+      "minimum": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        255.0,
+        255.0,
+        255.0
+      ],
+      "source": "fixed dataset convention [0,255]",
+      "clipping": false,
+      "dtype": "float32"
+    },
+    "source": "/workspace/Data/Kodac/kodim20.png",
+    "layout": "variable,time_or_depth,height,width"
+  },
+  {
+    "protocol_id": "aifc-objective-v1",
+    "dataset_id": "kodak",
+    "canonical_sample_id": "kodim21",
+    "canonical_shape": [
+      3,
+      1,
+      512,
+      768
+    ],
+    "canonical_dtype": "float32",
+    "canonical_symbol_count": 1179648,
+    "canonical_valid_symbol_count": 1179648,
+    "canonical_sha256": "5c7e5276824cb9108057317c1f83929d00d83b6dd9682c20d71e506462b8ce8a",
+    "normalized_canonical_sha256": "b13b657d6e6eb2398c00da429ce0e7fe33f054576f335382dbad2ac87b82ad32",
+    "external_input_manifest": {
+      "normalization_id": "kodak-objective-corpus-minmax-v1",
+      "scope": "dataset",
+      "type": "fixed_affine_minmax",
+      "minimum": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        255.0,
+        255.0,
+        255.0
+      ],
+      "source": "fixed dataset convention [0,255]",
+      "clipping": false,
+      "dtype": "float32"
+    },
+    "source": "/workspace/Data/Kodac/kodim21.png",
+    "layout": "variable,time_or_depth,height,width"
+  },
+  {
+    "protocol_id": "aifc-objective-v1",
+    "dataset_id": "kodak",
+    "canonical_sample_id": "kodim22",
+    "canonical_shape": [
+      3,
+      1,
+      512,
+      768
+    ],
+    "canonical_dtype": "float32",
+    "canonical_symbol_count": 1179648,
+    "canonical_valid_symbol_count": 1179648,
+    "canonical_sha256": "4fd1f1519b9994b9b80a1603dc40f878e7c5e020107ffb728d4e296bee9fcd56",
+    "normalized_canonical_sha256": "9b56748fcd92c5b5774a27ad75de10e69d1ab62c6e5ceaa736dcb0b2e707bdf3",
+    "external_input_manifest": {
+      "normalization_id": "kodak-objective-corpus-minmax-v1",
+      "scope": "dataset",
+      "type": "fixed_affine_minmax",
+      "minimum": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        255.0,
+        255.0,
+        255.0
+      ],
+      "source": "fixed dataset convention [0,255]",
+      "clipping": false,
+      "dtype": "float32"
+    },
+    "source": "/workspace/Data/Kodac/kodim22.png",
+    "layout": "variable,time_or_depth,height,width"
+  },
+  {
+    "protocol_id": "aifc-objective-v1",
+    "dataset_id": "kodak",
+    "canonical_sample_id": "kodim23",
+    "canonical_shape": [
+      3,
+      1,
+      512,
+      768
+    ],
+    "canonical_dtype": "float32",
+    "canonical_symbol_count": 1179648,
+    "canonical_valid_symbol_count": 1179648,
+    "canonical_sha256": "2ec2e5dd60dbaf29197fc9be6796a114f71b97cc281aedfc85b37d0fe2781376",
+    "normalized_canonical_sha256": "c9ec08c3c3fcf9a5266cac3d89779fa9789be456e1d7a750782028cdd5c95ed0",
+    "external_input_manifest": {
+      "normalization_id": "kodak-objective-corpus-minmax-v1",
+      "scope": "dataset",
+      "type": "fixed_affine_minmax",
+      "minimum": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        255.0,
+        255.0,
+        255.0
+      ],
+      "source": "fixed dataset convention [0,255]",
+      "clipping": false,
+      "dtype": "float32"
+    },
+    "source": "/workspace/Data/Kodac/kodim23.png",
+    "layout": "variable,time_or_depth,height,width"
+  },
+  {
+    "protocol_id": "aifc-objective-v1",
+    "dataset_id": "kodak",
+    "canonical_sample_id": "kodim24",
+    "canonical_shape": [
+      3,
+      1,
+      512,
+      768
+    ],
+    "canonical_dtype": "float32",
+    "canonical_symbol_count": 1179648,
+    "canonical_valid_symbol_count": 1179648,
+    "canonical_sha256": "5f71f5a5c6638e080d01270994064242ac2c1fce531bbdb4d0741ce02507e70b",
+    "normalized_canonical_sha256": "3287f06afe65fa202770d378d23501e4f5e4fcfd89adb848156132e3b5a69e96",
+    "external_input_manifest": {
+      "normalization_id": "kodak-objective-corpus-minmax-v1",
+      "scope": "dataset",
+      "type": "fixed_affine_minmax",
+      "minimum": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        255.0,
+        255.0,
+        255.0
+      ],
+      "source": "fixed dataset convention [0,255]",
+      "clipping": false,
+      "dtype": "float32"
+    },
+    "source": "/workspace/Data/Kodac/kodim24.png",
+    "layout": "variable,time_or_depth,height,width"
+  }
+]

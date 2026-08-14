@@ -1,0 +1,14 @@
+{
+  "normalization_id": "turb_rot_npz-objective-corpus-minmax-v1",
+  "scope": "dataset",
+  "type": "fixed_affine_minmax",
+  "minimum": [
+    -11.864131927490234
+  ],
+  "scale": [
+    18.3592472076416
+  ],
+  "source": "complete objective evaluation corpus",
+  "clipping": false,
+  "dtype": "float32"
+}

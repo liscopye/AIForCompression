@@ -1,0 +1,20 @@
+{
+  "normalization_id": "s2c-objective-corpus-minmax-v1",
+  "scope": "dataset",
+  "type": "fixed_affine_minmax",
+  "minimum": [
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "scale": [
+    45204.0,
+    41258.0,
+    38738.0,
+    35632.0
+  ],
+  "source": "complete objective evaluation corpus",
+  "clipping": false,
+  "dtype": "float32"
+}

@@ -1,0 +1,14 @@
+{
+  "normalization_id": "hurricane-objective-corpus-minmax-v1",
+  "scope": "dataset",
+  "type": "fixed_affine_minmax",
+  "minimum": [
+    -37.925987243652344
+  ],
+  "scale": [
+    35.801387786865234
+  ],
+  "source": "complete objective evaluation corpus",
+  "clipping": false,
+  "dtype": "float32"
+}

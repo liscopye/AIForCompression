@@ -1,0 +1,14 @@
+{
+  "normalization_id": "tomo-objective-corpus-minmax-v1",
+  "scope": "dataset",
+  "type": "fixed_affine_minmax",
+  "minimum": [
+    0.0
+  ],
+  "scale": [
+    65535.0
+  ],
+  "source": "fixed dataset convention [0,65535]",
+  "clipping": false,
+  "dtype": "float32"
+}

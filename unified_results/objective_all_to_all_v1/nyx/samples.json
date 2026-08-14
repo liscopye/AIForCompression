@@ -1,0 +1,34 @@
+[
+  {
+    "protocol_id": "aifc-objective-v1",
+    "dataset_id": "nyx",
+    "canonical_sample_id": "baryon_density_z000-511",
+    "canonical_shape": [
+      1,
+      512,
+      512,
+      512
+    ],
+    "canonical_dtype": "float32",
+    "canonical_symbol_count": 134217728,
+    "canonical_valid_symbol_count": 134217728,
+    "canonical_sha256": "352856560d319c207622662484d358bce2198282de4a50c7d5963b97a4f2986d",
+    "normalized_canonical_sha256": "71e425dee8378781dec4e45b04061d06764ce082d7a7b18da1b12808dfa86042",
+    "external_input_manifest": {
+      "normalization_id": "nyx-objective-corpus-minmax-v1",
+      "scope": "dataset",
+      "type": "fixed_affine_minmax",
+      "minimum": [
+        0.057996965944767
+      ],
+      "scale": [
+        115862.234375
+      ],
+      "source": "complete objective evaluation corpus",
+      "clipping": false,
+      "dtype": "float32"
+    },
+    "source": "/workspace/Data/SDRBENCH-EXASKY-NYX-512x512x512/SDRBENCH-EXASKY-NYX-512x512x512/baryon_density.f32",
+    "layout": "variable,time_or_depth,height,width"
+  }
+]

@@ -1,0 +1,82 @@
+[
+  {
+    "protocol_id": "aifc-objective-v1",
+    "dataset_id": "e3sm_npz",
+    "canonical_sample_id": "vars000-004_sec000_t000-015",
+    "canonical_shape": [
+      5,
+      16,
+      240,
+      240
+    ],
+    "canonical_dtype": "float32",
+    "canonical_symbol_count": 4608000,
+    "canonical_valid_symbol_count": 4608000,
+    "canonical_sha256": "b14ce16886b48375a8a5dcf9057d691d67c384cd64a5fb34bdb1c6882e31db51",
+    "normalized_canonical_sha256": "78c2d68f35e175dfa5316bd428cf13f459347b5e95316c7c95f11d0dbe5de138",
+    "external_input_manifest": {
+      "normalization_id": "e3sm_npz-objective-corpus-minmax-v1",
+      "scope": "dataset",
+      "type": "fixed_affine_minmax",
+      "minimum": [
+        2.9463964892784134e-05,
+        0.0,
+        228.01449584960938,
+        227.30674743652344,
+        224.24290466308594
+      ],
+      "scale": [
+        0.021937228739261627,
+        0.0022851405665278435,
+        78.69082641601562,
+        85.36415100097656,
+        77.13780212402344
+      ],
+      "source": "complete objective evaluation corpus",
+      "clipping": false,
+      "dtype": "float32"
+    },
+    "source": "/workspace/Data/E3SM/caesar_processed/e3sm_5vars_paperlike240_first800_caesar.npz",
+    "layout": "variable,time_or_depth,height,width"
+  },
+  {
+    "protocol_id": "aifc-objective-v1",
+    "dataset_id": "e3sm_npz",
+    "canonical_sample_id": "vars000-004_sec000_t400-415",
+    "canonical_shape": [
+      5,
+      16,
+      240,
+      240
+    ],
+    "canonical_dtype": "float32",
+    "canonical_symbol_count": 4608000,
+    "canonical_valid_symbol_count": 4608000,
+    "canonical_sha256": "2811cb2d5529c6d2ee4054bb37ab5d552659a962ce6f3467042f2c13c2366b4c",
+    "normalized_canonical_sha256": "f72066c429e0c987542feb0ace5e8230eb69722eb21af85466ce513c346c5d3e",
+    "external_input_manifest": {
+      "normalization_id": "e3sm_npz-objective-corpus-minmax-v1",
+      "scope": "dataset",
+      "type": "fixed_affine_minmax",
+      "minimum": [
+        2.9463964892784134e-05,
+        0.0,
+        228.01449584960938,
+        227.30674743652344,
+        224.24290466308594
+      ],
+      "scale": [
+        0.021937228739261627,
+        0.0022851405665278435,
+        78.69082641601562,
+        85.36415100097656,
+        77.13780212402344
+      ],
+      "source": "complete objective evaluation corpus",
+      "clipping": false,
+      "dtype": "float32"
+    },
+    "source": "/workspace/Data/E3SM/caesar_processed/e3sm_5vars_paperlike240_first800_caesar.npz",
+    "layout": "variable,time_or_depth,height,width"
+  }
+]

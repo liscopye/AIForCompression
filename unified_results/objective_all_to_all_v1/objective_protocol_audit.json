@@ -1,0 +1,827 @@
+{
+  "protocol_id": "aifc-objective-v1",
+  "rows": 1650,
+  "compliant_rows": 1650,
+  "gate_passes": {
+    "known_dataset": 1650,
+    "track_eligible": 1650,
+    "canonical_identity": 1650,
+    "rate_complete": 1650,
+    "metric_fixed_scale": 1650,
+    "external_input_declared": 1650,
+    "mask_policy_declared": 1650,
+    "timing_repeated": 1650,
+    "hardware_declared": 1650,
+    "codec_valid": 1650,
+    "protocol_tagged": 1650,
+    "codec_execution_declared": 1650
+  },
+  "datasets_complete": 10,
+  "datasets": [
+    {
+      "dataset_id": "e3sm_npz",
+      "rows": 108,
+      "compliant_rows": 108,
+      "expected_samples": [
+        "vars000-004_sec000_t000-015",
+        "vars000-004_sec000_t400-415"
+      ],
+      "present_samples": [
+        "vars000-004_sec000_t000-015",
+        "vars000-004_sec000_t400-415"
+      ],
+      "objective_sample_coverage": true,
+      "checksum_consistent_by_sample": true,
+      "normalized_checksum_consistent_by_sample": true,
+      "expected_main_families": [
+        "CAESAR-D",
+        "CAESAR-V",
+        "DCAE",
+        "DCMVC-I",
+        "DCVC-RT-I",
+        "LIC-HPCM",
+        "cuSZ-Hi",
+        "nvJPEG2000"
+      ],
+      "present_families": [
+        "CAESAR-D",
+        "CAESAR-V",
+        "DCAE",
+        "DCMVC-I",
+        "DCVC-RT-I",
+        "LIC-HPCM",
+        "cuSZ-Hi",
+        "nvJPEG2000"
+      ],
+      "missing_main_families": [],
+      "complete_curve_points": {
+        "nvJPEG2000": 7,
+        "DCMVC-I": 4,
+        "DCVC-RT-I": 4,
+        "CAESAR-V": 7,
+        "cuSZ-Hi": 7,
+        "LIC-HPCM-base": 6,
+        "LIC-HPCM-large": 6,
+        "DCAE": 6,
+        "CAESAR-D": 7
+      },
+      "insufficient_curves": {},
+      "complete": true
+    },
+    {
+      "dataset_id": "era5_npy",
+      "rows": 54,
+      "compliant_rows": 54,
+      "expected_samples": [
+        "vars000-267_t000-015_crop240"
+      ],
+      "present_samples": [
+        "vars000-267_t000-015_crop240"
+      ],
+      "objective_sample_coverage": true,
+      "checksum_consistent_by_sample": true,
+      "normalized_checksum_consistent_by_sample": true,
+      "expected_main_families": [
+        "CAESAR-D",
+        "CAESAR-V",
+        "DCAE",
+        "DCMVC-I",
+        "DCVC-RT-I",
+        "LIC-HPCM",
+        "cuSZ-Hi",
+        "nvJPEG2000"
+      ],
+      "present_families": [
+        "CAESAR-D",
+        "CAESAR-V",
+        "DCAE",
+        "DCMVC-I",
+        "DCVC-RT-I",
+        "LIC-HPCM",
+        "cuSZ-Hi",
+        "nvJPEG2000"
+      ],
+      "missing_main_families": [],
+      "complete_curve_points": {
+        "nvJPEG2000": 7,
+        "DCMVC-I": 4,
+        "DCVC-RT-I": 4,
+        "CAESAR-V": 7,
+        "cuSZ-Hi": 7,
+        "LIC-HPCM-base": 6,
+        "LIC-HPCM-large": 6,
+        "DCAE": 6,
+        "CAESAR-D": 7
+      },
+      "insufficient_curves": {},
+      "complete": true
+    },
+    {
+      "dataset_id": "hurricane",
+      "rows": 54,
+      "compliant_rows": 54,
+      "expected_samples": [
+        "precip_log10_t000-095"
+      ],
+      "present_samples": [
+        "precip_log10_t000-095"
+      ],
+      "objective_sample_coverage": true,
+      "checksum_consistent_by_sample": true,
+      "normalized_checksum_consistent_by_sample": true,
+      "expected_main_families": [
+        "CAESAR-D",
+        "CAESAR-V",
+        "DCAE",
+        "DCMVC-I",
+        "DCVC-RT-I",
+        "LIC-HPCM",
+        "cuSZ-Hi",
+        "nvJPEG2000"
+      ],
+      "present_families": [
+        "CAESAR-D",
+        "CAESAR-V",
+        "DCAE",
+        "DCMVC-I",
+        "DCVC-RT-I",
+        "LIC-HPCM",
+        "cuSZ-Hi",
+        "nvJPEG2000"
+      ],
+      "missing_main_families": [],
+      "complete_curve_points": {
+        "nvJPEG2000": 7,
+        "DCMVC-I": 4,
+        "DCVC-RT-I": 4,
+        "CAESAR-V": 7,
+        "cuSZ-Hi": 7,
+        "LIC-HPCM-base": 6,
+        "LIC-HPCM-large": 6,
+        "DCAE": 6,
+        "CAESAR-D": 7
+      },
+      "insufficient_curves": {},
+      "complete": true
+    },
+    {
+      "dataset_id": "nyx",
+      "rows": 54,
+      "compliant_rows": 54,
+      "expected_samples": [
+        "baryon_density_z000-511"
+      ],
+      "present_samples": [
+        "baryon_density_z000-511"
+      ],
+      "objective_sample_coverage": true,
+      "checksum_consistent_by_sample": true,
+      "normalized_checksum_consistent_by_sample": true,
+      "expected_main_families": [
+        "CAESAR-D",
+        "CAESAR-V",
+        "DCAE",
+        "DCMVC-I",
+        "DCVC-RT-I",
+        "LIC-HPCM",
+        "cuSZ-Hi",
+        "nvJPEG2000"
+      ],
+      "present_families": [
+        "CAESAR-D",
+        "CAESAR-V",
+        "DCAE",
+        "DCMVC-I",
+        "DCVC-RT-I",
+        "LIC-HPCM",
+        "cuSZ-Hi",
+        "nvJPEG2000"
+      ],
+      "missing_main_families": [],
+      "complete_curve_points": {
+        "nvJPEG2000": 7,
+        "DCMVC-I": 4,
+        "DCVC-RT-I": 4,
+        "CAESAR-V": 7,
+        "cuSZ-Hi": 7,
+        "LIC-HPCM-base": 6,
+        "LIC-HPCM-large": 6,
+        "DCAE": 6,
+        "CAESAR-D": 7
+      },
+      "insufficient_curves": {},
+      "complete": true
+    },
+    {
+      "dataset_id": "turb_rot_npz",
+      "rows": 136,
+      "compliant_rows": 136,
+      "expected_samples": [
+        "var000_sec000_t000-255",
+        "var000_sec008_t000-255"
+      ],
+      "present_samples": [
+        "var000_sec000_t000-255",
+        "var000_sec008_t000-255"
+      ],
+      "objective_sample_coverage": true,
+      "checksum_consistent_by_sample": true,
+      "normalized_checksum_consistent_by_sample": true,
+      "expected_main_families": [
+        "CAESAR-D",
+        "CAESAR-V",
+        "DCAE",
+        "DCMVC-I",
+        "DCVC-RT-I",
+        "LIC-HPCM",
+        "cuSZ-Hi",
+        "nvJPEG2000"
+      ],
+      "present_families": [
+        "CAESAR-D",
+        "CAESAR-D-Turb-tuned",
+        "CAESAR-V",
+        "CAESAR-V-Turb-tuned",
+        "DCAE",
+        "DCMVC-I",
+        "DCVC-RT-I",
+        "LIC-HPCM",
+        "cuSZ-Hi",
+        "nvJPEG2000"
+      ],
+      "missing_main_families": [],
+      "complete_curve_points": {
+        "CAESAR-D-Turb-tuned": 7,
+        "nvJPEG2000": 7,
+        "DCMVC-I": 4,
+        "CAESAR-V-Turb-tuned": 7,
+        "DCVC-RT-I": 4,
+        "CAESAR-V": 7,
+        "cuSZ-Hi": 7,
+        "LIC-HPCM-base": 6,
+        "LIC-HPCM-large": 6,
+        "DCAE": 6,
+        "CAESAR-D": 7
+      },
+      "insufficient_curves": {},
+      "complete": true
+    },
+    {
+      "dataset_id": "tomo",
+      "rows": 108,
+      "compliant_rows": 108,
+      "expected_samples": [
+        "projection0000-0511_crop512",
+        "projection0989-1500_crop512"
+      ],
+      "present_samples": [
+        "projection0000-0511_crop512",
+        "projection0989-1500_crop512"
+      ],
+      "objective_sample_coverage": true,
+      "checksum_consistent_by_sample": true,
+      "normalized_checksum_consistent_by_sample": true,
+      "expected_main_families": [
+        "CAESAR-D",
+        "CAESAR-V",
+        "DCAE",
+        "DCMVC-I",
+        "DCVC-RT-I",
+        "LIC-HPCM",
+        "cuSZ-Hi",
+        "nvJPEG2000"
+      ],
+      "present_families": [
+        "CAESAR-D",
+        "CAESAR-V",
+        "DCAE",
+        "DCMVC-I",
+        "DCVC-RT-I",
+        "LIC-HPCM",
+        "cuSZ-Hi",
+        "nvJPEG2000"
+      ],
+      "missing_main_families": [],
+      "complete_curve_points": {
+        "nvJPEG2000": 7,
+        "DCMVC-I": 4,
+        "DCVC-RT-I": 4,
+        "CAESAR-V": 7,
+        "cuSZ-Hi": 7,
+        "LIC-HPCM-base": 6,
+        "LIC-HPCM-large": 6,
+        "DCAE": 6,
+        "CAESAR-D": 7
+      },
+      "insufficient_curves": {},
+      "complete": true
+    },
+    {
+      "dataset_id": "lysozyme",
+      "rows": 108,
+      "compliant_rows": 108,
+      "expected_samples": [
+        "test_chunks000-030_frames000-495",
+        "test_chunks031-061_frames000-495"
+      ],
+      "present_samples": [
+        "test_chunks000-030_frames000-495",
+        "test_chunks031-061_frames000-495"
+      ],
+      "objective_sample_coverage": true,
+      "checksum_consistent_by_sample": true,
+      "normalized_checksum_consistent_by_sample": true,
+      "expected_main_families": [
+        "CAESAR-D",
+        "CAESAR-V",
+        "DCAE",
+        "DCMVC-I",
+        "DCVC-RT-I",
+        "LIC-HPCM",
+        "cuSZ-Hi",
+        "nvJPEG2000"
+      ],
+      "present_families": [
+        "CAESAR-D",
+        "CAESAR-V",
+        "DCAE",
+        "DCMVC-I",
+        "DCVC-RT-I",
+        "LIC-HPCM",
+        "cuSZ-Hi",
+        "nvJPEG2000"
+      ],
+      "missing_main_families": [],
+      "complete_curve_points": {
+        "nvJPEG2000": 7,
+        "DCMVC-I": 4,
+        "DCVC-RT-I": 4,
+        "CAESAR-V": 7,
+        "cuSZ-Hi": 7,
+        "LIC-HPCM-base": 6,
+        "LIC-HPCM-large": 6,
+        "DCAE": 6,
+        "CAESAR-D": 7
+      },
+      "insufficient_curves": {},
+      "complete": true
+    },
+    {
+      "dataset_id": "s2c",
+      "rows": 153,
+      "compliant_rows": 153,
+      "expected_samples": [
+        "T51RUQ_20260509T022531_B02_10m_bands4_t000x004",
+        "T51RUQ_20260509T022531_B02_10m_bands4_t000x005",
+        "T51RUQ_20260509T022531_B02_10m_bands4_t000x006",
+        "T51RUQ_20260509T022531_B02_10m_bands4_t000x007"
+      ],
+      "present_samples": [
+        "T51RUQ_20260509T022531_B02_10m_bands4_t000x004",
+        "T51RUQ_20260509T022531_B02_10m_bands4_t000x005",
+        "T51RUQ_20260509T022531_B02_10m_bands4_t000x006",
+        "T51RUQ_20260509T022531_B02_10m_bands4_t000x007"
+      ],
+      "objective_sample_coverage": true,
+      "checksum_consistent_by_sample": true,
+      "normalized_checksum_consistent_by_sample": true,
+      "expected_main_families": [
+        "CAESAR-D",
+        "CAESAR-V",
+        "DCAE",
+        "DCMVC-I",
+        "DCVC-RT-I",
+        "LIC-HPCM",
+        "cuSZ-Hi",
+        "nvJPEG2000"
+      ],
+      "present_families": [
+        "CAESAR-D",
+        "CAESAR-V",
+        "DCAE",
+        "DCMVC-I",
+        "DCVC-RT-I",
+        "LIC-HPCM",
+        "cuSZ-Hi",
+        "nvJPEG2000"
+      ],
+      "missing_main_families": [],
+      "complete_curve_points": {
+        "nvJPEG2000": 7,
+        "DCMVC-I": 4,
+        "DCVC-RT-I": 4,
+        "CAESAR-V": 7,
+        "cuSZ-Hi": 7,
+        "LIC-HPCM-base": 6,
+        "LIC-HPCM-large": 6,
+        "DCAE": 6,
+        "CAESAR-D": 7
+      },
+      "insufficient_curves": {},
+      "complete": true
+    },
+    {
+      "dataset_id": "kodak",
+      "rows": 813,
+      "compliant_rows": 813,
+      "expected_samples": [
+        "kodim01",
+        "kodim02",
+        "kodim03",
+        "kodim04",
+        "kodim05",
+        "kodim06",
+        "kodim07",
+        "kodim08",
+        "kodim09",
+        "kodim10",
+        "kodim11",
+        "kodim12",
+        "kodim13",
+        "kodim14",
+        "kodim15",
+        "kodim16",
+        "kodim17",
+        "kodim18",
+        "kodim19",
+        "kodim20",
+        "kodim21",
+        "kodim22",
+        "kodim23",
+        "kodim24"
+      ],
+      "present_samples": [
+        "kodim01",
+        "kodim02",
+        "kodim03",
+        "kodim04",
+        "kodim05",
+        "kodim06",
+        "kodim07",
+        "kodim08",
+        "kodim09",
+        "kodim10",
+        "kodim11",
+        "kodim12",
+        "kodim13",
+        "kodim14",
+        "kodim15",
+        "kodim16",
+        "kodim17",
+        "kodim18",
+        "kodim19",
+        "kodim20",
+        "kodim21",
+        "kodim22",
+        "kodim23",
+        "kodim24"
+      ],
+      "objective_sample_coverage": true,
+      "checksum_consistent_by_sample": true,
+      "normalized_checksum_consistent_by_sample": true,
+      "expected_main_families": [
+        "CAESAR-D",
+        "CAESAR-V",
+        "DCAE",
+        "DCMVC-I",
+        "DCVC-RT-I",
+        "LIC-HPCM",
+        "cuSZ-Hi",
+        "nvJPEG"
+      ],
+      "present_families": [
+        "CAESAR-D",
+        "CAESAR-V",
+        "DCAE",
+        "DCMVC-I",
+        "DCVC-RT-I",
+        "LIC-HPCM",
+        "cuSZ-Hi",
+        "nvJPEG"
+      ],
+      "missing_main_families": [],
+      "complete_curve_points": {
+        "nvJPEG": 7,
+        "DCMVC-I": 4,
+        "DCVC-RT-I": 4,
+        "CAESAR-V": 7,
+        "cuSZ-Hi": 7,
+        "LIC-HPCM-base": 6,
+        "LIC-HPCM-large": 6,
+        "DCAE": 6,
+        "CAESAR-D": 7
+      },
+      "insufficient_curves": {},
+      "complete": true
+    },
+    {
+      "dataset_id": "uvg_twilight_1080p",
+      "rows": 62,
+      "compliant_rows": 62,
+      "expected_samples": [
+        "twilight_frames000-029_1080p"
+      ],
+      "present_samples": [
+        "twilight_frames000-029_1080p"
+      ],
+      "objective_sample_coverage": true,
+      "checksum_consistent_by_sample": true,
+      "normalized_checksum_consistent_by_sample": true,
+      "expected_main_families": [
+        "CAESAR-D",
+        "CAESAR-V",
+        "DCAE",
+        "DCMVC-I",
+        "DCMVC-IP",
+        "DCVC-RT-I",
+        "DCVC-RT-IP",
+        "LIC-HPCM",
+        "cuSZ-Hi",
+        "nvJPEG"
+      ],
+      "present_families": [
+        "CAESAR-D",
+        "CAESAR-V",
+        "DCAE",
+        "DCMVC-I",
+        "DCMVC-IP",
+        "DCVC-RT-I",
+        "DCVC-RT-IP",
+        "LIC-HPCM",
+        "cuSZ-Hi",
+        "nvJPEG"
+      ],
+      "missing_main_families": [],
+      "complete_curve_points": {
+        "nvJPEG": 7,
+        "DCMVC-I": 4,
+        "DCMVC-IP": 4,
+        "DCVC-RT-I": 4,
+        "CAESAR-V": 7,
+        "cuSZ-Hi": 7,
+        "LIC-HPCM-base": 6,
+        "LIC-HPCM-large": 6,
+        "DCAE": 6,
+        "CAESAR-D": 7,
+        "DCVC-RT-IP": 4
+      },
+      "insufficient_curves": {},
+      "complete": true
+    }
+  ],
+  "families": [
+    {
+      "family": "CAESAR-D",
+      "rows": 98,
+      "compliant_rows": 98,
+      "gate_passes": {
+        "known_dataset": 98,
+        "track_eligible": 98,
+        "canonical_identity": 98,
+        "rate_complete": 98,
+        "metric_fixed_scale": 98,
+        "external_input_declared": 98,
+        "mask_policy_declared": 98,
+        "timing_repeated": 98,
+        "hardware_declared": 98,
+        "codec_valid": 98,
+        "protocol_tagged": 98,
+        "codec_execution_declared": 98
+      }
+    },
+    {
+      "family": "CAESAR-D-Turb-tuned",
+      "rows": 14,
+      "compliant_rows": 14,
+      "gate_passes": {
+        "known_dataset": 14,
+        "track_eligible": 14,
+        "canonical_identity": 14,
+        "rate_complete": 14,
+        "metric_fixed_scale": 14,
+        "external_input_declared": 14,
+        "mask_policy_declared": 14,
+        "timing_repeated": 14,
+        "hardware_declared": 14,
+        "codec_valid": 14,
+        "protocol_tagged": 14,
+        "codec_execution_declared": 14
+      }
+    },
+    {
+      "family": "CAESAR-V",
+      "rows": 98,
+      "compliant_rows": 98,
+      "gate_passes": {
+        "known_dataset": 98,
+        "track_eligible": 98,
+        "canonical_identity": 98,
+        "rate_complete": 98,
+        "metric_fixed_scale": 98,
+        "external_input_declared": 98,
+        "mask_policy_declared": 98,
+        "timing_repeated": 98,
+        "hardware_declared": 98,
+        "codec_valid": 98,
+        "protocol_tagged": 98,
+        "codec_execution_declared": 98
+      }
+    },
+    {
+      "family": "CAESAR-V-Turb-tuned",
+      "rows": 14,
+      "compliant_rows": 14,
+      "gate_passes": {
+        "known_dataset": 14,
+        "track_eligible": 14,
+        "canonical_identity": 14,
+        "rate_complete": 14,
+        "metric_fixed_scale": 14,
+        "external_input_declared": 14,
+        "mask_policy_declared": 14,
+        "timing_repeated": 14,
+        "hardware_declared": 14,
+        "codec_valid": 14,
+        "protocol_tagged": 14,
+        "codec_execution_declared": 14
+      }
+    },
+    {
+      "family": "DCAE",
+      "rows": 240,
+      "compliant_rows": 240,
+      "gate_passes": {
+        "known_dataset": 240,
+        "track_eligible": 240,
+        "canonical_identity": 240,
+        "rate_complete": 240,
+        "metric_fixed_scale": 240,
+        "external_input_declared": 240,
+        "mask_policy_declared": 240,
+        "timing_repeated": 240,
+        "hardware_declared": 240,
+        "codec_valid": 240,
+        "protocol_tagged": 240,
+        "codec_execution_declared": 240
+      }
+    },
+    {
+      "family": "DCMVC-I",
+      "rows": 160,
+      "compliant_rows": 160,
+      "gate_passes": {
+        "known_dataset": 160,
+        "track_eligible": 160,
+        "canonical_identity": 160,
+        "rate_complete": 160,
+        "metric_fixed_scale": 160,
+        "external_input_declared": 160,
+        "mask_policy_declared": 160,
+        "timing_repeated": 160,
+        "hardware_declared": 160,
+        "codec_valid": 160,
+        "protocol_tagged": 160,
+        "codec_execution_declared": 160
+      }
+    },
+    {
+      "family": "DCMVC-IP",
+      "rows": 4,
+      "compliant_rows": 4,
+      "gate_passes": {
+        "known_dataset": 4,
+        "track_eligible": 4,
+        "canonical_identity": 4,
+        "rate_complete": 4,
+        "metric_fixed_scale": 4,
+        "external_input_declared": 4,
+        "mask_policy_declared": 4,
+        "timing_repeated": 4,
+        "hardware_declared": 4,
+        "codec_valid": 4,
+        "protocol_tagged": 4,
+        "codec_execution_declared": 4
+      }
+    },
+    {
+      "family": "DCVC-RT-I",
+      "rows": 160,
+      "compliant_rows": 160,
+      "gate_passes": {
+        "known_dataset": 160,
+        "track_eligible": 160,
+        "canonical_identity": 160,
+        "rate_complete": 160,
+        "metric_fixed_scale": 160,
+        "external_input_declared": 160,
+        "mask_policy_declared": 160,
+        "timing_repeated": 160,
+        "hardware_declared": 160,
+        "codec_valid": 160,
+        "protocol_tagged": 160,
+        "codec_execution_declared": 160
+      }
+    },
+    {
+      "family": "DCVC-RT-IP",
+      "rows": 4,
+      "compliant_rows": 4,
+      "gate_passes": {
+        "known_dataset": 4,
+        "track_eligible": 4,
+        "canonical_identity": 4,
+        "rate_complete": 4,
+        "metric_fixed_scale": 4,
+        "external_input_declared": 4,
+        "mask_policy_declared": 4,
+        "timing_repeated": 4,
+        "hardware_declared": 4,
+        "codec_valid": 4,
+        "protocol_tagged": 4,
+        "codec_execution_declared": 4
+      }
+    },
+    {
+      "family": "LIC-HPCM",
+      "rows": 480,
+      "compliant_rows": 480,
+      "gate_passes": {
+        "known_dataset": 480,
+        "track_eligible": 480,
+        "canonical_identity": 480,
+        "rate_complete": 480,
+        "metric_fixed_scale": 480,
+        "external_input_declared": 480,
+        "mask_policy_declared": 480,
+        "timing_repeated": 480,
+        "hardware_declared": 480,
+        "codec_valid": 480,
+        "protocol_tagged": 480,
+        "codec_execution_declared": 480
+      }
+    },
+    {
+      "family": "cuSZ-Hi",
+      "rows": 98,
+      "compliant_rows": 98,
+      "gate_passes": {
+        "known_dataset": 98,
+        "track_eligible": 98,
+        "canonical_identity": 98,
+        "rate_complete": 98,
+        "metric_fixed_scale": 98,
+        "external_input_declared": 98,
+        "mask_policy_declared": 98,
+        "timing_repeated": 98,
+        "hardware_declared": 98,
+        "codec_valid": 98,
+        "protocol_tagged": 98,
+        "codec_execution_declared": 98
+      }
+    },
+    {
+      "family": "nvJPEG",
+      "rows": 175,
+      "compliant_rows": 175,
+      "gate_passes": {
+        "known_dataset": 175,
+        "track_eligible": 175,
+        "canonical_identity": 175,
+        "rate_complete": 175,
+        "metric_fixed_scale": 175,
+        "external_input_declared": 175,
+        "mask_policy_declared": 175,
+        "timing_repeated": 175,
+        "hardware_declared": 175,
+        "codec_valid": 175,
+        "protocol_tagged": 175,
+        "codec_execution_declared": 175
+      }
+    },
+    {
+      "family": "nvJPEG2000",
+      "rows": 105,
+      "compliant_rows": 105,
+      "gate_passes": {
+        "known_dataset": 105,
+        "track_eligible": 105,
+        "canonical_identity": 105,
+        "rate_complete": 105,
+        "metric_fixed_scale": 105,
+        "external_input_declared": 105,
+        "mask_policy_declared": 105,
+        "timing_repeated": 105,
+        "hardware_declared": 105,
+        "codec_valid": 105,
+        "protocol_tagged": 105,
+        "codec_execution_declared": 105
+      }
+    }
+  ],
+  "row_failure_patterns": [
+    [
+      "",
+      1650
+    ]
+  ]
+}

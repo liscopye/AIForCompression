@@ -272,6 +272,7 @@ def image_point(
     mask: np.ndarray | None,
     batch_size: int,
     lpips_fn: Callable | None,
+    return_reconstruction: bool = False,
 ) -> dict[str, Any]:
     wall_start = time.perf_counter()
     reconstruction = np.empty_like(normalized, dtype=np.float32)
@@ -334,6 +335,8 @@ def image_point(
     metrics["sample_wall_throughput_MBps"] = metrics["original_bytes"] / wall / 1e6
     metrics["partition_count"] = len(tasks)
     metrics["partition_policy"] = "RGB frames" if dataset_id in GENERAL_DATASETS else "fixed-normalized 2D groups"
+    if return_reconstruction:
+        metrics["_reconstruction"] = reconstruction
     return metrics
 
 

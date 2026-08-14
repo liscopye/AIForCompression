@@ -1,0 +1,34 @@
+[
+  {
+    "protocol_id": "aifc-objective-v1",
+    "dataset_id": "hurricane",
+    "canonical_sample_id": "precip_log10_t000-095",
+    "canonical_shape": [
+      1,
+      96,
+      500,
+      500
+    ],
+    "canonical_dtype": "float32",
+    "canonical_symbol_count": 24000000,
+    "canonical_valid_symbol_count": 24000000,
+    "canonical_sha256": "3059d744b60abbd7060f06f23a69566f4424dc1f4053df1e62b5928089054fcd",
+    "normalized_canonical_sha256": "5e0acd569f8a76e72ab5d40c37688d29441db48cc87a40b054346553cfada6c6",
+    "external_input_manifest": {
+      "normalization_id": "hurricane-objective-corpus-minmax-v1",
+      "scope": "dataset",
+      "type": "fixed_affine_minmax",
+      "minimum": [
+        -37.925987243652344
+      ],
+      "scale": [
+        35.801387786865234
+      ],
+      "source": "complete objective evaluation corpus",
+      "clipping": false,
+      "dtype": "float32"
+    },
+    "source": "/workspace/Data/SDRBENCH-Hurricane-ISABEL-100x500x500/100x500x500/PRECIPf48.log10.bin.f32",
+    "layout": "variable,time_or_depth,height,width"
+  }
+]
