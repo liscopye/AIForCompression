@@ -1,6 +1,6 @@
 # `/workspace/Data` 数据资产盘点
 
-盘点时间：2026-08-12。统计对象为当前机器上的 `/workspace/Data`，总磁盘占用约 **1.5 TB**。
+本文统计当前机器上 `/workspace/Data` 中的数据资产。
 
 ## 一、统计口径
 
@@ -85,6 +85,14 @@
 
 `E3SM/day_5vars/` 保存 5 个原始 NetCDF，合计 **3.686 GB**：`huss`、`pr`、`tas`、`tasmax`、`tasmin`，每个来自一个十年 historical 时间段。
 
+对应的可续传下载脚本位于：
+
+```text
+/workspace/Data/E3SM/download_5vars.sh
+```
+
+该脚本使用 ESGF 直接文件地址，输出固定到脚本同级的 `day_5vars/`，不依赖启动时的工作目录。
+
 `E3SM/caesar_processed/` 约 **13 GB**，包含多组 CAESAR NPZ：first16/160/800、不同变量组合以及 paper-like `240x240` 版本。当前推荐输入是：
 
 ```text
@@ -101,7 +109,7 @@ E3SM/caesar_processed/e3sm_5vars_paperlike240_first160_caesar.npz
 - dark/white reference：各 `[1,1792,2048] uint16`
 - `exchange/theta`: 1501 个角度
 
-当前 `TomoH5Adapter` 需要按协议确认读取的是投影还是已经重建的数据语义。仓库已删除那个写死旧路径且依赖缺失 `tomopy` 的一次性重建脚本，因此换机器时若需重建，应单独安装 TomoPy 并建立可复用处理流程。
+当前 `TomoH5Adapter` 需要按协议确认读取的是投影还是已经重建的数据语义。仓库不提供 TomoPy 重建入口；换机器时若需重建，应单独安装 TomoPy 并建立可复用处理流程。
 
 ### 3.5 Turb_Rot
 
@@ -184,4 +192,4 @@ S2C_MSIL2A_20260509T022531_N0512_R046_T51RUQ_20260509T055911.SAFE.zip
 4. Lysozyme 同时保留 152 GB 原始 HDF5、mmap 和多个 NPZ。只做正式测试时不需要全部训练/验证副本，但删除前应确定不再训练且 test mmap 可独立读取。
 5. `s2c_tci_tiles_512_n16` 是预览/图像实验派生物，不能替代正式四波段 SAFE 输入。
 
-本文件只记录和解释，没有删除 `/workspace/Data` 中任何数据。
+Lysozyme 原始 HDF5（60,604 个文件）和 ERA5 实际数据目录均已完整保留；当前训练和正式评测直接使用这些目录及其派生数据。
